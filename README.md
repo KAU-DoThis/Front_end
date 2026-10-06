@@ -78,27 +78,37 @@ eas build --profile development --platform android
 
 ```
 src/
-├── app/            라우팅, 화면, 전역 레이아웃
-├── assets/         정적 자산 원본
-│   ├── fonts/      로컬 폰트 파일
-│   └── icon/       SVG 아이콘 원본
-├── components/     여러 곳에서 재사용되는 공통 컴포넌트
-│   ├── layout/     공통 레이아웃 컴포넌트
-│   └── ui/         Button, Input 등 순수 UI 컴포넌트
-├── features/       도메인·기능 단위 비즈니스 로직
-│   ├── auth/       로그인, 인증, 사용자 세션
-│   │   ├── api/          서버 통신 로직
+├── app/                라우트 파일만 (Expo Router)
+│   └── _layout.tsx     전역 Provider, 루트 레이아웃
+├── assets/             앱 안에서 쓰는 정적 자산
+│   ├── fonts/          로컬 폰트 파일
+│   ├── icons/          SVG 아이콘 원본
+│   └── images/         이미지
+├── features/           도메인·기능 단위 비즈니스 로직
+│   ├── auth/           로그인, 인증, 사용자 세션
+│   │   ├── api/          요청 함수, TanStack Query 훅, query key
 │   │   ├── components/   기능 전용 컴포넌트
-│   │   ├── hooks/        커스텀 훅
-│   │   ├── stores/       클라이언트 상태 관리 (Zustand)
+│   │   ├── hooks/        기능 전용 로직 훅 (서버 통신 제외)
+│   │   ├── stores/       클라이언트 상태 (Zustand)
 │   │   └── types/        도메인 타입 정의
-│   └── {domain}/   block, goal, suggestion 등 도메인 기능
-├── lib/            도메인에 종속되지 않는 유틸리티, 외부 라이브러리 설정
-├── shared/         여러 기능에서 함께 쓰는 공통 자원
-│   ├── constants/  공통 상수
-│   ├── hooks/      공통 커스텀 훅
-│   └── types/      공통 타입
-└── styles/         전역 스타일, 테마
+│   └── {domain}/       block, goal, suggestion 등
+├── shared/             여러 기능에서 함께 쓰는 공통 자원
+│   ├── components/
+│   │   ├── layout/       공통 레이아웃 컴포넌트
+│   │   └── ui/           Button, Input 등 순수 UI 컴포넌트
+│   ├── constants/      공통 상수
+│   ├── hooks/          공통 커스텀 훅
+│   └── types/          공통 타입
+├── lib/                API 클라이언트, QueryClient 설정, cn() 등 유틸
+└── styles/
+    └── global.css      NativeWind용 전역 CSS
+
+루트(src/ 와 같은 계층)
+├── assets/             앱 아이콘, 스플래시 (app.json에서 참조)
+├── tailwind.config.js  색상·폰트·간격 등 디자인 토큰
+├── nativewind-env.d.ts className 타입 지원
+├── babel.config.js / metro.config.js   NativeWind 설정
+└── app.json / eas.json
 ```
 
 <br>
