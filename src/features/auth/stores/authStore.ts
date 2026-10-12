@@ -19,6 +19,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
 
     async login(accessToken, refreshToken) {
+        // 이전 세션의 토큰이 남지 않도록 비운 뒤 저장한다.
+        await tokenStorage.clear();
         await tokenStorage.setTokens(accessToken, refreshToken);
         set({ isLoggedIn: true });
     },
