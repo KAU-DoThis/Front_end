@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: ko-KR
+reviews:
+    profile: chill
+    auto_review:
+        enabled: true
+        base_branches:
+            - '^dev$'
+    path_instructions:
+        - path: 'src/**'
+          instructions: |
+              - 서버 데이터는 TanStack Query, 클라이언트 상태는 Zustand로 관리하는지 확인한다.
+              - 금액·달성률·블록 상태 등 계산 값은 서버 응답을 그대로 사용하고, 화면에서 다시 계산하지 않는지 확인한다.
+              - 금액은 원 단위 정수로 다루고, 표시할 때만 formatWon으로 포맷팅하는지 확인한다.
+              - 토큰 등 민감 정보를 AsyncStorage가 아닌 expo-secure-store에 저장하는지 확인한다.
+              - API 에러 분기를 message가 아니라 code 기준으로 처리하는지 확인한다.
+        - path: 'src/app/**'
+          instructions: |
+              - 라우트 파일에는 화면 조립만 두고, 비즈니스 로직은 features/ 로 분리했는지 확인한다.
