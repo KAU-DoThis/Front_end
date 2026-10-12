@@ -89,6 +89,7 @@ src/
 │   │   ├── api/          요청 함수, TanStack Query 훅, query key
 │   │   ├── components/   기능 전용 컴포넌트
 │   │   ├── hooks/        기능 전용 로직 훅 (서버 통신 제외)
+│   │   ├── screens/      화면 컴포넌트 (라우트에서 불러옴)
 │   │   ├── stores/       클라이언트 상태 (Zustand)
 │   │   └── types/        도메인 타입 정의
 │   └── {domain}/       block, goal, suggestion 등
@@ -137,6 +138,8 @@ src/
 ---
 
 # 📌 Convention
+
+> 코드 작성 규칙은 [docs/CONVENTION.md](docs/CONVENTION.md)를 참고합니다.
 
 ## 기본 원칙
 
