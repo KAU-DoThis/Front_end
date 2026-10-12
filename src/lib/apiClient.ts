@@ -1,6 +1,11 @@
 import { AxiosError, create, type AxiosRequestConfig } from 'axios';
 
-import { ApiError, NETWORK_ERROR_CODE, type ApiResponse } from '@/shared/types/api';
+import {
+    ApiError,
+    HTTP_ERROR_CODE,
+    NETWORK_ERROR_CODE,
+    type ApiResponse,
+} from '@/shared/types/api';
 
 import { tokenStorage } from './tokenStorage';
 
@@ -42,11 +47,16 @@ export async function request<T>(config: AxiosRequestConfig): Promise<T> {
             throw error;
         }
         if (error instanceof AxiosError) {
-            const body = error.response?.data as Partial<ApiResponse<unknown>> | undefined;
+            const { response } = error;
+            // 서버 응답 자체가 없는 경우만 네트워크 오류로 분류한다.
+            if (!response) {
+                throw new ApiError(NETWORK_ERROR_CODE, '네트워크 연결을 확인해 주세요.');
+            }
+            const body = response.data as Partial<ApiResponse<unknown>> | undefined;
             throw new ApiError(
-                body?.code ?? NETWORK_ERROR_CODE,
-                body?.message ?? '네트워크 연결을 확인해 주세요.',
-                error.response?.status,
+                body?.code ?? HTTP_ERROR_CODE,
+                body?.message ?? '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+                response.status,
             );
         }
         throw error;
