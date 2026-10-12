@@ -30,9 +30,6 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
-
 # typescript
 *.tsbuildinfo
 
@@ -42,4 +39,5 @@ yarn-error.*
 /android
 
 # env (.env.example만 커밋)
-.env
+.env*
+!.env.example
