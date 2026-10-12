@@ -1,6 +1,6 @@
 import { AxiosError, create, type AxiosRequestConfig } from 'axios';
 
-import { ApiError, type ApiResponse } from '@/shared/types/api';
+import { ApiError, NETWORK_ERROR_CODE, type ApiResponse } from '@/shared/types/api';
 
 import { tokenStorage } from './tokenStorage';
 
@@ -32,9 +32,9 @@ apiClient.interceptors.request.use(async (config) => {
  */
 export async function request<T>(config: AxiosRequestConfig): Promise<T> {
     try {
-        const { data } = await apiClient.request<ApiResponse<T>>(config);
+        const { data, status } = await apiClient.request<ApiResponse<T>>(config);
         if (!data.isSuccess) {
-            throw new ApiError(data.code, data.message);
+            throw new ApiError(data.code, data.message, status);
         }
         return data.result;
     } catch (error) {
@@ -44,7 +44,7 @@ export async function request<T>(config: AxiosRequestConfig): Promise<T> {
         if (error instanceof AxiosError) {
             const body = error.response?.data as Partial<ApiResponse<unknown>> | undefined;
             throw new ApiError(
-                body?.code ?? 'NETWORK_ERROR',
+                body?.code ?? NETWORK_ERROR_CODE,
                 body?.message ?? '네트워크 연결을 확인해 주세요.',
                 error.response?.status,
             );
