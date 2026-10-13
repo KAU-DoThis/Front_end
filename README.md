@@ -23,7 +23,7 @@
 
 | 이름 | 역할 |
 | --- | --- |
-| 김승욱 | Frontend |
+| 김승욱 | Frontend, Design |
 | 정관혁 | Frontend, Design |
 
 <br>
