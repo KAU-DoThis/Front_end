@@ -45,7 +45,8 @@
 - Node.js (LTS)
 - pnpm
 - Android Studio (에뮬레이터) 또는 Android 기기
-- Expo 계정 (EAS Build 사용 시)
+- Expo 계정 (팀 organization에 초대된 계정)
+- EAS CLI (`npm install -g eas-cli`)
 
 ### 설치 및 실행
 
@@ -56,7 +57,16 @@ pnpm install
 pnpm expo start
 ```
 
-이 프로젝트는 **Expo Go가 아닌 development build**로 실행합니다. 처음 한 번 개발용 앱을 빌드해 기기 또는 에뮬레이터에 설치하세요.
+이 프로젝트는 **Expo Go가 아닌 development build**로 실행합니다. 개발용 앱은 EAS 클라우드에서 빌드하며, 이미 만들어진 최신 빌드를 에뮬레이터 또는 기기에 설치해 사용합니다.
+
+```bash
+eas login
+eas build:run -p android --latest
+```
+
+설치 후 `pnpm expo start`를 실행하고 터미널에서 `a`를 누르면 에뮬레이터에서 앱이 열립니다.
+
+네이티브 코드가 포함된 패키지를 추가·변경한 경우에만 새로 빌드합니다.
 
 ```bash
 eas build --profile development --platform android
@@ -71,6 +81,8 @@ eas build --profile development --platform android
 | `EXPO_PUBLIC_API_URL` | 백엔드 API 서버 주소 |
 
 > `EXPO_PUBLIC_` 접두사가 붙은 값은 앱 번들에 포함되므로, 비밀 키는 절대 넣지 않습니다.
+>
+> 에뮬레이터에서 로컬 백엔드에 연결할 때는 `localhost` 대신 `http://10.0.2.2:8080`을 사용합니다.
 
 <br>
 
