@@ -57,11 +57,11 @@ pnpm install
 pnpm expo start
 ```
 
-이 프로젝트는 **Expo Go가 아닌 development build**로 실행합니다. 개발용 앱은 EAS 클라우드에서 빌드하며, 이미 만들어진 최신 빌드를 에뮬레이터 또는 기기에 설치해 사용합니다.
+이 프로젝트는 **Expo Go가 아닌 development build**로 실행합니다. 개발용 앱은 EAS 클라우드에서 빌드하며, 이미 만들어진 최신 development 빌드를 에뮬레이터에 설치해 사용합니다.
 
 ```bash
 eas login
-eas build:run -p android --latest
+eas build:run -p android --latest --profile development
 ```
 
 설치 후 `pnpm expo start`를 실행하고 터미널에서 `a`를 누르면 에뮬레이터에서 앱이 열립니다.
