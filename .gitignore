@@ -41,3 +41,6 @@ yarn-error.*
 # env (.env.example만 커밋)
 .env*
 !.env.example
+
+# IDE
+.idea/
