@@ -54,6 +54,7 @@ export function Button({
     isLoading = false,
     loadingTitle,
     disabled,
+    accessibilityState,
     className,
     ...props
 }: ButtonProps) {
@@ -65,7 +66,12 @@ export function Button({
     return (
         <Pressable
             accessibilityRole="button"
-            accessibilityState={{ disabled: isDisabled || isLoading, busy: isLoading }}
+            // 호출자가 준 상태(selected 등)는 살리되 disabled·busy는 버튼이 계산한 값으로 고정한다.
+            accessibilityState={{
+                ...accessibilityState,
+                disabled: isDisabled || isLoading,
+                busy: isLoading,
+            }}
             className={cn(
                 'items-center justify-center',
                 sizeClass.container,
