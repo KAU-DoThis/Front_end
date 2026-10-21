@@ -40,7 +40,18 @@ export default function RootLayout() {
             <QueryClientProvider client={queryClient}>
                 <BottomSheetModalProvider>
                     <StatusBar style="dark" />
-                    <Stack screenOptions={{ headerShown: false }} />
+                    <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="(tabs)" />
+                        {/* 가운데 에이전트 버튼: 아래에서 올라오는 전체 화면, 뒤로 가기로 닫힘 */}
+                        <Stack.Screen
+                            name="agent"
+                            options={{
+                                presentation: 'fullScreenModal',
+                                animation: 'slide_from_bottom',
+                            }}
+                        />
+                        <Stack.Screen name="dev/components" />
+                    </Stack>
                 </BottomSheetModalProvider>
             </QueryClientProvider>
         </GestureHandlerRootView>
