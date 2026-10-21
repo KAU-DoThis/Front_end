@@ -38,22 +38,39 @@ export function BottomSheet({
     children,
 }: BottomSheetProps) {
     const sheetRef = useRef<BottomSheetModal>(null);
-    // 한 번도 열지 않은 시트에 dismiss()를 부르면 gorhom이 '닫히는 중' 상태에 멈춰 다시 열리지 않는다.
+    // 시트가 실제로 올라오기 시작했는지. present()는 다음 프레임에 마운트하므로 그 전에 dismiss()를 부르면
+    // gorhom이 '닫히는 중' 상태에 멈춰 다시 열리지 않는다. 그래서 열림 애니메이션이 시작된 뒤에만 true로 둔다.
     const isPresentedRef = useRef(false);
+    // onDismiss·onAnimate는 비동기로 불리므로 최신 isOpen을 ref로 본다.
+    const isOpenRef = useRef(isOpen);
     const insets = useSafeAreaInsets();
 
     useEffect(() => {
+        isOpenRef.current = isOpen;
         if (isOpen) {
             sheetRef.current?.present();
-            isPresentedRef.current = true;
         } else if (isPresentedRef.current) {
             sheetRef.current?.dismiss();
         }
     }, [isOpen]);
 
+    const handleAnimate = useCallback((_fromIndex: number, toIndex: number) => {
+        if (toIndex < 0 || isPresentedRef.current) {
+            return;
+        }
+        isPresentedRef.current = true;
+        // 올라오기 전에 닫기 요청이 들어왔다면 이제 닫는다.
+        if (!isOpenRef.current) {
+            sheetRef.current?.dismiss();
+        }
+    }, []);
+
     const handleDismiss = useCallback(() => {
         isPresentedRef.current = false;
-        onClose();
+        // 닫기 버튼·뒤로 가기로 닫힌 경우엔 이미 onClose가 불려 isOpen이 false다. 배경·끌어내리기로 닫힌 경우만 알린다.
+        if (isOpenRef.current) {
+            onClose();
+        }
     }, [onClose]);
 
     // 모달 시트는 안드로이드 뒤로 가기를 직접 처리해야 화면 대신 시트가 닫힌다.
@@ -87,6 +104,7 @@ export function BottomSheet({
     return (
         <BottomSheetModal
             ref={sheetRef}
+            onAnimate={handleAnimate}
             onDismiss={handleDismiss}
             backdropComponent={renderBackdrop}
             enablePanDownToClose
