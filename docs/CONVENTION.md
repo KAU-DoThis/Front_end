@@ -43,9 +43,11 @@ src/
 | `connection`  | 금융기관 연결, 연결 상태                        |
 | `transaction` | 거래 내역, 소비 통계                            |
 | `block`       | 홈 블록 현황, 블록 생성·상세, 블록 간 자금 이동 |
-| `goal`        | 목표 설정, 달성률                               |
-| `suggestion`  | AI 절약 제안, 챗봇                              |
+| `goal`        | 목표 설정, 달성률, 절약 탭                      |
+| `suggestion`  | AI 절약 제안, 챗봇(에이전트)                    |
+| `report`      | 월간 리포트                                     |
 | `mypage`      | 마이페이지, 설정                                |
+| `dev`         | 개발 모드 전용 화면 (공통 컴포넌트 확인 등)     |
 
 <br>
 
@@ -54,13 +56,17 @@ src/
 - `src/app/`에는 라우트 파일만 둔다. 화면 UI는 `features/{domain}/screens/`에 작성하고 라우트에서 불러온다.
 
 ```tsx
-// src/app/(tabs)/home.tsx
+// src/app/(tabs)/index.tsx
 import { BlockHomeScreen } from '@/features/block/screens/BlockHomeScreen';
 
 export default BlockHomeScreen;
 ```
 
 - 라우트 그룹: 로그인 전 화면은 `(auth)`, 하단 탭 화면은 `(tabs)`
+- 하단 탭: 블록 `(tabs)/index` · 내역 `(tabs)/transactions` · 절약 `(tabs)/saving` · 리포트 `(tabs)/report`
+    - 가운데 에이전트 버튼은 탭이 아니라 루트 스택의 `agent` 화면을 연다. (아래에서 올라오는 전체 화면, 뒤로 가기로 닫힘)
+    - 탭 화면은 `<Screen edges={['top']}>`을 쓴다. 아래 여백은 탭 바가 처리한다.
+- 개발용 화면은 `app/dev/` 아래에 두고 `__DEV__`가 아니면 홈으로 돌려보낸다. (공통 컴포넌트 확인: `/dev/components`)
 - 라우트 파일명은 소문자 kebab-case (`block-detail.tsx`, `[blockId].tsx`)
 - 라우트 파일만 `export default`를 쓴다. (Expo Router 규칙)
 
