@@ -69,20 +69,34 @@ export default BlockHomeScreen;
 ## 3. 스타일링
 
 - 스타일은 NativeWind `className`으로 작성한다.
-- **색상값을 코드에 직접 쓰지 않는다.** `tailwind.config.js`에 정의된 토큰만 쓴다.
+- **색상값을 코드에 직접 쓰지 않는다.** 디자인 토큰만 쓴다.
+    - 토큰 값은 `src/styles/tokens.js`에 있고, `tailwind.config.js`가 이 파일로 className을 만든다. (Figma 변수 `Fintris Colors`와 같은 값)
     - `bg-primary-600` ⭕ / `bg-[#2D8F94]` ❌ / `style={{ color: '#2D8F94' }}` ❌
-    - 새 색상, 폰트 크기, 간격이 필요하면 프론트 팀과 합의한 뒤 `tailwind.config.js`에 추가한다.
+    - className을 쓸 수 없는 곳(ActivityIndicator `color`, 라이브러리 style prop 등)만 `tokens.js`를 import해서 쓴다.
+    - 새 색상, 폰트 크기, 간격이 필요하면 프론트 팀과 합의한 뒤 `tokens.js`에 추가한다.
+- 디자인 토큰
+
+| 구분   | 클래스                                                                                   | 비고                                                |
+| ------ | ---------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| 색     | `primary-*`, `ink`, `surface-*`, `line-*`, `caution-*`, `danger-*`, `delta-*`, `block-*` | 이름과 용도는 `tokens.js` 주석 참고                 |
+| 글자   | `text-10` `11` `12` `13` `15` `16` `17` `20` `24` `30`                                   | 행간 포함. 10·11은 상태칩·배지·차트 축에만          |
+| 굵기   | `font-regular`, `font-semibold`, `font-bold`                                             | Pretendard. `font-medium` 등은 없다                 |
+| 모서리 | `rounded-8` `12` `14` `16` `24` `full`                                                   | 칩 · 중간/작은 버튼·입력 · 큰 버튼 · 카드 · 큰 카드 |
+
+- 글자는 RN `Text` 대신 `AppText`를 쓴다. (기본 Pretendard Regular · 15 · `text-ink`, 폰트가 상속되지 않기 때문)
 - 조건부 클래스는 `cn()`으로 합친다.
 
 ```tsx
-<Pressable className={cn('rounded-xl px-4', isSelected && 'bg-primary-600', className)} />
+<Pressable className={cn('rounded-12 px-4', isSelected && 'bg-primary-700', className)} />
 ```
 
 - `StyleSheet`, `style` prop은 className으로 표현할 수 없는 경우에만 쓴다.
-    - 예: Reanimated 애니메이션 값, 금액에 비례해 계산되는 블록 크기
+    - 예: Reanimated 애니메이션 값, 금액에 비례해 계산되는 블록 크기, 바텀시트 핸들·배경
 - 화면 너비를 숫자로 고정하지 않는다. `flex`, `w-full`, 화면 패딩으로 배치한다.
 - 모든 화면은 최상위를 `Screen` 컴포넌트로 감싼다. (Safe Area 처리)
 - 스크롤이 필요한 화면은 `ScrollView`, 목록은 `FlatList`를 쓴다.
+- 32~40px 크기의 누를 수 있는 요소는 `hitSlop`으로 터치 영역을 44px로 맞춘다.
+- 바텀시트는 `shared/components/ui/BottomSheet`를 쓰고, 시트 안 입력칸은 같은 파일의 `BottomSheetTextInput`을 쓴다. (키보드에 맞춰 시트가 올라간다)
 
 <br>
 
