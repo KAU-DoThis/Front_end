@@ -9,7 +9,6 @@ import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
 import { StatusTag } from '@/shared/components/ui/StatusTag';
 
-// 공통 컴포넌트 확인용 화면 (하단 탭 네비게이션 작업 때 교체한다)
 const FONT_SIZES = [
     'text-30',
     'text-24',
@@ -32,7 +31,8 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
     );
 }
 
-export default function ComponentGalleryScreen() {
+/** 공통 컴포넌트 확인용 화면 (개발 모드에서만 /dev/components 로 들어간다) */
+export function ComponentGalleryScreen() {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
