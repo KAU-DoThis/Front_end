@@ -90,6 +90,7 @@ export default BlockHomeScreen;
 | 모서리 | `rounded-8` `12` `14` `16` `24` `full`                                                   | 칩 · 중간/작은 버튼·입력 · 큰 버튼 · 카드 · 큰 카드 |
 
 - 글자는 RN `Text` 대신 `AppText`를 쓴다. (기본 Pretendard Regular · 15 · `text-ink`, 폰트가 상속되지 않기 때문)
+- 아이콘은 `shared/components/ui/Icon`(react-native-svg)을 쓴다. 새 아이콘은 Figma에서 SVG 경로를 그대로 복사해 `Icon.tsx`에 추가한다. (하단 탭 아이콘만 PNG)
 - 조건부 클래스는 `cn()`으로 합친다.
 
 ```tsx

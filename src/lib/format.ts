@@ -22,3 +22,15 @@ export function formatAmount(
 export function formatWon(amount: number) {
     return formatAmount(amount);
 }
+
+/** 서버 날짜(yyyy-MM-dd)를 "10월 14일"로 바꾼다. (시간대 영향을 받지 않도록 문자열로 자른다) */
+export function formatMonthDay(date: string) {
+    const [, month, day] = date.split('-').map(Number);
+    return `${month}월 ${day}일`;
+}
+
+/** 서버 날짜(yyyy-MM-dd)를 "9월"로 바꾼다. */
+export function formatMonth(date: string) {
+    const [, month] = date.split('-').map(Number);
+    return `${month}월`;
+}
