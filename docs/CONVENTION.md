@@ -66,6 +66,7 @@ export default BlockHomeScreen;
 - 하단 탭: 블록 `(tabs)/index` · 내역 `(tabs)/transactions` · 절약 `(tabs)/saving` · 리포트 `(tabs)/report`
     - 가운데 에이전트 버튼은 탭이 아니라 루트 스택의 `agent` 화면을 연다. (아래에서 올라오는 전체 화면, 뒤로 가기로 닫힘)
     - 탭 화면은 `<Screen edges={['top']}>`을 쓴다. 아래 여백은 탭 바가 처리한다.
+- 블록 상세는 루트 스택의 `block/[blockId]` 화면이다. (홈에서 블록을 누르면 열림)
 - 개발용 화면은 `app/dev/` 아래에 두고 `__DEV__`가 아니면 홈으로 돌려보낸다. (공통 컴포넌트 확인: `/dev/components`)
 - 라우트 파일명은 소문자 kebab-case (`block-detail.tsx`, `[blockId].tsx`)
 - 라우트 파일만 `export default`를 쓴다. (Expo Router 규칙)

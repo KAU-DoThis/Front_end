@@ -10,12 +10,18 @@ import { colors } from '@/styles/tokens';
 import { useBlockHomeQuery } from '@/features/block/api/useBlockHomeQuery';
 import { AgentBanner } from '@/features/block/components/AgentBanner';
 import { AssetCardPager } from '@/features/block/components/AssetCardPager';
+import { BlockGrid } from '@/features/block/components/BlockGrid';
 import { HomeHeader } from '@/features/block/components/HomeHeader';
 import { PendingMoneySection } from '@/features/block/components/PendingMoneySection';
+import type { HomeBlock } from '@/features/block/types/block';
 
 /** 01 홈 · 블록 탭 */
 export function BlockHomeScreen() {
     const { data: home, isPending, isError, refetch } = useBlockHomeQuery();
+
+    const handlePressBlock = (block: HomeBlock) => {
+        router.push({ pathname: '/block/[blockId]', params: { blockId: String(block.blockId) } });
+    };
 
     return (
         <Screen edges={['top']}>
@@ -76,6 +82,14 @@ export function BlockHomeScreen() {
                     {/* 나누기(⑤ 대기 블록 배분)는 해당 작업에서 onSplit으로 연결한다. */}
                     <View className="mt-3">
                         <PendingMoneySection items={home.pendingMoney} />
+                    </View>
+
+                    <View className="mt-3">
+                        <BlockGrid
+                            blocks={home.blocks}
+                            totalAssets={home.totalAssets}
+                            onPressBlock={handlePressBlock}
+                        />
                     </View>
                 </ScrollView>
             )}
