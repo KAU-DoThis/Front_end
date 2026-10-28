@@ -20,7 +20,7 @@ function daysAgo(days: number, hour: number, minute: number) {
 }
 
 /**
- * 블록 상세 목업 (시안 v2 02 값)
+ * 블록 상세 목업 (시안 v2 02 · 02-1 · 02-2 값, 저축·저금통은 시안에 없어 임의 값)
  * 소진 속도 차트: 시안 숫자끼리 서로 맞지 않아(배분 1,500,000 · 사용 550,000 · 17% 빠름)
  * 계획선 끝을 1,000,000으로 두고 시안 그림 모양에 맞췄다. 실제 값은 서버가 계산해 준다.
  */
@@ -96,6 +96,98 @@ export const BLOCK_DETAIL_MOCK: Record<number, BlockDetail> = {
                 merchantOrPayee: '김밥천국 홍대점',
                 categoryName: '식비',
                 contextTag: null,
+            },
+        ],
+    },
+    2: {
+        type: 'GOAL',
+        block: homeBlock(2),
+        statusReason: null,
+        explanation: null,
+        targetAmount: 3_000_000,
+        daysLeft: null,
+        monthly: { target: 300_000, saved: 300_000, remaining: 0 },
+        projection: null,
+        inflows: [
+            {
+                transferId: 201,
+                title: '10월 블록 배분',
+                note: '월급에서',
+                occurredAt: '2026-10-01',
+                amount: 300_000,
+            },
+            {
+                transferId: 202,
+                title: '9월 블록 배분',
+                note: '월급에서',
+                occurredAt: '2026-09-01',
+                amount: 300_000,
+            },
+        ],
+    },
+    3: {
+        type: 'GOAL',
+        block: homeBlock(3),
+        statusReason: '2주 늦어짐',
+        explanation:
+            '이번 달에 모은 돈이 월 목표보다 80,000원 적어요. 이대로면 1월 중순에 다 모여요. 9월 절약분 50,000원을 넣으면 12월 31일에 맞출 수 있어요.',
+        targetAmount: 800_000,
+        daysLeft: 78,
+        monthly: { target: 200_000, saved: 120_000, remaining: 80_000 },
+        projection: {
+            paceText: '목표보다 2주 늦음',
+            isLate: true,
+            expectedDate: '2027-01-15',
+            expectedLabel: '1월 중순',
+            startMonth: '2026-08',
+            endMonth: '2027-02',
+            saved: [
+                { date: '2026-08-01', amount: 100_000 },
+                { date: '2026-09-01', amount: 200_000 },
+                { date: '2026-10-01', amount: 320_000 },
+                { date: '2026-10-14', amount: 320_000 },
+            ],
+        },
+        inflows: [
+            {
+                transferId: 301,
+                title: '10월 블록 배분',
+                note: '월급에서',
+                occurredAt: '2026-10-01',
+                amount: 120_000,
+            },
+            {
+                transferId: 302,
+                title: '9월 블록 배분',
+                note: '월급에서',
+                occurredAt: '2026-09-01',
+                amount: 100_000,
+            },
+            {
+                transferId: 303,
+                title: '여행 블록 만듦',
+                note: '첫 배분',
+                occurredAt: '2026-08-01',
+                amount: 100_000,
+            },
+        ],
+    },
+    5: {
+        type: 'GOAL',
+        block: homeBlock(5),
+        statusReason: '목표 달성',
+        explanation: null,
+        targetAmount: 500_000,
+        daysLeft: null,
+        monthly: { target: 0, saved: 0, remaining: 0 },
+        projection: null,
+        inflows: [
+            {
+                transferId: 501,
+                title: '저금통 블록 만듦',
+                note: '첫 배분',
+                occurredAt: '2026-06-01',
+                amount: 500_000,
             },
         ],
     },

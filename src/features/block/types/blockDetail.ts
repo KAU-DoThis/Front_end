@@ -57,4 +57,47 @@ export interface SpendingBlockDetail extends BlockDetailBase {
     recentTransactions: BlockTransaction[];
 }
 
-export type BlockDetail = SpendingBlockDetail;
+/** 목표형 블록에 들어온 돈 (block_transfers 기준) */
+export interface BlockInflow {
+    transferId: number;
+    /** 예: 10월 블록 배분, 여행 블록 만듦 */
+    title: string;
+    /** 예: 월급에서, 첫 배분 */
+    note: string | null;
+    /** yyyy-MM-dd 또는 ISO 8601 */
+    occurredAt: string;
+    amount: number;
+}
+
+/** 목표형 (02-1 여행) */
+export interface GoalBlockDetail extends BlockDetailBase {
+    type: 'GOAL';
+    targetAmount: number;
+    /** 기한까지 남은 날 (기한이 없으면 null) */
+    daysLeft: number | null;
+    monthly: {
+        /** 이번 달 목표 (rule.monthly_target) */
+        target: number;
+        saved: number;
+        /** 더 필요 */
+        remaining: number;
+    };
+    /** 목표 도착 예상 (기한이 없으면 null) */
+    projection: {
+        /** 예: 목표보다 2주 늦음 */
+        paceText: string;
+        isLate: boolean;
+        /** 지금 속도로 다 모이는 날 (yyyy-MM-dd) */
+        expectedDate: string;
+        /** 예: 1월 중순 */
+        expectedLabel: string;
+        /** 차트 x축 첫 달·마지막 달 (yyyy-MM) */
+        startMonth: string;
+        endMonth: string;
+        /** 모은 돈 누적 (yyyy-MM-dd) */
+        saved: { date: string; amount: number }[];
+    } | null;
+    inflows: BlockInflow[];
+}
+
+export type BlockDetail = SpendingBlockDetail | GoalBlockDetail;
