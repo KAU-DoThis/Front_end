@@ -14,15 +14,15 @@ import { formatAmount, formatMonthDay } from '@/lib/format';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
 
-import type { BlockHome } from '@/features/block/types/blockHome';
+import type { BlockHome, LinkedAccountSummary } from '@/features/block/types/blockHome';
 
 interface AssetCardPagerProps {
     home: BlockHome;
 }
 
 /**
- * 총 자산 카드 (01 홈) — 옆으로 넘기면 계좌별 카드 (01-1)
- * 넘김 점: 전체 / 계좌 수만큼
+ * 총 자산 카드 (01 홈) — 옆으로 넘기면 계좌·카드별 카드 (01-1)
+ * 넘김 점: 전체 + 연동 계좌·카드 수
  */
 export function AssetCardPager({ home }: AssetCardPagerProps) {
     const [pageWidth, setPageWidth] = useState(0);
@@ -52,38 +52,22 @@ export function AssetCardPager({ home }: AssetCardPagerProps) {
                 <CardPage
                     width={pageWidth}
                     label={`연동 계좌 ${home.accounts.length}개의 총 자산`}
-                    baseDate={home.baseDate}
-                    total={home.totalAssets}
-                    subLabel="오늘 쓸 수 있는 돈"
-                    subAmount={home.todayAvailable}
-                    aside={
-                        <AppText className="text-right text-12 leading-[18px] text-primary-100">
-                            {`${home.todayBasis.blockName} ${formatAmount(home.todayBasis.balance)}\n남은 ${home.todayBasis.remainingDays}일 기준`}
-                        </AppText>
+                    updatedAt={home.balanceUpdatedAt}
+                    amount={home.totalAssets}
+                    footer={
+                        <>
+                            <SubAmount label="오늘 쓸 수 있는 돈" amount={home.todayAvailable} />
+                            <AppText className="text-right text-12 leading-[18px] text-primary-100">
+                                {`${home.todayBasis.blockName} ${formatAmount(home.todayBasis.balance)}\n남은 ${home.todayBasis.remainingDays}일 기준`}
+                            </AppText>
+                        </>
                     }
                 />
                 {home.accounts.map((account) => (
-                    <CardPage
-                        key={account.accountId}
+                    <AccountPage
+                        key={account.linkedAccountId}
+                        account={account}
                         width={pageWidth}
-                        label={`${account.bankName} ${account.accountType} ••${account.accountNumberTail}`}
-                        baseDate={home.baseDate}
-                        total={account.balance}
-                        subLabel="이번 달 나간 돈"
-                        subAmount={account.monthlySpent}
-                        aside={
-                            // 계좌별 내역(09-2)이 생기면 계좌 필터를 넘긴다.
-                            <Pressable
-                                accessibilityRole="link"
-                                hitSlop={12}
-                                onPress={() => router.push('/transactions')}
-                                className="active:opacity-60"
-                            >
-                                <AppText className="text-12 leading-[18px] text-primary-300">
-                                    거래 내역 보기 ›
-                                </AppText>
-                            </Pressable>
-                        }
                     />
                 ))}
             </ScrollView>
@@ -102,35 +86,99 @@ export function AssetCardPager({ home }: AssetCardPagerProps) {
     );
 }
 
+/** "KB국민 입출금통장 ••1234" — 비어 있는 값은 건너뛴다. */
+function getAccountLabel({
+    institutionName,
+    accountName,
+    accountNumberLast4,
+}: LinkedAccountSummary) {
+    return [institutionName, accountName, accountNumberLast4 && `••${accountNumberLast4}`]
+        .filter(Boolean)
+        .join(' ');
+}
+
+interface AccountPageProps {
+    account: LinkedAccountSummary;
+    width: number;
+}
+
+function AccountPage({ account, width }: AccountPageProps) {
+    // 계좌별 내역(09-2)이 생기면 계좌 필터를 넘긴다.
+    const transactionLink = (
+        <Pressable
+            accessibilityRole="link"
+            hitSlop={12}
+            onPress={() => router.push('/transactions')}
+            className="ml-auto active:opacity-60"
+        >
+            <AppText className="text-12 leading-[18px] text-primary-300">거래 내역 보기 ›</AppText>
+        </Pressable>
+    );
+
+    // 카드는 잔액이 없어 이번 달 사용액을 크게 보여준다. (시안에 카드 화면이 없어 임시 구성)
+    if (account.type === 'CARD' || account.balance === null) {
+        return (
+            <CardPage
+                width={width}
+                label={`${getAccountLabel(account)} · 이번 달 사용`}
+                updatedAt={account.balanceUpdatedAt}
+                amount={account.monthlySpent}
+                footer={transactionLink}
+            />
+        );
+    }
+
+    return (
+        <CardPage
+            width={width}
+            label={getAccountLabel(account)}
+            updatedAt={account.balanceUpdatedAt}
+            amount={account.balance}
+            footer={
+                <>
+                    <SubAmount label="이번 달 나간 돈" amount={account.monthlySpent} />
+                    {transactionLink}
+                </>
+            }
+        />
+    );
+}
+
 interface CardPageProps {
     width: number;
     label: string;
-    baseDate: string;
-    total: number;
-    subLabel: string;
-    subAmount: number;
-    /** 아래 줄 오른쪽 (근거 문구 또는 링크) */
-    aside: ReactNode;
+    /** 기준 시각 (없으면 표시하지 않는다) */
+    updatedAt: string | null;
+    amount: number;
+    /** 구분선 아래 줄 */
+    footer: ReactNode;
 }
 
-function CardPage({ width, label, baseDate, total, subLabel, subAmount, aside }: CardPageProps) {
+function CardPage({ width, label, updatedAt, amount, footer }: CardPageProps) {
     return (
         <View className="px-5 pt-5" style={{ width }}>
-            <View className="flex-row items-center justify-between">
-                <AppText className="text-13 text-primary-100">{label}</AppText>
-                <AppText className="text-12 text-primary-100">
-                    {formatMonthDay(baseDate)} 기준
+            <View className="flex-row items-center gap-3">
+                <AppText numberOfLines={1} className="flex-1 text-13 text-primary-100">
+                    {label}
                 </AppText>
+                {updatedAt && (
+                    <AppText className="text-12 text-primary-100">
+                        {formatMonthDay(updatedAt)} 기준
+                    </AppText>
+                )}
             </View>
-            <AmountText amount={total} isOnDark className="mt-2 text-30 tracking-[-0.5px]" />
+            <AmountText amount={amount} isOnDark className="mt-2 text-30 tracking-[-0.5px]" />
             <View className="mb-4 mt-4 h-px bg-primary-100/25" />
-            <View className="flex-row items-end justify-between">
-                <View className="gap-0.5">
-                    <AppText className="text-13 text-primary-100">{subLabel}</AppText>
-                    <AmountText amount={subAmount} className="text-24 text-primary-300" />
-                </View>
-                {aside}
-            </View>
+            <View className="min-h-[47px] flex-row items-end justify-between">{footer}</View>
+        </View>
+    );
+}
+
+function SubAmount({ label, amount }: { label: string; amount: number }) {
+    return (
+        <View className="gap-0.5">
+            <AppText className="text-13 text-primary-100">{label}</AppText>
+            <AmountText amount={amount} className="text-24 text-primary-300" />
         </View>
     );
 }

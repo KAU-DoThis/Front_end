@@ -15,10 +15,16 @@ interface PendingMoneySectionProps {
 
 const SOURCE_LABEL = { SAVING: '절약분', DEPOSIT: '추가 입금' } as const;
 
-function getDetail({ source, occurredAt }: PendingMoney) {
-    return source === 'SAVING'
-        ? `${formatMonth(occurredAt)} 절약 확정`
-        : `${formatMonthDay(occurredAt)} 입금`;
+function getDetail(item: PendingMoney) {
+    if (item.source === 'SAVING') {
+        return `${formatMonth(item.periodEndDate)} 절약 확정`;
+    }
+    return item.lastDepositAt ? `${formatMonthDay(item.lastDepositAt)} 입금` : '블록에 안 넣은 돈';
+}
+
+/** 절약분은 절약 목표마다 따로, 추가 입금(미배분 잔액)은 하나만 온다. */
+function getKey(item: PendingMoney) {
+    return item.source === 'SAVING' ? `saving-${item.savingGoalId}` : 'deposit';
 }
 
 /** 나눌 돈 (대기 블록). 다 나누면 섹션이 사라진다. */
@@ -42,10 +48,10 @@ export function PendingMoneySection({ items, onSplit }: PendingMoneySectionProps
                 <AppText className="text-12 text-ink-sub">다 나누면 사라져요</AppText>
             </View>
             {rows.map((row) => (
-                <View key={row[0].pendingId} className="flex-row gap-2">
+                <View key={getKey(row[0])} className="flex-row gap-2">
                     {row.map((item) => (
                         <PendingMoneyCard
-                            key={item.pendingId}
+                            key={getKey(item)}
                             item={item}
                             onPress={onSplit ? () => onSplit(item) : undefined}
                         />

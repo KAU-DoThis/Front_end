@@ -1,31 +1,51 @@
 import type { BlockHome } from '@/features/block/types/blockHome';
 
 /**
- * 홈 목업 (시안 v2 01 홈 · 01-1 값)
- * 카카오뱅크 카드는 시안에 화면이 없어 총 자산에서 KB국민을 뺀 값과 임의 지출로 채웠다.
+ * 홈 목업 (시안 v2 01 홈 · 01-1 값 + DB 스키마 모양)
+ * 계좌 이름·카카오뱅크·카드 값은 시안에 없어 임의로 채웠다.
  * 상태(안전·주의·위험)는 백엔드 상태 판정 전까지 고정값이다.
  */
 export const BLOCK_HOME_MOCK: BlockHome = {
-    baseDate: '2026-10-14',
     totalAssets: 4_577_000,
+    balanceUpdatedAt: '2026-10-14T09:00:00',
     todayAvailable: 52_700,
     todayBasis: { blockName: '생활비', balance: 950_000, remainingDays: 18 },
     accounts: [
         {
-            accountId: 1,
-            bankName: 'KB국민',
-            accountType: '입출금',
-            accountNumberTail: '1234',
+            linkedAccountId: 1,
+            institutionCode: '0004',
+            institutionName: 'KB국민',
+            type: 'BANK',
+            accountName: '입출금통장',
+            accountNumberLast4: '1234',
             balance: 2_687_000,
+            balanceUpdatedAt: '2026-10-14T09:00:00',
+            status: 'ACTIVE',
             monthlySpent: 115_900,
         },
         {
-            accountId: 2,
-            bankName: '카카오뱅크',
-            accountType: '입출금',
-            accountNumberTail: '5678',
+            linkedAccountId: 2,
+            institutionCode: '0090',
+            institutionName: '카카오뱅크',
+            type: 'BANK',
+            accountName: '입출금통장',
+            accountNumberLast4: '5678',
             balance: 1_890_000,
+            balanceUpdatedAt: '2026-10-14T09:10:00',
+            status: 'ACTIVE',
             monthlySpent: 84_300,
+        },
+        {
+            linkedAccountId: 3,
+            institutionCode: '0301',
+            institutionName: 'KB국민카드',
+            type: 'CARD',
+            accountName: '노리2 체크카드',
+            accountNumberLast4: '4321',
+            balance: null,
+            balanceUpdatedAt: null,
+            status: 'ACTIVE',
+            monthlySpent: 213_400,
         },
     ],
     agentMessage: {
@@ -33,8 +53,8 @@ export const BLOCK_HOME_MOCK: BlockHome = {
         body: '이번 주 배달을 2번만 줄이면 다시 안전으로 돌아와요',
     },
     pendingMoney: [
-        { pendingId: 1, source: 'SAVING', amount: 87_000, occurredAt: '2026-09-30' },
-        { pendingId: 2, source: 'DEPOSIT', amount: 170_000, occurredAt: '2026-10-12' },
+        { source: 'SAVING', savingGoalId: 1, amount: 87_000, periodEndDate: '2026-09-30' },
+        { source: 'DEPOSIT', amount: 170_000, lastDepositAt: '2026-10-12T14:20:00' },
     ],
     blocks: [
         {
