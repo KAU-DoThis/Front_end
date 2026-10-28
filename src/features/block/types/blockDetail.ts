@@ -100,4 +100,45 @@ export interface GoalBlockDetail extends BlockDetailBase {
     inflows: BlockInflow[];
 }
 
-export type BlockDetail = SpendingBlockDetail | GoalBlockDetail;
+/** 고정지출형 납부 기록 (조건에 맞아 '납부 완료'로 처리된 출금) */
+export interface BlockPayment {
+    transactionId: number;
+    /** ISO 8601 */
+    paidAt: string;
+    payee: string;
+    /** 예: 국민 ••34 */
+    accountLabel: string;
+    amount: number;
+}
+
+/** 고정지출형 (02-2 월세) */
+export interface FixedBlockDetail extends BlockDetailBase {
+    type: 'FIXED';
+    /** 다음 납부일 (yyyy-MM-dd) */
+    nextPayDate: string;
+    payAmount: number;
+    /** 모자란 돈 */
+    shortfall: number;
+    /** 납부 확인 조건 — 서버가 문구까지 만들어 준다. (rule.match_condition 등) */
+    matchRule: {
+        payee: string;
+        /** 예: 600,000원 그대로 */
+        amountText: string;
+        /** 예: 매월 25일 앞뒤 3일 */
+        dateText: string;
+        /** 예: 국민 ••34 */
+        accountLabel: string;
+    };
+    /** 블록별 알림 설정 */
+    alerts: {
+        /** 납부 3일 전까지 모자라면 알려주기 */
+        shortageBeforePay: boolean;
+        /** 납부 확인되면 알려주기 */
+        paymentConfirmed: boolean;
+    };
+    /** 연속으로 제때 낸 달 수 */
+    onTimeStreak: number;
+    payments: BlockPayment[];
+}
+
+export type BlockDetail = SpendingBlockDetail | GoalBlockDetail | FixedBlockDetail;

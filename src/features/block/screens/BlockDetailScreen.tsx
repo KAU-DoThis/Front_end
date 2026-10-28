@@ -9,6 +9,7 @@ import { Icon } from '@/shared/components/ui/Icon';
 import { colors } from '@/styles/tokens';
 
 import { useBlockDetailQuery } from '@/features/block/api/useBlockDetailQuery';
+import { FixedDetailContent } from '@/features/block/components/FixedDetailContent';
 import { GoalDetailContent } from '@/features/block/components/GoalDetailContent';
 import { SpendingDetailContent } from '@/features/block/components/SpendingDetailContent';
 import type { BlockDetail } from '@/features/block/types/blockDetail';
@@ -67,5 +68,7 @@ function DetailContent({ detail }: { detail: BlockDetail }) {
             return <SpendingDetailContent detail={detail} />;
         case 'GOAL':
             return <GoalDetailContent detail={detail} />;
+        case 'FIXED':
+            return <FixedDetailContent detail={detail} />;
     }
 }
