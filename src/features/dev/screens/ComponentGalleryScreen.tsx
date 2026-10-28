@@ -8,7 +8,11 @@ import { BlockBeaker } from '@/shared/components/ui/BlockBeaker';
 import { BottomSheet } from '@/shared/components/ui/BottomSheet';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
+import { ImpactList } from '@/shared/components/ui/ImpactList';
+import { ListRow } from '@/shared/components/ui/ListRow';
 import { StatusTag } from '@/shared/components/ui/StatusTag';
+import { SuggestionCard } from '@/shared/components/ui/SuggestionCard';
+import { Toggle } from '@/shared/components/ui/Toggle';
 
 const FONT_SIZES = [
     'text-30',
@@ -36,6 +40,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 export function ComponentGalleryScreen() {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isToggleOn, setIsToggleOn] = useState(true);
 
     return (
         <Screen>
@@ -148,6 +153,89 @@ export function ComponentGalleryScreen() {
                                 />
                             </View>
                         </View>
+                    </View>
+                </Section>
+
+                <Section title="결과 목록 (ImpactList)">
+                    <ImpactList
+                        title="이동 전 검증"
+                        subtitle="옮긴 뒤 각 블록의 규칙을 미리 계산했어요"
+                        items={[
+                            {
+                                type: 'status_change',
+                                severity: 'good',
+                                title: '생활비 주의 → 안전',
+                                detail: '하루 쓸 돈 52,700원 → 55,500원',
+                            },
+                            {
+                                type: 'goal_date',
+                                severity: 'warn',
+                                title: '여행 목표가 약 2주 늦어져요',
+                                detail: '이번 달 확보액 120,000 → 70,000',
+                            },
+                            {
+                                type: 'payment',
+                                severity: 'danger',
+                                title: '월세 납부일에 60,000원 모자라요',
+                                detail: '10월 25일 600,000 중 540,000만 확보',
+                            },
+                            {
+                                type: 'daily_budget',
+                                severity: 'info',
+                                title: '하루 쓸 돈 52,700원 → 52,000원',
+                            },
+                        ]}
+                    />
+                </Section>
+
+                <Section title="제안 카드 (SuggestionCard)">
+                    <SuggestionCard
+                        variant="chat"
+                        title="제안"
+                        message={
+                            <>
+                                절약분 <AppText className="font-bold text-15">50,000원</AppText>을
+                                여행에 넣으면 12월 31일에 맞출 수 있어요.
+                            </>
+                        }
+                        actions={[
+                            { title: '미리보기', variant: 'primary' },
+                            { title: '괜찮아요', variant: 'secondary' },
+                        ]}
+                    />
+                    <SuggestionCard
+                        title="왜 주의인가요?"
+                        message="배달·카페 지출이 지난달 같은 기간보다 9만 원 늘었어요. 이대로면 28일쯤 생활비가 바닥나요."
+                        actions={[
+                            { title: '절약 제안 보기', variant: 'secondary' },
+                            { title: '다른 블록에서 채우기', variant: 'primary' },
+                        ]}
+                    />
+                </Section>
+
+                <Section title="목록 · 토글">
+                    <View className="-mx-5 border-t border-line-soft">
+                        <ListRow
+                            title="배달의민족"
+                            subtitle="식비  어제 23:04"
+                            tag="야근"
+                            amount={-23000}
+                        />
+                        <ListRow
+                            title="10월 블록 배분"
+                            subtitle="10월 1일  월급에서"
+                            amount={120000}
+                            amountTone="up"
+                            isLast
+                        />
+                    </View>
+                    <View className="flex-row items-center justify-between">
+                        <AppText className="font-semibold">납부 확인되면 알려주기</AppText>
+                        <Toggle
+                            value={isToggleOn}
+                            onValueChange={setIsToggleOn}
+                            accessibilityLabel="납부 확인되면 알려주기"
+                        />
                     </View>
                 </Section>
 
