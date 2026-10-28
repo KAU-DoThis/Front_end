@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -64,10 +65,6 @@ export function BlockBeaker({
     className,
     style,
 }: BlockBeakerProps) {
-    const waterColor = colors.block[color][STATUS_KEY[status]];
-    // 테두리·그림자는 시안처럼 블록 색을 조금 어둡게 쓴다.
-    const edgeColor = shade(waterColor, 0.88);
-    const rate = Math.min(100, Math.max(0, fillRate));
     const sizeStyle = SIZE_STYLE[size];
 
     return (
@@ -76,70 +73,121 @@ export function BlockBeaker({
             accessibilityLabel={`${name} 블록, ${amount.toLocaleString('ko-KR')}원`}
             disabled={!onPress}
             onPress={onPress}
-            className={cn('rounded-16 active:opacity-80', className)}
-            style={[
-                {
-                    height: BEAKER_HEIGHT[size],
-                    boxShadow: `0px 6px 14px 0px ${withAlpha(edgeColor, 0.22)}`,
-                },
-                style,
-            ]}
+            className={cn('active:opacity-80', className)}
+            style={[{ height: BEAKER_HEIGHT[size] }, style]}
+        >
+            <BeakerSurface
+                color={color}
+                status={status}
+                fillRate={fillRate}
+                wave={size === 'xs' ? 'strip' : 'block'}
+                className="flex-1"
+                contentClassName={cn('justify-between', sizeStyle.container)}
+            >
+                {size === 'sm' ? (
+                    <View className="items-start">
+                        <AppText numberOfLines={1} className="font-bold text-13">
+                            {name}
+                        </AppText>
+                        <StatusTag status={status} />
+                    </View>
+                ) : (
+                    <View className="flex-row items-center justify-between gap-1">
+                        <AppText
+                            numberOfLines={1}
+                            className={cn('shrink font-bold', sizeStyle.name)}
+                        >
+                            {name}
+                        </AppText>
+                        <StatusTag status={status} />
+                    </View>
+                )}
+                <View>
+                    {caption && size !== 'xs' && (
+                        <AppText numberOfLines={1} className="font-semibold text-12">
+                            {caption}
+                        </AppText>
+                    )}
+                    <AmountText
+                        amount={amount}
+                        showUnit={false}
+                        numberOfLines={1}
+                        // 자리가 모자라면 글자를 줄여서라도 금액을 다 보여준다.
+                        adjustsFontSizeToFit
+                        className={sizeStyle.amount}
+                    />
+                </View>
+            </BeakerSurface>
+        </Pressable>
+    );
+}
+
+/** 물결 모양: block 홈 블록 · strip 띠 블록(한 겹, 납작) · card 블록 상세 큰 카드(너비 350 기준) */
+type WaveKind = 'block' | 'strip' | 'card';
+
+interface BeakerSurfaceProps {
+    color: BlockColor;
+    status: Status;
+    /** 물 높이 0~100 */
+    fillRate: number;
+    wave: WaveKind;
+    /** 모서리: 16 홈 블록 · 24 블록 상세 카드 */
+    radius?: 16 | 24;
+    /** 겉 크기 (flex-1, h-50 등) */
+    className?: string;
+    /** 물 위에 올라가는 내용 영역 */
+    contentClassName?: string;
+    children?: ReactNode;
+}
+
+/**
+ * 비커 바탕: 블록 색 22% 면 + 남은 비율만큼 찬 물 + 유리 테두리 + 그림자.
+ * 홈 블록(BlockBeaker)과 블록 상세 카드가 같이 쓴다.
+ */
+export function BeakerSurface({
+    color,
+    status,
+    fillRate,
+    wave,
+    radius = 16,
+    className,
+    contentClassName,
+    children,
+}: BeakerSurfaceProps) {
+    const waterColor = colors.block[color][STATUS_KEY[status]];
+    // 테두리·그림자는 시안처럼 블록 색을 조금 어둡게 쓴다.
+    const edgeColor = shade(waterColor, 0.88);
+    const rate = Math.min(100, Math.max(0, fillRate));
+    const radiusClass = RADIUS_CLASS[radius];
+
+    return (
+        <View
+            className={cn(radiusClass, className)}
+            style={{ boxShadow: `0px 6px 14px 0px ${withAlpha(edgeColor, 0.22)}` }}
         >
             <View
-                className="flex-1 overflow-hidden rounded-16"
+                className={cn('flex-1 overflow-hidden', radiusClass)}
                 style={{ backgroundColor: withAlpha(waterColor, 0.22) }}
             >
-                <Water color={waterColor} rate={rate} isStrip={size === 'xs'} />
+                <Water color={waterColor} rate={rate} wave={wave} />
                 {/* 유리 테두리: 위는 밝게, 아래는 어둡게 1px */}
                 <View
                     pointerEvents="none"
-                    className="absolute inset-0 rounded-16 border"
+                    className={cn('absolute inset-0 border', radiusClass)}
                     style={{
                         borderColor: withAlpha(edgeColor, 0.12),
                         boxShadow: `inset 0px 1px 0px 0px ${withAlpha(tint(waterColor, 0.7), 0.95)}, inset 0px -1px 0px 0px ${withAlpha(edgeColor, 0.45)}`,
                     }}
                 />
-                <View className={cn('flex-1 justify-between', sizeStyle.container)}>
-                    {size === 'sm' ? (
-                        <View className="items-start">
-                            <AppText numberOfLines={1} className="font-bold text-13">
-                                {name}
-                            </AppText>
-                            <StatusTag status={status} />
-                        </View>
-                    ) : (
-                        <View className="flex-row items-center justify-between gap-1">
-                            <AppText
-                                numberOfLines={1}
-                                className={cn('shrink font-bold', sizeStyle.name)}
-                            >
-                                {name}
-                            </AppText>
-                            <StatusTag status={status} />
-                        </View>
-                    )}
-                    <View>
-                        {caption && size !== 'xs' && (
-                            <AppText numberOfLines={1} className="font-semibold text-12">
-                                {caption}
-                            </AppText>
-                        )}
-                        <AmountText
-                            amount={amount}
-                            showUnit={false}
-                            numberOfLines={1}
-                            // 자리가 모자라면 글자를 줄여서라도 금액을 다 보여준다.
-                            adjustsFontSizeToFit
-                            className={sizeStyle.amount}
-                        />
-                    </View>
-                </View>
+                <View className={cn('flex-1', contentClassName)}>{children}</View>
             </View>
-        </Pressable>
+        </View>
     );
 }
 
 const STATUS_KEY = { SAFE: 'safe', CAUTION: 'caution', DANGER: 'danger' } as const;
+
+const RADIUS_CLASS = { 16: 'rounded-16', 24: 'rounded-24' } as const;
 
 // 물결 경로 (시안 wave/back · wave, 너비 171 기준 — 블록 너비에 맞춰 가로로 늘인다)
 const WAVE_BACK =
@@ -154,14 +202,20 @@ const WAVE_STRIP_FILL =
 const WAVE_STRIP_LINE =
     'M0 4C21.375 -2.98023e-08 42.75 -2.98023e-08 64.125 4C85.5 8 106.875 8 128.25 4C149.625 -2.98023e-08 159.6 0.666667 171 2.66667';
 
+// 큰 카드(블록 상세)용 물결: 너비 350 기준, 흰 선 없음
+const WAVE_CARD_BACK =
+    'M0 6.66666C58.3333 14.6667 116.667 14.6667 175 6.66666C233.333 -1.33334 291.667 -1.33334 350 6.66666V16H0V6.66666Z';
+const WAVE_CARD_FRONT =
+    'M0 6.5C43.75 0 87.5 0 131.25 6.5C175 13 218.75 13 262.5 6.5C306.25 0 326.667 1.08333 350 4.33333V13H0V6.5Z';
+
 interface WaterProps {
     color: string;
     /** 0~100 */
     rate: number;
-    isStrip: boolean;
+    wave: WaveKind;
 }
 
-function Water({ color, rate, isStrip }: WaterProps) {
+function Water({ color, rate, wave }: WaterProps) {
     const isFull = rate >= 100;
     const lineColor = withAlpha(colors.white, 0.8);
 
@@ -172,53 +226,75 @@ function Water({ color, rate, isStrip }: WaterProps) {
             style={{ height: `${rate}%`, backgroundColor: color }}
         >
             {/* 가득 찬 블록은 물결 없이 색으로만 채운다. (시안 월세 · 저금통) */}
-            {!isFull &&
-                (isStrip ? (
+            {!isFull && wave === 'strip' && (
+                <Svg
+                    width="100%"
+                    height={8}
+                    viewBox="0 0 171 8"
+                    preserveAspectRatio="none"
+                    style={{ position: 'absolute', top: -7 }}
+                >
+                    <Path d={WAVE_STRIP_FILL} fill={color} />
+                    <Path
+                        d={WAVE_STRIP_LINE}
+                        fill="none"
+                        stroke={lineColor}
+                        strokeWidth={1.46}
+                        vectorEffect="non-scaling-stroke"
+                    />
+                </Svg>
+            )}
+            {!isFull && wave === 'block' && (
+                <>
                     <Svg
                         width="100%"
-                        height={8}
-                        viewBox="0 0 171 8"
+                        height={14}
+                        viewBox="0 0 171 14"
                         preserveAspectRatio="none"
-                        style={{ position: 'absolute', top: -7 }}
+                        style={{ position: 'absolute', top: -13 }}
                     >
-                        <Path d={WAVE_STRIP_FILL} fill={color} />
+                        <Path d={WAVE_BACK} fill={color} opacity={0.45} />
+                    </Svg>
+                    <Svg
+                        width="100%"
+                        height={11}
+                        viewBox="0 0 171 11"
+                        preserveAspectRatio="none"
+                        style={{ position: 'absolute', top: -10 }}
+                    >
+                        <Path d={WAVE_FRONT_FILL} fill={color} />
                         <Path
-                            d={WAVE_STRIP_LINE}
+                            d={WAVE_FRONT_LINE}
                             fill="none"
                             stroke={lineColor}
-                            strokeWidth={1.46}
+                            strokeWidth={1.71}
                             vectorEffect="non-scaling-stroke"
                         />
                     </Svg>
-                ) : (
-                    <>
-                        <Svg
-                            width="100%"
-                            height={14}
-                            viewBox="0 0 171 14"
-                            preserveAspectRatio="none"
-                            style={{ position: 'absolute', top: -13 }}
-                        >
-                            <Path d={WAVE_BACK} fill={color} opacity={0.45} />
-                        </Svg>
-                        <Svg
-                            width="100%"
-                            height={11}
-                            viewBox="0 0 171 11"
-                            preserveAspectRatio="none"
-                            style={{ position: 'absolute', top: -10 }}
-                        >
-                            <Path d={WAVE_FRONT_FILL} fill={color} />
-                            <Path
-                                d={WAVE_FRONT_LINE}
-                                fill="none"
-                                stroke={lineColor}
-                                strokeWidth={1.71}
-                                vectorEffect="non-scaling-stroke"
-                            />
-                        </Svg>
-                    </>
-                ))}
+                </>
+            )}
+            {!isFull && wave === 'card' && (
+                <>
+                    <Svg
+                        width="100%"
+                        height={16}
+                        viewBox="0 0 350 16"
+                        preserveAspectRatio="none"
+                        style={{ position: 'absolute', top: -15 }}
+                    >
+                        <Path d={WAVE_CARD_BACK} fill={color} opacity={0.45} />
+                    </Svg>
+                    <Svg
+                        width="100%"
+                        height={13}
+                        viewBox="0 0 350 13"
+                        preserveAspectRatio="none"
+                        style={{ position: 'absolute', top: -12 }}
+                    >
+                        <Path d={WAVE_CARD_FRONT} fill={color} />
+                    </Svg>
+                </>
+            )}
         </View>
     );
 }
