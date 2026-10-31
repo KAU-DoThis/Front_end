@@ -20,6 +20,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         try {
             const accessToken = await tokenStorage.getAccessToken();
             set({ isLoggedIn: Boolean(accessToken) });
+        } catch {
+            // 토큰을 읽지 못하면 비로그인 상태로 시작한다.
+            set({ isLoggedIn: false });
         } finally {
             // 토큰을 읽다 실패해도 로그인 화면으로라도 진입할 수 있게 한다.
             set({ isRestored: true });
