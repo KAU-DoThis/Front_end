@@ -4,6 +4,8 @@ import { tokenStorage } from '@/lib/tokenStorage';
 
 interface AuthState {
     isLoggedIn: boolean;
+    /** restore()가 끝났는지. 끝나기 전에는 로그인/홈 중 어디로 갈지 정할 수 없다. */
+    isRestored: boolean;
     /** 앱 시작 시 저장된 토큰으로 로그인 상태 복원 */
     restore: () => Promise<void>;
     login: (accessToken: string, refreshToken?: string) => Promise<void>;
@@ -12,10 +14,16 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set) => ({
     isLoggedIn: false,
+    isRestored: false,
 
     async restore() {
-        const accessToken = await tokenStorage.getAccessToken();
-        set({ isLoggedIn: Boolean(accessToken) });
+        try {
+            const accessToken = await tokenStorage.getAccessToken();
+            set({ isLoggedIn: Boolean(accessToken) });
+        } finally {
+            // 토큰을 읽다 실패해도 로그인 화면으로라도 진입할 수 있게 한다.
+            set({ isRestored: true });
+        }
     },
 
     async login(accessToken, refreshToken) {
