@@ -17,8 +17,11 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
     const restore = useAuthStore((state) => state.restore);
+    const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+    const isRestored = useAuthStore((state) => state.isRestored);
     const [isFontLoaded, fontError] = useAppFonts();
-    const isReady = isFontLoaded || fontError !== null;
+    // 로그인 상태를 복원하기 전에 화면을 띄우면 홈이 잠깐 보였다가 로그인으로 튈 수 있다.
+    const isReady = (isFontLoaded || fontError !== null) && isRestored;
 
     useEffect(() => {
         restore();
@@ -41,15 +44,22 @@ export default function RootLayout() {
                 <BottomSheetModalProvider>
                     <StatusBar style="dark" />
                     <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="(tabs)" />
-                        {/* 가운데 에이전트 버튼: 아래에서 올라오는 전체 화면, 뒤로 가기로 닫힘 */}
-                        <Stack.Screen
-                            name="agent"
-                            options={{
-                                presentation: 'fullScreenModal',
-                                animation: 'slide_from_bottom',
-                            }}
-                        />
+                        {/* 로그인한 사용자만 접근. 비로그인 상태면 로그인 화면으로 보낸다. */}
+                        <Stack.Protected guard={isLoggedIn}>
+                            <Stack.Screen name="(tabs)" />
+                            {/* 가운데 에이전트 버튼: 아래에서 올라오는 전체 화면, 뒤로 가기로 닫힘 */}
+                            <Stack.Screen
+                                name="agent"
+                                options={{
+                                    presentation: 'fullScreenModal',
+                                    animation: 'slide_from_bottom',
+                                }}
+                            />
+                        </Stack.Protected>
+                        {/* 로그인한 상태면 로그인 화면 대신 홈으로 보낸다. */}
+                        <Stack.Protected guard={!isLoggedIn}>
+                            <Stack.Screen name="(auth)/login" />
+                        </Stack.Protected>
                         <Stack.Screen name="dev/components" />
                     </Stack>
                 </BottomSheetModalProvider>

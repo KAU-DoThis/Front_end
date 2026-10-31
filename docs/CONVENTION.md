@@ -66,6 +66,9 @@ export default BlockHomeScreen;
 - 하단 탭: 블록 `(tabs)/index` · 내역 `(tabs)/transactions` · 절약 `(tabs)/saving` · 리포트 `(tabs)/report`
     - 가운데 에이전트 버튼은 탭이 아니라 루트 스택의 `agent` 화면을 연다. (아래에서 올라오는 전체 화면, 뒤로 가기로 닫힘)
     - 탭 화면은 `<Screen edges={['top']}>`을 쓴다. 아래 여백은 탭 바가 처리한다.
+- 로그인 여부에 따른 화면 분기는 루트 `_layout.tsx`의 `Stack.Protected`로 처리한다. 화면에서 직접 로그인 여부를 확인해 이동시키지 않는다.
+    - 로그인이 필요한 화면은 `guard={isLoggedIn}` 안에, 로그인 전 화면(`(auth)`)은 `guard={!isLoggedIn}` 안에 등록한다.
+    - 로그인 상태는 `features/auth/stores/authStore`의 `login()` / `logout()`으로만 바꾼다. 상태가 바뀌면 화면은 자동으로 전환된다.
 - 개발용 화면은 `app/dev/` 아래에 두고 `__DEV__`가 아니면 홈으로 돌려보낸다. (공통 컴포넌트 확인: `/dev/components`)
 - 라우트 파일명은 소문자 kebab-case (`block-detail.tsx`, `[blockId].tsx`)
 - 라우트 파일만 `export default`를 쓴다. (Expo Router 규칙)
@@ -102,6 +105,7 @@ export default BlockHomeScreen;
 - 모든 화면은 최상위를 `Screen` 컴포넌트로 감싼다. (Safe Area 처리)
 - 스크롤이 필요한 화면은 `ScrollView`, 목록은 `FlatList`를 쓴다.
 - 32~40px 크기의 누를 수 있는 요소는 `hitSlop`으로 터치 영역을 44px로 맞춘다.
+- 입력칸은 `shared/components/ui/Input`을 쓴다. (라벨·오류 메시지 포함, `secureTextEntry`를 주면 비밀번호 보기 버튼이 생긴다)
 - 바텀시트는 `shared/components/ui/BottomSheet`를 쓰고, 시트 안 입력칸은 같은 파일의 `BottomSheetTextInput`을 쓴다. (키보드에 맞춰 시트가 올라간다)
 
 <br>

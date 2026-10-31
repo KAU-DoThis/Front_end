@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
 
@@ -7,6 +8,7 @@ import { AppText } from '@/shared/components/ui/AppText';
 import { BottomSheet } from '@/shared/components/ui/BottomSheet';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
+import { Input } from '@/shared/components/ui/Input';
 import { StatusTag } from '@/shared/components/ui/StatusTag';
 
 const FONT_SIZES = [
@@ -39,6 +41,15 @@ export function ComponentGalleryScreen() {
     return (
         <Screen>
             <ScrollView contentContainerClassName="gap-8 px-5 py-6">
+                <Section title="화면 바로가기">
+                    <Button
+                        title="로그인"
+                        variant="secondary"
+                        size="md"
+                        onPress={() => router.push('/login')}
+                    />
+                </Section>
+
                 <Section title="글자">
                     {FONT_SIZES.map((size) => (
                         <AppText key={size} className={`${size} font-bold`}>
@@ -81,6 +92,30 @@ export function ComponentGalleryScreen() {
                             disabled
                         />
                     </View>
+                </Section>
+
+                <Section title="입력칸">
+                    <Input
+                        label="이메일"
+                        placeholder="name@email.com"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoComplete="email"
+                    />
+                    <Input
+                        label="비밀번호"
+                        placeholder="비밀번호"
+                        secureTextEntry
+                        autoComplete="password"
+                        helperText="사용할 수 있는 비밀번호에요"
+                    />
+                    <Input
+                        label="비밀번호 확인"
+                        defaultValue="password"
+                        secureTextEntry
+                        errorMessage="비밀번호가 일치하지 않아요"
+                    />
+                    <Input label="비활성" defaultValue="name@email.com" disabled />
                 </Section>
 
                 <Section title="상태칩">
