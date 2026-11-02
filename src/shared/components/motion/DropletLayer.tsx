@@ -50,8 +50,8 @@ const SETTLE_DELAY_MS = 110;
 
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 const EASE_IN_OUT = Easing.bezier(0.77, 0, 0.175, 1);
-/** 멈췄을 때 2~3번 흔들리고 원형으로 (보드 3단계) */
-const WOBBLE = { damping: 6, stiffness: 260, mass: 0.6 } as const;
+/** 멈췄을 때 2~3번 출렁이고 원형으로 (보드 3단계) */
+const WOBBLE = { damping: 4, stiffness: 300, mass: 0.6 } as const;
 
 export interface DragState {
     /** 물방울을 뽑은 블록 */

@@ -85,8 +85,8 @@ export function Droplet({ x, y, stretch, angle, opacity, scale, color }: Droplet
         return {
             transform: [
                 { rotate: `${angle.get()}rad` },
-                { scaleX: 1 + squash * 0.25 },
-                { scaleY: 1 - squash * 0.35 },
+                { scaleX: 1 + squash * 0.4 },
+                { scaleY: 1 - squash * 0.55 },
             ],
         };
     });
