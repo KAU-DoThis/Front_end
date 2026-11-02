@@ -3,6 +3,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { cn } from '@/lib/cn';
 import { shade, tint, withAlpha } from '@/lib/color';
+import { formatWon } from '@/lib/format';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
 import { StatusTag, type Status } from '@/shared/components/ui/StatusTag';
@@ -73,7 +74,7 @@ export function BlockBeaker({
     return (
         <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${name} 블록, ${amount.toLocaleString('ko-KR')}원`}
+            accessibilityLabel={`${name} 블록, ${formatWon(amount)}`}
             disabled={!onPress}
             onPress={onPress}
             className={cn('rounded-16 active:opacity-80', className)}

@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
 
-import { formatMonth, formatMonthDay } from '@/lib/format';
+import { formatMonth, formatMonthDay, formatWon } from '@/lib/format';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Icon } from '@/shared/components/ui/Icon';
@@ -72,7 +72,7 @@ function PendingMoneyCard({ item, onPress }: PendingMoneyCardProps) {
     return (
         <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${SOURCE_LABEL[item.source]} ${item.amount.toLocaleString('ko-KR')}원 나누기`}
+            accessibilityLabel={`${SOURCE_LABEL[item.source]} ${formatWon(item.amount)} 나누기`}
             onPress={onPress}
             className="flex-1 rounded-16 border-1.5 border-dashed border-line-control bg-white p-[11.5px] active:bg-surface-neutral"
         >
