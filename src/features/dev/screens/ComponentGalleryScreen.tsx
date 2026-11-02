@@ -4,6 +4,7 @@ import { ScrollView, View } from 'react-native';
 import { Screen } from '@/shared/components/layout/Screen';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
+import { BlockBeaker } from '@/shared/components/ui/BlockBeaker';
 import { BottomSheet } from '@/shared/components/ui/BottomSheet';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
@@ -88,6 +89,65 @@ export function ComponentGalleryScreen() {
                         <StatusTag status="SAFE" />
                         <StatusTag status="CAUTION" />
                         <StatusTag status="DANGER" />
+                    </View>
+                </Section>
+
+                <Section title="비커 블록">
+                    <AppText className="text-13 text-ink-sub">
+                        크기 lg · md · sm · xs / 물 높이 fillRate / 상태별 채도
+                    </AppText>
+                    <View className="flex-row gap-2">
+                        <BlockBeaker
+                            name="저축"
+                            amount={2000000}
+                            color="j"
+                            status="SAFE"
+                            fillRate={67}
+                            size="lg"
+                            caption="목표 3,000,000  67%"
+                            className="flex-1"
+                        />
+                        <View className="flex-1 gap-2">
+                            <BlockBeaker
+                                name="생활비"
+                                amount={950000}
+                                color="i"
+                                status="CAUTION"
+                                fillRate={63}
+                                size="md"
+                                caption="사용형  63% 남음"
+                            />
+                            <BlockBeaker
+                                name="여행"
+                                amount={320000}
+                                color="o"
+                                status="DANGER"
+                                fillRate={15}
+                                size="xs"
+                            />
+                            <View className="flex-row gap-2">
+                                <BlockBeaker
+                                    name="월세"
+                                    amount={600000}
+                                    color="l"
+                                    status="SAFE"
+                                    fillRate={100}
+                                    size="sm"
+                                    caption="D-11"
+                                    className="flex-1"
+                                />
+                                <BlockBeaker
+                                    name="구독"
+                                    amount={0}
+                                    color="z"
+                                    status="DANGER"
+                                    fillRate={0}
+                                    size="sm"
+                                    caption="D-2"
+                                    className="flex-1"
+                                />
+                            </View>
+                        </View>
                     </View>
                 </Section>
 

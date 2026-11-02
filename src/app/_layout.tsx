@@ -50,6 +50,7 @@ export default function RootLayout() {
                                 animation: 'slide_from_bottom',
                             }}
                         />
+                        <Stack.Screen name="block/[blockId]" />
                         <Stack.Screen name="dev/components" />
                     </Stack>
                 </BottomSheetModalProvider>
