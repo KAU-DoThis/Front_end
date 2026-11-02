@@ -10,12 +10,12 @@ interface DragHintProps {
 }
 
 /**
- * 03-1 드래그 안내: "생활비 위에서 손을 떼세요 / 다른 곳에서 떼면 취소돼요"
+ * 03-1 드래그 안내: "생활비 위에서 손을 떼세요"
  * 화면 위쪽에 떠 있어서, 아래로 스크롤해 둔 상태에서도 보이고 레이아웃을 밀지 않는다.
  */
 export function DragHint({ color, targetName }: DragHintProps) {
     return (
-        <View pointerEvents="none" className="absolute left-0 right-0 top-3 items-center gap-1.5">
+        <View pointerEvents="none" className="absolute left-0 right-0 top-3 items-center">
             <View className="flex-row items-center gap-2.5 rounded-full bg-primary-900 py-2.5 pl-3 pr-4">
                 <View className="h-5 w-5 rounded-full" style={{ backgroundColor: color }} />
                 {targetName ? (
@@ -31,9 +31,6 @@ export function DragHint({ color, targetName }: DragHintProps) {
                     </AppText>
                 )}
             </View>
-            <AppText className="rounded-full bg-white/90 px-2 text-12 text-ink-sub">
-                다른 곳에서 떼면 취소돼요
-            </AppText>
         </View>
     );
 }
