@@ -4,6 +4,7 @@ import { Image, Pressable, View, type ImageSourcePropType } from 'react-native';
 
 import { cn } from '@/lib/cn';
 import { AppText } from '@/shared/components/ui/AppText';
+import { Mascot } from '@/shared/components/ui/Mascot';
 import { colors } from '@/styles/tokens';
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
@@ -94,10 +95,7 @@ function AgentButton({ badgeCount }: { badgeCount: number }) {
             className="h-17 flex-1 items-center justify-end pb-1.5 active:opacity-80"
             onPress={() => router.push('/agent')}
         >
-            {/* 마스코트 캐릭터가 나오기 전까지 시안과 같은 점선 자리 표시 */}
-            <View className="absolute -top-6.5 h-14.5 w-14.5 items-center justify-center rounded-24 border-1.5 border-dashed border-primary-600 bg-primary-50">
-                <AppText className="font-bold text-10 text-primary-700">캐릭터</AppText>
-            </View>
+            <Mascot className="absolute -top-6.5 h-14.5 w-14.5" />
             {badgeCount > 0 && (
                 <View className="absolute -top-7 left-1/2 ml-3 h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-primary-700 px-1">
                     <AppText className="font-bold text-11 text-white">{badgeCount}</AppText>
