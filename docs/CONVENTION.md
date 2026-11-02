@@ -92,6 +92,8 @@ export default BlockHomeScreen;
 
 - 글자는 RN `Text` 대신 `AppText`를 쓴다. (기본 Pretendard Regular · 15 · `text-ink`, 폰트가 상속되지 않기 때문)
 - 아이콘은 `shared/components/ui/Icon`(react-native-svg)을 쓴다. 새 아이콘은 Figma에서 SVG 경로를 그대로 복사해 `Icon.tsx`에 추가한다. (하단 탭 아이콘만 PNG)
+- 계산 결과(배분·이동 전후 비교)는 회색 `ImpactList`, 에이전트가 권하는 말은 청록 `SuggestionCard`로만 그린다. 문장·숫자는 서버 값을 그대로 쓴다. (Figma '카드 공통 컴포넌트' 보드)
+- 차트는 `LineChart`(react-native-svg)로 그린다. 차트 라이브러리는 쓰지 않는다.
 - 조건부 클래스는 `cn()`으로 합친다.
 
 ```tsx
