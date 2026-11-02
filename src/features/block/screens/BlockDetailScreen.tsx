@@ -67,11 +67,12 @@ export function BlockDetailScreen() {
             ) : (
                 <NotReady />
             )}
-            {/* 다른 블록에서 채우기: 이 블록이 받는 블록, 보내는 블록은 시트에서 고른다. */}
+            {/* 다른 블록에서 채우기: 이 블록을 받는 블록으로 고정하고, 보내는 블록만 시트에서 고른다. */}
             <TransferSheet
                 isOpen={isTransferOpen}
                 onClose={() => setIsTransferOpen(false)}
                 initialToBlockId={isValidId ? id : null}
+                lockedSide="to"
             />
         </Screen>
     );

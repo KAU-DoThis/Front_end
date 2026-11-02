@@ -1,5 +1,6 @@
 import { Pressable, View } from 'react-native';
 
+import { cn } from '@/lib/cn';
 import { formatAmount } from '@/lib/format';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Icon } from '@/shared/components/ui/Icon';
@@ -16,6 +17,8 @@ interface TransferBlockCardProps {
     block: HomeBlock | null;
     /** 옮긴 뒤 잔액 (미리보기가 없으면 null — 지금 잔액만 보여준다) */
     balanceAfter: number | null;
+    /** 바꿀 수 없는 블록 (블록 상세에서 열었을 때 그 블록) — 누를 수 없고 > 표시가 없다. */
+    isLocked?: boolean;
     onPress: () => void;
 }
 
@@ -37,7 +40,13 @@ function estimateFillRate(block: HomeBlock, balanceAfter: number) {
  * 03-2 보내는 블록 · 받는 블록 카드 (누르면 다른 블록을 고른다)
  * 왼쪽은 [라벨 / 블록 이름], 오른쪽은 [이동 전 금액(취소선) 또는 '잔액' / 지금 금액] 두 줄로 맞춘다.
  */
-export function TransferBlockCard({ label, block, balanceAfter, onPress }: TransferBlockCardProps) {
+export function TransferBlockCard({
+    label,
+    block,
+    balanceAfter,
+    isLocked = false,
+    onPress,
+}: TransferBlockCardProps) {
     if (!block) {
         return <EmptyBlockCard label={label} onPress={onPress} />;
     }
@@ -46,10 +55,16 @@ export function TransferBlockCard({ label, block, balanceAfter, onPress }: Trans
 
     return (
         <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${label} ${block.name}, 바꾸기`}
+            accessibilityRole={isLocked ? undefined : 'button'}
+            accessibilityLabel={
+                isLocked ? `${label} ${block.name}` : `${label} ${block.name}, 바꾸기`
+            }
+            disabled={isLocked}
             onPress={onPress}
-            className="h-[70px] flex-row items-center gap-3 rounded-12 border border-line bg-white px-3 active:bg-surface-neutral"
+            className={cn(
+                'h-[70px] flex-row items-center gap-3 rounded-12 border border-line bg-white px-3',
+                !isLocked && 'active:bg-surface-neutral',
+            )}
         >
             <MiniBeaker
                 color={block.color}
@@ -75,7 +90,7 @@ export function TransferBlockCard({ label, block, balanceAfter, onPress }: Trans
                     {won(hasChange ? balanceAfter : block.balance)}
                 </AppText>
             </View>
-            <Icon name="chevron-right" size={16} color={colors.ink.sub} />
+            {!isLocked && <Icon name="chevron-right" size={16} color={colors.ink.sub} />}
         </Pressable>
     );
 }

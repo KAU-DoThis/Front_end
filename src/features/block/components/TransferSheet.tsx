@@ -48,6 +48,11 @@ interface TransferSheetProps {
     initialFromBlockId?: number | null;
     /** 처음 고른 받는 블록 */
     initialToBlockId?: number | null;
+    /**
+     * 바꿀 수 없게 고정할 쪽. 블록 상세에서 열면 그 블록 쪽을 고정한다.
+     * (다른 블록에서 채우기 → 'to', 홈 드래그처럼 둘 다 고른 이동은 고정 없음)
+     */
+    lockedSide?: PickingSide;
     onTransferred?: (result: TransferResponse) => void;
 }
 
@@ -61,6 +66,7 @@ export function TransferSheet({
     onClose,
     initialFromBlockId = null,
     initialToBlockId = null,
+    lockedSide,
     onTransferred,
 }: TransferSheetProps) {
     const [fromBlockId, setFromBlockId] = useState<number | null>(initialFromBlockId);
@@ -218,6 +224,8 @@ export function TransferSheet({
                 isOpen={isOpen}
                 onClose={onClose}
                 title={picking === 'from' ? '보내는 블록 고르기' : '받는 블록 고르기'}
+                // 이미 고른 블록을 바꾸러 들어온 경우만 이전 화면이 있다. 처음 고르는 중이면 닫기만 둔다.
+                onBack={selectedId !== null ? () => setPicking(null) : undefined}
             >
                 <View className="gap-2 pb-2">
                     {blocks
@@ -230,13 +238,6 @@ export function TransferSheet({
                                 onPress={() => handlePick(block)}
                             />
                         ))}
-                    <Button
-                        title="돌아가기"
-                        variant="secondary"
-                        size="md"
-                        className="mt-2"
-                        onPress={() => setPicking(null)}
-                    />
                 </View>
             </BottomSheet>
         );
@@ -249,12 +250,14 @@ export function TransferSheet({
                     label="보내는 블록"
                     block={fromBlock}
                     balanceAfter={balanceAfter(fromBlockId)}
+                    isLocked={lockedSide === 'from'}
                     onPress={() => setPicking('from')}
                 />
                 <TransferBlockCard
                     label="받는 블록"
                     block={toBlock}
                     balanceAfter={balanceAfter(toBlockId)}
+                    isLocked={lockedSide === 'to'}
                     onPress={() => setPicking('to')}
                 />
             </View>
