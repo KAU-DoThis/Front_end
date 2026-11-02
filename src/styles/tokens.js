@@ -65,6 +65,11 @@ const colors = {
         down: '#B4363B',
         'down-bg': '#FDE7E8',
     },
+    // 소셜 로그인 — 카카오 디자인 가이드 색 그대로 쓴다.
+    kakao: {
+        DEFAULT: '#FEE500', // 카카오 버튼 바탕
+        label: '#000000', // 카카오 버튼 글씨
+    },
     // 블록 색 (block/{I~L}/{safe · caution · danger}) — 상태가 나빠질수록 채도가 빠진다
     block: {
         i: { safe: '#6EC9C3', caution: '#86B1AF', danger: '#94A4A3' }, // 청록
