@@ -9,6 +9,7 @@ import { BackHandler, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/shared/components/ui/AppText';
+import { Icon } from '@/shared/components/ui/Icon';
 import { colors, dimOpacity } from '@/styles/tokens';
 
 /**
@@ -22,6 +23,8 @@ interface BottomSheetProps {
     onClose: () => void;
     title?: string;
     hasCloseButton?: boolean;
+    /** 있으면 제목 왼쪽에 뒤로 가기(<)를 보여준다. 시트 안에서 한 단계 들어간 화면용 (예: 블록 고르기) */
+    onBack?: () => void;
     children: ReactNode;
 }
 
@@ -35,6 +38,7 @@ export function BottomSheet({
     onClose,
     title,
     hasCloseButton = true,
+    onBack,
     children,
 }: BottomSheetProps) {
     const sheetRef = useRef<BottomSheetModal>(null);
@@ -119,7 +123,20 @@ export function BottomSheet({
                 <View className="px-5">
                     {hasHeader && (
                         <View className="flex-row items-center justify-between pb-4 pt-5">
-                            <AppText className="font-bold text-17">{title}</AppText>
+                            <View className="flex-1 flex-row items-center gap-2">
+                                {onBack && (
+                                    <Pressable
+                                        accessibilityRole="button"
+                                        accessibilityLabel="뒤로 가기"
+                                        className="active:opacity-60"
+                                        hitSlop={12}
+                                        onPress={onBack}
+                                    >
+                                        <Icon name="chevron-left" size={20} />
+                                    </Pressable>
+                                )}
+                                <AppText className="font-bold text-17">{title}</AppText>
+                            </View>
                             {hasCloseButton && (
                                 <Pressable
                                     accessibilityRole="button"
