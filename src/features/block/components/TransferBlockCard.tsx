@@ -33,46 +33,70 @@ function estimateFillRate(block: HomeBlock, balanceAfter: number) {
     return Math.round(block.fillRate * (balanceAfter / block.balance));
 }
 
-/** 03-2 보내는 블록 · 받는 블록 카드 (누르면 다른 블록을 고른다) */
+/**
+ * 03-2 보내는 블록 · 받는 블록 카드 (누르면 다른 블록을 고른다)
+ * 왼쪽은 [라벨 / 블록 이름], 오른쪽은 [이동 전 금액(취소선) 또는 '잔액' / 지금 금액] 두 줄로 맞춘다.
+ */
 export function TransferBlockCard({ label, block, balanceAfter, onPress }: TransferBlockCardProps) {
-    const hasChange = block !== null && balanceAfter !== null && balanceAfter !== block.balance;
+    if (!block) {
+        return <EmptyBlockCard label={label} onPress={onPress} />;
+    }
+
+    const hasChange = balanceAfter !== null && balanceAfter !== block.balance;
 
     return (
         <Pressable
             accessibilityRole="button"
-            accessibilityLabel={block ? `${label} ${block.name}, 바꾸기` : `${label} 고르기`}
+            accessibilityLabel={`${label} ${block.name}, 바꾸기`}
             onPress={onPress}
             className="h-[70px] flex-row items-center gap-3 rounded-12 border border-line bg-white px-3 active:bg-surface-neutral"
         >
-            {block ? (
-                <MiniBeaker
-                    color={block.color}
-                    status={block.status}
-                    fillRate={hasChange ? estimateFillRate(block, balanceAfter) : block.fillRate}
-                    beforeFillRate={hasChange ? block.fillRate : undefined}
-                />
-            ) : (
-                <View className="h-11 w-9 rounded-8 border border-dashed border-line-control" />
-            )}
+            <MiniBeaker
+                color={block.color}
+                status={block.status}
+                fillRate={hasChange ? estimateFillRate(block, balanceAfter) : block.fillRate}
+                beforeFillRate={hasChange ? block.fillRate : undefined}
+            />
             <View className="flex-1 gap-0.5">
                 <AppText className="text-12 text-ink-sub">{label}</AppText>
-                <AppText className="font-bold text-15">
-                    {block ? block.name : '블록을 골라 주세요'}
+                <AppText className="font-bold text-15" numberOfLines={1}>
+                    {block.name}
                 </AppText>
             </View>
-            {block && (
-                <View className="items-end gap-0.5">
-                    {hasChange && (
-                        <AppText className="text-12 text-ink-sub line-through">
-                            {won(block.balance)}
-                        </AppText>
-                    )}
-                    <AppText className="font-bold text-15">
-                        {won(hasChange ? balanceAfter : block.balance)}
+            <View className="items-end gap-0.5">
+                {hasChange ? (
+                    <AppText className="text-12 text-ink-sub line-through">
+                        {won(block.balance)}
                     </AppText>
-                </View>
-            )}
+                ) : (
+                    <AppText className="text-12 text-ink-sub">잔액</AppText>
+                )}
+                <AppText className="font-bold text-15">
+                    {won(hasChange ? balanceAfter : block.balance)}
+                </AppText>
+            </View>
             <Icon name="chevron-right" size={16} color={colors.ink.sub} />
+        </Pressable>
+    );
+}
+
+/** 아직 블록을 안 골랐을 때 — 누르면 고르는 화면이 열린다는 걸 바로 알 수 있게 + 버튼 모양으로 둔다. */
+function EmptyBlockCard({ label, onPress }: { label: string; onPress: () => void }) {
+    return (
+        <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${label} 고르기`}
+            onPress={onPress}
+            className="h-[70px] flex-row items-center gap-3 rounded-12 border border-primary-100 bg-primary-50 px-3 active:bg-surface-chip"
+        >
+            <View className="h-11 w-9 items-center justify-center rounded-8 bg-white">
+                <Icon name="plus" size={18} color={colors.primary[700]} />
+            </View>
+            <View className="flex-1 gap-0.5">
+                <AppText className="text-12 text-ink-sub">{label}</AppText>
+                <AppText className="font-bold text-15 text-primary-700">블록 고르기</AppText>
+            </View>
+            <Icon name="chevron-right" size={16} color={colors.primary[700]} />
         </Pressable>
     );
 }

@@ -30,6 +30,17 @@ const QUICK_AMOUNTS = [
 
 type PickingSide = 'from' | 'to';
 
+/** 한쪽 블록만 정해서 열면(블록 상세 '다른 블록에서 채우기') 비어 있는 쪽 고르기부터 보여준다. */
+function firstPicking(fromBlockId: number | null, toBlockId: number | null): PickingSide | null {
+    if (fromBlockId === null && toBlockId !== null) {
+        return 'from';
+    }
+    if (toBlockId === null && fromBlockId !== null) {
+        return 'to';
+    }
+    return null;
+}
+
 interface TransferSheetProps {
     isOpen: boolean;
     onClose: () => void;
@@ -58,7 +69,9 @@ export function TransferSheet({
     // 처음 열 때 받는 블록이 모자란 만큼 금액을 채워 둔다. 사용자가 금액을 건드리면 다시 채우지 않는다.
     const [isAmountTouched, setIsAmountTouched] = useState(false);
     const [isAutoReturn, setIsAutoReturn] = useState(true);
-    const [picking, setPicking] = useState<PickingSide | null>(null);
+    const [picking, setPicking] = useState<PickingSide | null>(() =>
+        firstPicking(initialFromBlockId, initialToBlockId),
+    );
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // 시트를 열 때마다 처음 상태로 되돌린다. (effect 대신 렌더 중에 이전 값과 비교 — React 권장 방식)
@@ -71,7 +84,7 @@ export function TransferSheet({
             setAmount(0);
             setIsAmountTouched(false);
             setIsAutoReturn(true);
-            setPicking(null);
+            setPicking(firstPicking(initialFromBlockId, initialToBlockId));
             setErrorMessage(null);
         }
     }
@@ -115,6 +128,14 @@ export function TransferSheet({
         result !== undefined &&
         !simulation.isStale &&
         !result.blocked;
+
+    // 누를 수 없을 때는 무엇이 남았는지 버튼이 말해 준다.
+    const submitTitle =
+        fromBlockId === null || toBlockId === null
+            ? '블록을 먼저 골라 주세요'
+            : amount <= 0
+              ? '옮길 금액을 입력해 주세요'
+              : `${formatWon(amount)} 옮기기`;
 
     const submit = (confirmed: boolean) => {
         if (fromBlockId === null || toBlockId === null) {
@@ -307,7 +328,7 @@ export function TransferSheet({
 
             <Button
                 className="mt-6"
-                title={amount > 0 ? `${formatWon(amount)} 옮기기` : '옮기기'}
+                title={submitTitle}
                 isLoading={transfer.isPending}
                 loadingTitle="옮기는 중"
                 disabled={!canSubmit}
