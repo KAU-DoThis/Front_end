@@ -66,6 +66,7 @@ export default BlockHomeScreen;
 - 하단 탭: 블록 `(tabs)/index` · 내역 `(tabs)/transactions` · 절약 `(tabs)/saving` · 리포트 `(tabs)/report`
     - 가운데 에이전트 버튼은 탭이 아니라 루트 스택의 `agent` 화면을 연다. (아래에서 올라오는 전체 화면, 뒤로 가기로 닫힘)
     - 탭 화면은 `<Screen edges={['top']}>`을 쓴다. 아래 여백은 탭 바가 처리한다.
+- 블록 상세는 루트 스택의 `block/[blockId]` 화면이다. (홈에서 블록을 누르면 열림)
 - 로그인 여부에 따른 화면 분기는 루트 `_layout.tsx`의 `Stack.Protected`로 처리한다. 화면에서 직접 로그인 여부를 확인해 이동시키지 않는다.
     - 로그인이 필요한 화면은 `guard={isLoggedIn}` 안에, 로그인 전 화면(`(auth)`)은 `guard={!isLoggedIn}` 안에 등록한다.
     - 로그인 상태는 `features/auth/stores/authStore`의 `login()` / `logout()`으로만 바꾼다. 상태가 바뀌면 화면은 자동으로 전환된다.
@@ -93,6 +94,9 @@ export default BlockHomeScreen;
 | 모서리 | `rounded-8` `12` `14` `16` `24` `full`                                                   | 칩 · 중간/작은 버튼·입력 · 큰 버튼 · 카드 · 큰 카드 |
 
 - 글자는 RN `Text` 대신 `AppText`를 쓴다. (기본 Pretendard Regular · 15 · `text-ink`, 폰트가 상속되지 않기 때문)
+- 아이콘은 `shared/components/ui/Icon`(react-native-svg)을 쓴다. 새 아이콘은 Figma에서 SVG 경로를 그대로 복사해 `Icon.tsx`에 추가한다. (하단 탭 아이콘만 PNG)
+- 계산 결과(배분·이동 전후 비교)는 회색 `ImpactList`, 에이전트가 권하는 말은 청록 `SuggestionCard`로만 그린다. 문장·숫자는 서버 값을 그대로 쓴다. (Figma '카드 공통 컴포넌트' 보드)
+- 차트는 `LineChart`(react-native-svg)로 그린다. 차트 라이브러리는 쓰지 않는다.
 - 조건부 클래스는 `cn()`으로 합친다.
 
 ```tsx

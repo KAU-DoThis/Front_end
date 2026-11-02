@@ -55,6 +55,7 @@ export default function RootLayout() {
                                     animation: 'slide_from_bottom',
                                 }}
                             />
+                            <Stack.Screen name="block/[blockId]" />
                         </Stack.Protected>
                         {/* 로그인한 상태면 로그인 화면 대신 홈으로 보낸다. */}
                         <Stack.Protected guard={!isLoggedIn}>
