@@ -113,7 +113,7 @@ export function LineChart({
             {width > 0 &&
                 yLabels.map((label) => (
                     <AppText
-                        key={label.label}
+                        key={label.y}
                         className="absolute text-10 text-ink-sub"
                         style={{ left: padding.left + 2, top: toY(label.y) + 2 }}
                     >
@@ -123,7 +123,7 @@ export function LineChart({
             {width > 0 &&
                 xLabels.map((label) => (
                     <AppText
-                        key={label.label}
+                        key={label.x}
                         className="absolute w-10 text-center text-10 text-ink-sub"
                         style={{ left: toX(label.x) - 20, bottom: 0 }}
                     >

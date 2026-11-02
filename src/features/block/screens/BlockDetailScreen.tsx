@@ -17,7 +17,10 @@ import type { BlockDetail } from '@/features/block/types/blockDetail';
 /** 02 블록 상세 — 블록 유형(사용형 · 목표형 · 고정지출형)에 맞는 화면을 보여준다. */
 export function BlockDetailScreen() {
     const { blockId } = useLocalSearchParams<{ blockId: string }>();
-    const { data: detail, isPending, isError, refetch } = useBlockDetailQuery(Number(blockId));
+    const id = Number(blockId);
+    // 숫자가 아닌 ID(딥링크 block/abc 등)는 쿼리가 꺼진 채 isPending으로 남으므로 먼저 걸러 낸다.
+    const isValidId = Number.isInteger(id) && id > 0;
+    const { data: detail, isPending, isError, refetch } = useBlockDetailQuery(id);
 
     return (
         <Screen>
@@ -35,7 +38,9 @@ export function BlockDetailScreen() {
                     </Pressable>
                 }
             />
-            {isPending ? (
+            {!isValidId ? (
+                <NotReady />
+            ) : isPending ? (
                 <View className="flex-1 items-center justify-center">
                     <ActivityIndicator color={colors.primary[700]} />
                 </View>
@@ -54,11 +59,17 @@ export function BlockDetailScreen() {
                     <DetailContent detail={detail} />
                 </ScrollView>
             ) : (
-                <View className="flex-1 items-center justify-center px-5">
-                    <AppText className="text-ink-sub">이 블록의 상세 화면은 준비 중이에요</AppText>
-                </View>
+                <NotReady />
             )}
         </Screen>
+    );
+}
+
+function NotReady() {
+    return (
+        <View className="flex-1 items-center justify-center px-5">
+            <AppText className="text-ink-sub">이 블록의 상세 화면은 준비 중이에요</AppText>
+        </View>
     );
 }
 
