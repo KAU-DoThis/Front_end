@@ -24,6 +24,11 @@ export interface BlockHome {
     agentMessage: AgentMessage | null;
     /** 아직 블록에 나누지 않은 돈 (대기 블록) */
     pendingMoney: PendingMoney[];
+    /**
+     * 다음 정기 입금 예정 (입금원 분석 결과, 없으면 null)
+     * API 명세 v4 거래 목록의 nextExpectedIncome과 같은 값 — 자금 이동 '자동 되돌리기' 문구에 쓴다.
+     */
+    nextExpectedIncome: NextExpectedIncome | null;
     blocks: HomeBlock[];
 }
 
@@ -50,6 +55,13 @@ export interface LinkedAccountSummary {
     status: LinkedAccountStatus;
     /** 이번 달 나간 돈 (카드는 이번 달 사용액) — 서버 계산 */
     monthlySpent: number;
+}
+
+export interface NextExpectedIncome {
+    /** 예: 월급 */
+    label: string;
+    /** yyyy-MM-dd */
+    expectedDate: string;
 }
 
 export interface AgentMessage {

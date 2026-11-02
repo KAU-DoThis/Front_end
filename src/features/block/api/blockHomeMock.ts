@@ -56,6 +56,7 @@ export const BLOCK_HOME_MOCK: BlockHome = {
         { source: 'SAVING', savingGoalId: 1, amount: 87_000, periodEndDate: '2026-09-30' },
         { source: 'DEPOSIT', amount: 170_000, lastDepositAt: '2026-10-12T14:20:00' },
     ],
+    nextExpectedIncome: { label: '월급', expectedDate: '2026-10-25' },
     blocks: [
         {
             blockId: 1,
