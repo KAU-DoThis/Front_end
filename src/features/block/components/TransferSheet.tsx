@@ -313,7 +313,8 @@ export function TransferSheet({
                 />
             )}
 
-            {fromBlock && income && (
+            {/* 금액을 정하기 전엔 '0원 되돌리기'가 되므로 숨긴다. */}
+            {fromBlock && income && amount > 0 && (
                 <View className="mt-3 flex-row items-center gap-3 rounded-16 border border-primary-100 bg-surface-neutral px-4 py-3">
                     <AppText className="flex-1 text-13 leading-[19.5px]">
                         {`다음 ${income.label}날(${Number(income.expectedDate.slice(8, 10))}일)에 ${fromBlock.name} 블록으로 `}
