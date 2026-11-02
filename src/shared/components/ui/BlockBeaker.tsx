@@ -163,6 +163,8 @@ interface WaterProps {
 
 function Water({ color, rate, isStrip }: WaterProps) {
     const isFull = rate >= 100;
+    // 물이 없으면 물결도 그리지 않는다. (높이 0인 물 위로 물결만 솟아 보임)
+    const hasWave = !isFull && rate > 0;
     const lineColor = withAlpha(colors.white, 0.8);
 
     return (
@@ -172,7 +174,7 @@ function Water({ color, rate, isStrip }: WaterProps) {
             style={{ height: `${rate}%`, backgroundColor: color }}
         >
             {/* 가득 찬 블록은 물결 없이 색으로만 채운다. (시안 월세 · 저금통) */}
-            {!isFull &&
+            {hasWave &&
                 (isStrip ? (
                     <Svg
                         width="100%"
