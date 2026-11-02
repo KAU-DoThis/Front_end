@@ -4,6 +4,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { cn } from '@/lib/cn';
 import { shade, tint, withAlpha } from '@/lib/color';
+import { formatWon } from '@/lib/format';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
 import { StatusTag, type Status } from '@/shared/components/ui/StatusTag';
@@ -70,7 +71,7 @@ export function BlockBeaker({
     return (
         <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${name} 블록, ${amount.toLocaleString('ko-KR')}원`}
+            accessibilityLabel={`${name} 블록, ${formatWon(amount)}`}
             disabled={!onPress}
             onPress={onPress}
             className={cn('active:opacity-80', className)}
@@ -217,6 +218,8 @@ interface WaterProps {
 
 function Water({ color, rate, wave }: WaterProps) {
     const isFull = rate >= 100;
+    // 물이 없으면 물결도 그리지 않는다. (높이 0인 물 위로 물결만 솟아 보임)
+    const hasWave = !isFull && rate > 0;
     const lineColor = withAlpha(colors.white, 0.8);
 
     return (
@@ -226,7 +229,7 @@ function Water({ color, rate, wave }: WaterProps) {
             style={{ height: `${rate}%`, backgroundColor: color }}
         >
             {/* 가득 찬 블록은 물결 없이 색으로만 채운다. (시안 월세 · 저금통) */}
-            {!isFull && wave === 'strip' && (
+            {hasWave && wave === 'strip' && (
                 <Svg
                     width="100%"
                     height={8}
@@ -244,7 +247,7 @@ function Water({ color, rate, wave }: WaterProps) {
                     />
                 </Svg>
             )}
-            {!isFull && wave === 'block' && (
+            {hasWave && wave === 'block' && (
                 <>
                     <Svg
                         width="100%"
@@ -273,7 +276,7 @@ function Water({ color, rate, wave }: WaterProps) {
                     </Svg>
                 </>
             )}
-            {!isFull && wave === 'card' && (
+            {hasWave && wave === 'card' && (
                 <>
                     <Svg
                         width="100%"
