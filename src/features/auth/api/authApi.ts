@@ -24,7 +24,6 @@ function mockLogin(body: LoginRequest): Promise<LoginResponse> {
                 resolve({
                     accessToken: 'dev-mock-access-token',
                     refreshToken: 'dev-mock-refresh-token',
-                    hasLinkedAccount: true,
                 });
             } else {
                 reject(

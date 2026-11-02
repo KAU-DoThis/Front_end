@@ -18,8 +18,13 @@ const KAKAO_ICON = require('@/assets/icons/auth-kakao.png');
 const GOOGLE_ICON = require('@/assets/icons/auth-google.png');
 
 function getLoginErrorMessage(error: Error) {
-    if (error instanceof ApiError && error.code === AUTH_ERROR_CODE.INVALID_CREDENTIALS) {
-        return '이메일 또는 비밀번호가 맞지 않아요';
+    if (error instanceof ApiError) {
+        if (error.code === AUTH_ERROR_CODE.INVALID_CREDENTIALS) {
+            return '이메일 또는 비밀번호가 맞지 않아요';
+        }
+        if (error.code === AUTH_ERROR_CODE.ACCOUNT_LOCKED) {
+            return '로그인에 5번 실패해서 10분 동안 잠겼어요. 잠시 후 다시 시도해 주세요';
+        }
     }
     return '로그인하지 못했어요. 잠시 후 다시 시도해 주세요';
 }
@@ -84,7 +89,6 @@ export function LoginScreen() {
         login(
             { email: trimmedEmail, password },
             {
-                // TODO: 온보딩 라우트가 생기면 hasLinkedAccount가 false일 때 계좌 연결로 보낸다.
                 onSuccess: () => router.replace('/'),
             },
         );
