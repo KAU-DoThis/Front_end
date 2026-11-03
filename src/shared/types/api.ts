@@ -4,8 +4,9 @@
  * 응답 형식이 바뀌면 이 파일과 `lib/apiClient.ts`만 수정하면 된다.
  */
 export interface ApiResponse<T> {
-    isSuccess: boolean;
-    /** 비즈니스 코드 (예: COMMON_200, COMMON_400) */
+    /** API 명세 응답 예시 기준 (Java 필드 isSuccess가 JSON에서는 success로 직렬화된다) */
+    success: boolean;
+    /** 비즈니스 코드 (예: S201) */
     code: string;
     message: string;
     result: T;

@@ -4,7 +4,7 @@ import { ApiError, NETWORK_ERROR_CODE } from '@/shared/types/api';
 
 /**
  * 네트워크 오류와 서버 오류(5xx)만 재시도한다.
- * 4xx와 비즈니스 오류(isSuccess: false)는 재시도해도 결과가 같으므로 바로 실패 처리한다.
+ * 4xx와 비즈니스 오류(success: false)는 재시도해도 결과가 같으므로 바로 실패 처리한다.
  */
 function isRetryableError(error: Error) {
     if (!(error instanceof ApiError)) {

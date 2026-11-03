@@ -38,7 +38,7 @@ apiClient.interceptors.request.use(async (config) => {
 export async function request<T>(config: AxiosRequestConfig): Promise<T> {
     try {
         const { data, status } = await apiClient.request<ApiResponse<T>>(config);
-        if (!data.isSuccess) {
+        if (!data.success) {
             throw new ApiError(data.code, data.message, status);
         }
         return data.result;
