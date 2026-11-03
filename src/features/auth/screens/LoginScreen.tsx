@@ -95,7 +95,7 @@ export function LoginScreen() {
     };
 
     const handleSignUp = () => {
-        // TODO: 회원가입 라우트((auth)/sign-up)가 생기면 연결
+        router.push('/sign-up');
     };
 
     const handleSocialLogin = () => {

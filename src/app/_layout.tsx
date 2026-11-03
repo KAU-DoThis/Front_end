@@ -60,6 +60,7 @@ export default function RootLayout() {
                         {/* 로그인한 상태면 로그인 화면 대신 홈으로 보낸다. */}
                         <Stack.Protected guard={!isLoggedIn}>
                             <Stack.Screen name="(auth)/login" />
+                            <Stack.Screen name="(auth)/sign-up" />
                         </Stack.Protected>
                         <Stack.Screen name="dev/components" />
                     </Stack>
