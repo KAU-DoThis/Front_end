@@ -82,12 +82,17 @@ export function BottomSheet({
         if (!isOpen) {
             return;
         }
+        // 시트 안에서 한 단계 들어간 화면(onBack)이면 화면의 < 버튼과 똑같이 이전 화면으로 돌아간다.
         const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-            onClose();
+            if (onBack) {
+                onBack();
+            } else {
+                onClose();
+            }
             return true;
         });
         return () => subscription.remove();
-    }, [isOpen, onClose]);
+    }, [isOpen, onBack, onClose]);
 
     const renderBackdrop = useCallback(
         (props: BottomSheetBackdropProps) => (
