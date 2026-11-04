@@ -99,9 +99,11 @@ function goalMonthlyDetail(block: HomeBlock, diff: number) {
         return undefined;
     }
     const { saved, target } = detail.monthly;
+    // 이번 달 모은 돈보다 많이 보내도 0 아래로는 내려가지 않는다. (나머지는 지난달까지 모은 돈에서 빠짐)
+    const savedAfter = Math.max(0, saved + diff);
     const won = (amount: number) => formatAmount(amount, { showUnit: false });
     // 시안 03-2·명세 예시처럼 이 줄은 '원' 없이 숫자만 쓴다.
-    return `이번 달 확보액 ${won(saved)} → ${won(saved + diff)} (월 목표 ${won(target)})`;
+    return `이번 달 확보액 ${won(saved)} → ${won(savedAfter)} (월 목표 ${won(target)})`;
 }
 
 /** 블록 하나가 받거나(+) 보낼 때(−) 생기는 결과 한 줄 */
@@ -278,7 +280,7 @@ function applyBalance(block: HomeBlock, diff: number, recovers: boolean) {
         }
     }
     if (detail?.type === 'GOAL') {
-        const saved = detail.monthly.saved + diff;
+        const saved = Math.max(0, detail.monthly.saved + diff);
         detail.monthly = {
             ...detail.monthly,
             saved,
