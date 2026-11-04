@@ -405,12 +405,13 @@ export function useBlockDragGesture({
                     ),
                 );
             })
-            .onFinalize(() => {
+            .onFinalize((_event, success) => {
                 // 짧게 누르기만 했거나 다른 블록의 드래그면 할 일이 없다.
                 if (sourceId.get() !== blockId) {
                     return;
                 }
-                const toId = hoverId.get();
+                // 손을 뗀 게 아니라 중간에 끊긴 드래그(전화·시스템 제스처 등)는 놓지 않은 것으로 본다.
+                const toId = success ? hoverId.get() : NONE;
                 const fromRect = rects.get()[blockId];
                 if (toId === NONE && fromRect) {
                     // 놓을 자리가 아니면 원래 블록으로 돌아가며 사라진다.
