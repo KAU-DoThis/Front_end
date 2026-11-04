@@ -10,7 +10,8 @@ export function BackButton() {
             accessibilityRole="button"
             accessibilityLabel="뒤로 가기"
             className="h-11 w-11 items-center justify-center"
-            onPress={() => router.back()}
+            // 딥링크로 바로 들어와 이전 화면이 없으면 로그인으로 보낸다.
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/login'))}
         >
             <Image source={BACK_ICON} className="h-5.5 w-5.5" />
         </Pressable>

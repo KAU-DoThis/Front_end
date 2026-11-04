@@ -62,7 +62,13 @@ export function SignUpScreen() {
     const isCodeSent = codeSentEmail !== null;
     const verifiedTokens = verify.data ?? null;
     const isEmailVerified = verifiedTokens !== null;
-    const isCodeExpired = isCodeSent && !isEmailVerified && countdown.isFinished;
+    // 서버가 만료라고 답한 경우도 타이머가 끝난 것과 똑같이 막는다.
+    const isServerCodeExpired = hasErrorCode(
+        verify.error,
+        AUTH_ERROR_CODE.VERIFICATION_CODE_EXPIRED,
+    );
+    const isCodeExpired =
+        isCodeSent && !isEmailVerified && (countdown.isFinished || isServerCodeExpired);
     const isPasswordValid = PASSWORD_REGEX.test(password);
     const isPasswordConfirmed = passwordConfirm.length > 0 && passwordConfirm === password;
     const canSubmit = isEmailVerified && isPasswordValid && isPasswordConfirmed;
@@ -83,11 +89,9 @@ export function SignUpScreen() {
         ? '인증번호가 만료됐어요. 다시 받아 주세요'
         : hasErrorCode(verify.error, AUTH_ERROR_CODE.INVALID_VERIFICATION_CODE)
           ? '인증번호가 맞지 않아요. 다시 확인해 주세요'
-          : hasErrorCode(verify.error, AUTH_ERROR_CODE.VERIFICATION_CODE_EXPIRED)
-            ? '인증번호가 만료됐어요. 다시 받아 주세요'
-            : verify.error
-              ? '인증하지 못했어요. 잠시 후 다시 시도해 주세요'
-              : undefined;
+          : verify.error
+            ? '인증하지 못했어요. 잠시 후 다시 시도해 주세요'
+            : undefined;
     const passwordErrorMessage =
         isPasswordTouched && password.length > 0 && !isPasswordValid
             ? '영문, 숫자, 특수문자를 포함해 8~20자로 입력해 주세요'
@@ -125,7 +129,8 @@ export function SignUpScreen() {
 
     const handleChangeCode = (value: string) => {
         setCode(value.replace(/\D/g, '').slice(0, CODE_LENGTH));
-        if (verify.error) verify.reset();
+        // 만료 오류는 '다시 받기' 전까지 남겨 둔다. 그 밖의 오류는 다시 입력하면 지운다.
+        if (verify.error && !isServerCodeExpired) verify.reset();
     };
 
     const handleVerify = () => {
