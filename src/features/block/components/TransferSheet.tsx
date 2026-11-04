@@ -123,6 +123,8 @@ export function TransferSheet({
 
     const balanceAfter = (blockId: number | null) =>
         result?.blocks.find((block) => block.blockId === blockId)?.balanceAfter ?? null;
+    const fillRateAfter = (blockId: number | null) =>
+        result?.blocks.find((block) => block.blockId === blockId)?.fillRateAfter;
     const versionOf = (blockId: number | null) =>
         result?.blocks.find((block) => block.blockId === blockId)?.version ?? 0;
 
@@ -250,6 +252,7 @@ export function TransferSheet({
                     label="보내는 블록"
                     block={fromBlock}
                     balanceAfter={balanceAfter(fromBlockId)}
+                    fillRateAfter={fillRateAfter(fromBlockId)}
                     isLocked={lockedSide === 'from'}
                     onPress={() => setPicking('from')}
                 />
@@ -257,6 +260,7 @@ export function TransferSheet({
                     label="받는 블록"
                     block={toBlock}
                     balanceAfter={balanceAfter(toBlockId)}
+                    fillRateAfter={fillRateAfter(toBlockId)}
                     isLocked={lockedSide === 'to'}
                     onPress={() => setPicking('to')}
                 />

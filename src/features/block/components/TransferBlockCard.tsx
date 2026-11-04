@@ -17,24 +17,14 @@ interface TransferBlockCardProps {
     block: HomeBlock | null;
     /** 옮긴 뒤 잔액 (미리보기가 없으면 null — 지금 잔액만 보여준다) */
     balanceAfter: number | null;
+    /** 옮긴 뒤 물 높이 (미리보기 응답 값, 없으면 지금 물 높이만 보여준다) */
+    fillRateAfter?: number;
     /** 바꿀 수 없는 블록 (블록 상세에서 열었을 때 그 블록) — 누를 수 없고 > 표시가 없다. */
     isLocked?: boolean;
     onPress: () => void;
 }
 
 const won = (amount: number) => formatAmount(amount, { showUnit: false });
-
-/**
- * 비커 물 높이 추정: 지금 물 높이 × (옮긴 뒤 잔액 ÷ 지금 잔액)
- * 미리보기 응답에 물 높이가 없어서 그림용으로만 계산한다. (금액·상태는 서버 값을 그대로 쓴다)
- * TODO: simulate 응답 blocks[]에 fillRateAfter가 생기면 그 값으로 바꾼다.
- */
-function estimateFillRate(block: HomeBlock, balanceAfter: number) {
-    if (block.balance <= 0) {
-        return block.fillRate;
-    }
-    return Math.round(block.fillRate * (balanceAfter / block.balance));
-}
 
 /**
  * 03-2 보내는 블록 · 받는 블록 카드 (누르면 다른 블록을 고른다)
@@ -44,6 +34,7 @@ export function TransferBlockCard({
     label,
     block,
     balanceAfter,
+    fillRateAfter,
     isLocked = false,
     onPress,
 }: TransferBlockCardProps) {
@@ -69,8 +60,11 @@ export function TransferBlockCard({
             <MiniBeaker
                 color={block.color}
                 status={block.status}
-                fillRate={hasChange ? estimateFillRate(block, balanceAfter) : block.fillRate}
-                beforeFillRate={hasChange ? block.fillRate : undefined}
+                // 물 높이는 화면에서 계산하지 않고 미리보기 응답 값만 쓴다.
+                fillRate={hasChange && fillRateAfter !== undefined ? fillRateAfter : block.fillRate}
+                beforeFillRate={
+                    hasChange && fillRateAfter !== undefined ? block.fillRate : undefined
+                }
             />
             <View className="flex-1 gap-0.5">
                 <AppText className="text-12 text-ink-sub">{label}</AppText>

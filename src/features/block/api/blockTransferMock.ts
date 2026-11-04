@@ -233,6 +233,7 @@ export function simulateTransferMock({ changes }: SimulateRequest): SimulateResp
                 name: from.name,
                 balanceBefore: from.balance,
                 balanceAfter: from.balance - amount,
+                fillRateAfter: fillRateOf(from, from.balance - amount),
                 version: versionOf(from.blockId),
             },
             {
@@ -240,6 +241,7 @@ export function simulateTransferMock({ changes }: SimulateRequest): SimulateResp
                 name: to.name,
                 balanceBefore: to.balance,
                 balanceAfter: to.balance + amount,
+                fillRateAfter: fillRateOf(to, to.balance + amount),
                 version: versionOf(to.blockId),
             },
         ],

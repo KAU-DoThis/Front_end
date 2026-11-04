@@ -21,6 +21,11 @@ export interface SimulateBlockResult {
     name: string;
     balanceBefore: number;
     balanceAfter: number;
+    /**
+     * 옮긴 뒤 물 높이 0~100 (03-2 작은 비커)
+     * 명세 v4엔 없어서 백엔드에 추가를 요청한 값 — 목업은 서버 대신 계산해 준다.
+     */
+    fillRateAfter?: number;
     /** 확정 요청에 그대로 보낸다. (동시 수정 방지) */
     version: number;
 }
