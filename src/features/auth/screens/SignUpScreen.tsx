@@ -1,4 +1,4 @@
-// import { router } from 'expo-router'; <-약관동의 화면 연결시 사용
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
@@ -143,7 +143,7 @@ export function SignUpScreen() {
     const handleSubmit = () => {
         if (!canSubmit || !codeSentEmail || !verifiedTokens) return;
         setCredentials(codeSentEmail, password, verifiedTokens);
-        // router.push('/agreement'); <- 이후구현할 것 미리적어놓음(약관동의화면으로 이동)
+        router.push('/agreement');
     };
 
     return (
