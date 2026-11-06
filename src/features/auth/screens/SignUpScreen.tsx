@@ -176,8 +176,9 @@ export function SignUpScreen() {
                                 onBlur={() => setIsEmailTouched(true)}
                                 errorMessage={emailErrorMessage}
                                 helperText={emailHelperText}
-                                // 보내는 중에 이메일을 고치면 화면과 다른 이메일로 인증·가입되므로 잠근다.
-                                disabled={sendCode.isPending}
+                                // 보내는 중·확인 중에 이메일을 고치면 화면과 다른 이메일로 인증·가입되므로 잠근다.
+                                // 인증을 마친 이메일은 실수로 고쳐 인증이 풀리지 않도록 잠근다.
+                                disabled={sendCode.isPending || verify.isPending || isEmailVerified}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                                 autoComplete="email"
