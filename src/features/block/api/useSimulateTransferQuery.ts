@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 
@@ -17,7 +17,7 @@ interface SimulateTransferParams {
 /**
  * 03-2 이동 전 검증
  * 보내는·받는 블록을 다 고르면 요청한다. 금액이 0이어도 요청해서 [부족한 만큼] 값(shortfall)을 먼저 받는다.
- * 다시 계산하는 동안에는 이전 결과를 그대로 보여준다. (목록이 깜빡이지 않도록)
+ * 같은 블록 조합에서 금액만 바꿔 다시 계산하는 동안에는 이전 결과를 그대로 보여준다.
  */
 export function useSimulateTransferQuery({
     fromBlockId,
@@ -40,7 +40,14 @@ export function useSimulateTransferQuery({
                 ],
             }),
         enabled,
-        placeholderData: keepPreviousData,
+        // 금액만 바뀔 때는 이전 결과를 그대로 보여준다. (목록이 깜빡이지 않도록)
+        // 블록 조합이 바뀌면 이전 결과는 다른 블록 이야기라 버린다.
+        placeholderData: (previousData, previousQuery) => {
+            const [, , previousFrom, previousTo] = previousQuery?.queryKey ?? [];
+            return previousFrom === fromBlockId && previousTo === toBlockId
+                ? previousData
+                : undefined;
+        },
         staleTime: 0,
     });
 

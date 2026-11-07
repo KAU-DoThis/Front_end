@@ -102,9 +102,18 @@ export function TransferSheet({
 
     const simulation = useSimulateTransferQuery({ fromBlockId, toBlockId, amount });
     const result = simulation.data;
-    const shortfall = result?.shortfall?.amount ?? 0;
+    // 지금 받는 블록의 부족액만 쓴다. (다른 블록 조합의 응답이 남아 있어도 섞이지 않게)
+    const shortfall =
+        result?.shortfall?.blockId === toBlockId ? (result?.shortfall?.amount ?? 0) : 0;
 
-    if (isOpen && !isAmountTouched && shortfall > 0 && amount !== shortfall) {
+    // 처음 금액 채우기는 이번 조합으로 새로 받은 응답일 때만 한다.
+    if (
+        isOpen &&
+        !isAmountTouched &&
+        !simulation.isPlaceholderData &&
+        shortfall > 0 &&
+        amount !== shortfall
+    ) {
         setAmount(shortfall);
     }
 
