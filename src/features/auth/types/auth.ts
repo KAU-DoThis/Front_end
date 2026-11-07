@@ -26,10 +26,8 @@ export interface SignUpRequest {
     agreements: Agreement[];
 }
 
-/** 이메일 인증을 마친 뒤에 보낸다. */
-export interface SignUpResponse {
-    email: string;
-}
+/** 백엔드 가입 응답 (TokenResponse). 이 토큰으로 로그인한다. */
+export type SignUpResponse = LoginResponse;
 
 // TODO: 인증번호 발송·확인 요청 필드가 명세에 나오면 맞춘다. (지금은 가정값)
 /** 인증번호 발송 (다시 보낼 때도 같은 요청). 이전 인증번호는 더 이상 쓸 수 없다. */
@@ -42,7 +40,7 @@ export interface VerifyEmailRequest {
     code: string;
 }
 
-/** 인증이 끝나면 토큰을 준다. (API 명세 응답 예시 기준) 가입을 마치면 이 토큰으로 로그인한다. */
+/** 인증이 끝나면 토큰을 준다. (API 명세 응답 예시 기준) 로그인은 가입 응답 토큰으로 한다. */
 export interface VerifyEmailResponse {
     accessToken: string;
     refreshToken: string;
