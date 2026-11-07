@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Image, Pressable, TextInput, View, type TextInputProps } from 'react-native';
 
 import { cn } from '@/lib/cn';
@@ -14,6 +14,8 @@ interface InputProps extends Omit<TextInputProps, 'editable'> {
     /** 오류가 없을 때 칸 아래에 보여줄 안내 (예: 사용할 수 있는 비밀번호에요) */
     helperText?: string;
     disabled?: boolean;
+    /** 입력칸 오른쪽에 붙일 요소 (예: 인증번호 받기 버튼) */
+    accessory?: ReactNode;
     className?: string;
 }
 
@@ -35,6 +37,7 @@ export function Input({
     helperText,
     disabled = false,
     secureTextEntry,
+    accessory,
     className,
     onFocus,
     onBlur,
@@ -55,51 +58,58 @@ export function Input({
     return (
         <View className={cn('gap-2.5', className)}>
             {label && <AppText className="font-bold text-16">{label}</AppText>}
-            <View
-                className={cn(
-                    'h-14 flex-row items-center rounded-12 px-5',
-                    FIELD_STATE_CLASS[fieldState],
-                )}
-            >
-                <TextInput
+            <View className="flex-row gap-2">
+                <View
                     className={cn(
-                        'h-full flex-1 font-regular text-16',
-                        disabled ? 'text-line-control' : 'text-ink',
+                        'h-14 flex-1 flex-row items-center rounded-12 px-5',
+                        FIELD_STATE_CLASS[fieldState],
                     )}
-                    placeholderTextColor={colors.ink.disabled}
-                    editable={!disabled}
-                    secureTextEntry={secureTextEntry && !isSecretVisible}
-                    accessibilityLabel={label}
-                    accessibilityState={{ disabled }}
-                    onFocus={(event) => {
-                        setIsFocused(true);
-                        onFocus?.(event);
-                    }}
-                    onBlur={(event) => {
-                        setIsFocused(false);
-                        onBlur?.(event);
-                    }}
-                    {...props}
-                />
-                {secureTextEntry && (
-                    <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={isSecretVisible ? '비밀번호 숨기기' : '비밀번호 보기'}
-                        className="ml-2.5"
-                        disabled={disabled}
-                        // 24px 아이콘의 터치 영역을 44px로 맞춘다.
-                        hitSlop={10}
-                        onPress={() => setIsSecretVisible((prev) => !prev)}
-                    >
-                        <Image
-                            source={EYE_ICON}
-                            className="h-6 w-6"
-                            style={{
-                                tintColor: isSecretVisible ? colors.primary[700] : colors.ink.sub,
-                            }}
-                        />
-                    </Pressable>
-                )}
+                >
+                    <TextInput
+                        className={cn(
+                            'h-full flex-1 font-regular text-16',
+                            disabled ? 'text-line-control' : 'text-ink',
+                        )}
+                        placeholderTextColor={colors.ink.disabled}
+                        editable={!disabled}
+                        secureTextEntry={secureTextEntry && !isSecretVisible}
+                        accessibilityLabel={label}
+                        accessibilityState={{ disabled }}
+                        onFocus={(event) => {
+                            setIsFocused(true);
+                            onFocus?.(event);
+                        }}
+                        onBlur={(event) => {
+                            setIsFocused(false);
+                            onBlur?.(event);
+                        }}
+                        {...props}
+                    />
+                    {secureTextEntry && (
+                        <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={
+                                isSecretVisible ? '비밀번호 숨기기' : '비밀번호 보기'
+                            }
+                            className="ml-2.5"
+                            disabled={disabled}
+                            // 24px 아이콘의 터치 영역을 44px로 맞춘다.
+                            hitSlop={10}
+                            onPress={() => setIsSecretVisible((prev) => !prev)}
+                        >
+                            <Image
+                                source={EYE_ICON}
+                                className="h-6 w-6"
+                                style={{
+                                    tintColor: isSecretVisible
+                                        ? colors.primary[700]
+                                        : colors.ink.sub,
+                                }}
+                            />
+                        </Pressable>
+                    )}
+                </View>
+                {accessory}
             </View>
             {message && (
                 <AppText
