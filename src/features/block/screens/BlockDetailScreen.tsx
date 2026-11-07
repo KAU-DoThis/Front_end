@@ -1,4 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
 import { Screen } from '@/shared/components/layout/Screen';
@@ -12,6 +13,7 @@ import { useBlockDetailQuery } from '@/features/block/api/useBlockDetailQuery';
 import { FixedDetailContent } from '@/features/block/components/FixedDetailContent';
 import { GoalDetailContent } from '@/features/block/components/GoalDetailContent';
 import { SpendingDetailContent } from '@/features/block/components/SpendingDetailContent';
+import { TransferSheet } from '@/features/block/components/TransferSheet';
 import type { BlockDetail } from '@/features/block/types/blockDetail';
 
 /** 02 블록 상세 — 블록 유형(사용형 · 목표형 · 고정지출형)에 맞는 화면을 보여준다. */
@@ -21,6 +23,7 @@ export function BlockDetailScreen() {
     // 숫자가 아닌 ID(딥링크 block/abc 등)는 쿼리가 꺼진 채 isPending으로 남으므로 먼저 걸러 낸다.
     const isValidId = Number.isInteger(id) && id > 0;
     const { data: detail, isPending, isError, refetch } = useBlockDetailQuery(id);
+    const [isTransferOpen, setIsTransferOpen] = useState(false);
 
     return (
         <Screen>
@@ -56,11 +59,21 @@ export function BlockDetailScreen() {
                 </View>
             ) : detail ? (
                 <ScrollView contentContainerClassName="px-5 pb-8">
-                    <DetailContent detail={detail} />
+                    <DetailContent
+                        detail={detail}
+                        onFillFromOther={() => setIsTransferOpen(true)}
+                    />
                 </ScrollView>
             ) : (
                 <NotReady />
             )}
+            {/* 다른 블록에서 채우기: 이 블록을 받는 블록으로 고정하고, 보내는 블록만 시트에서 고른다. */}
+            <TransferSheet
+                isOpen={isTransferOpen}
+                onClose={() => setIsTransferOpen(false)}
+                initialToBlockId={isValidId ? id : null}
+                lockedSide="to"
+            />
         </Screen>
     );
 }
@@ -73,10 +86,15 @@ function NotReady() {
     );
 }
 
-function DetailContent({ detail }: { detail: BlockDetail }) {
+interface DetailContentProps {
+    detail: BlockDetail;
+    onFillFromOther: () => void;
+}
+
+function DetailContent({ detail, onFillFromOther }: DetailContentProps) {
     switch (detail.type) {
         case 'SPENDING':
-            return <SpendingDetailContent detail={detail} />;
+            return <SpendingDetailContent detail={detail} onFillFromOther={onFillFromOther} />;
         case 'GOAL':
             return <GoalDetailContent detail={detail} />;
         case 'FIXED':
