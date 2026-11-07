@@ -1,4 +1,4 @@
-// import { router } from 'expo-router'; <-약관동의 화면 연결시 사용
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
@@ -142,8 +142,8 @@ export function SignUpScreen() {
 
     const handleSubmit = () => {
         if (!canSubmit || !codeSentEmail || !verifiedTokens) return;
-        setCredentials(codeSentEmail, password, verifiedTokens);
-        // router.push('/agreement'); <- 이후구현할 것 미리적어놓음(약관동의화면으로 이동)
+        setCredentials(codeSentEmail, password);
+        router.push('/agreement');
     };
 
     return (
@@ -176,8 +176,9 @@ export function SignUpScreen() {
                                 onBlur={() => setIsEmailTouched(true)}
                                 errorMessage={emailErrorMessage}
                                 helperText={emailHelperText}
-                                // 보내는 중에 이메일을 고치면 화면과 다른 이메일로 인증·가입되므로 잠근다.
-                                disabled={sendCode.isPending}
+                                // 보내는 중·확인 중에 이메일을 고치면 화면과 다른 이메일로 인증·가입되므로 잠근다.
+                                // 인증을 마친 이메일은 실수로 고쳐 인증이 풀리지 않도록 잠근다.
+                                disabled={sendCode.isPending || verify.isPending || isEmailVerified}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                                 autoComplete="email"

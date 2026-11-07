@@ -130,7 +130,10 @@ export const verifyEmail = (body: VerifyEmailRequest) => {
 /** 가입 요청. 이메일 인증을 마친 뒤에 보낸다. */
 export const signUp = (body: SignUpRequest) => {
     if (USE_SIGN_UP_MOCK) {
-        return delay<SignUpResponse>(() => ({ email: body.email }));
+        return delay<SignUpResponse>(() => ({
+            accessToken: 'dev-mock-access-token',
+            refreshToken: 'dev-mock-refresh-token',
+        }));
     }
     return request<SignUpResponse>({ method: 'POST', url: '/auth/signup', data: body });
 };
