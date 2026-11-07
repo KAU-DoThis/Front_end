@@ -20,8 +20,14 @@ function formatPeriod(startDate: string, endDate: string) {
 
 const won = (amount: number) => formatAmount(amount, { showUnit: false });
 
+interface SpendingDetailContentProps {
+    detail: SpendingBlockDetail;
+    /** '다른 블록에서 채우기' → 03-2 자금 이동 시트 */
+    onFillFromOther: () => void;
+}
+
 /** 02 블록 상세 · 사용형 (생활비) */
-export function SpendingDetailContent({ detail }: { detail: SpendingBlockDetail }) {
+export function SpendingDetailContent({ detail, onFillFromOther }: SpendingDetailContentProps) {
     const { block, today } = detail;
 
     return (
@@ -47,14 +53,18 @@ export function SpendingDetailContent({ detail }: { detail: SpendingBlockDetail 
                 <BurnRateCard burnRate={detail.burnRate} />
             </View>
             {detail.explanation && (
-                // 절약 제안(⑤)·다른 블록에서 채우기(③ 자금 이동)는 해당 작업에서 연결한다.
+                // 절약 제안 보기는 ⑤ 절약 작업에서 연결한다.
                 <SuggestionCard
                     className="mt-3"
                     title="왜 주의인가요?"
                     message={detail.explanation}
                     actions={[
                         { title: '절약 제안 보기', variant: 'secondary' },
-                        { title: '다른 블록에서 채우기', variant: 'primary' },
+                        {
+                            title: '다른 블록에서 채우기',
+                            variant: 'primary',
+                            onPress: onFillFromOther,
+                        },
                     ]}
                 />
             )}

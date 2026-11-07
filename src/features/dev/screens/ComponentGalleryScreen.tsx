@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
 
+import { DropletDemo } from '@/features/dev/components/DropletDemo';
 import { Screen } from '@/shared/components/layout/Screen';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
@@ -43,10 +44,11 @@ export function ComponentGalleryScreen() {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isToggleOn, setIsToggleOn] = useState(true);
+    const [isDragging, setIsDragging] = useState(false);
 
     return (
         <Screen>
-            <ScrollView contentContainerClassName="gap-8 px-5 py-6">
+            <ScrollView contentContainerClassName="gap-8 px-5 py-6" scrollEnabled={!isDragging}>
                 <Section title="화면 바로가기">
                     <Button
                         title="로그인"
@@ -130,6 +132,10 @@ export function ComponentGalleryScreen() {
                         <StatusTag status="CAUTION" />
                         <StatusTag status="DANGER" />
                     </View>
+                </Section>
+
+                <Section title="물방울 (자금 이동 드래그)">
+                    <DropletDemo onDraggingChange={setIsDragging} />
                 </Section>
 
                 <Section title="비커 블록">

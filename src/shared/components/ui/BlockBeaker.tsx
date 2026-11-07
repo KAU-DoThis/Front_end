@@ -36,6 +36,8 @@ interface BlockBeakerProps {
     size: BeakerSize;
     /** 이름 아래 보조 문구 (xs에서는 표시하지 않는다) */
     caption?: string;
+    /** 자금 이동 드래그 중 상태칩 자리에 보여줄 표시 (보내는 중 · 받는 블록, 03-1) */
+    dragLabel?: string;
     onPress?: () => void;
     className?: string;
     style?: StyleProp<ViewStyle>;
@@ -62,11 +64,13 @@ export function BlockBeaker({
     fillRate,
     size,
     caption,
+    dragLabel,
     onPress,
     className,
     style,
 }: BlockBeakerProps) {
     const sizeStyle = SIZE_STYLE[size];
+    const tag = dragLabel ? <DragTag label={dragLabel} /> : <StatusTag status={status} />;
 
     return (
         <Pressable
@@ -90,7 +94,7 @@ export function BlockBeaker({
                         <AppText numberOfLines={1} className="font-bold text-13">
                             {name}
                         </AppText>
-                        <StatusTag status={status} />
+                        {tag}
                     </View>
                 ) : (
                     <View className="flex-row items-center justify-between gap-1">
@@ -100,7 +104,7 @@ export function BlockBeaker({
                         >
                             {name}
                         </AppText>
-                        <StatusTag status={status} />
+                        {tag}
                     </View>
                 )}
                 <View>
@@ -121,6 +125,20 @@ export function BlockBeaker({
             </BeakerSurface>
         </Pressable>
     );
+}
+
+/** 드래그 중 표시 칩: 상태칩과 같은 크기, 진한 바탕 */
+function DragTag({ label }: { label: string }) {
+    return (
+        <View className="self-start rounded-8 bg-primary-900 px-2 py-0.75">
+            <AppText className="font-bold text-11 text-white">{label}</AppText>
+        </View>
+    );
+}
+
+/** 블록 물 색 (상태가 나빠질수록 채도가 빠진다) — 물방울처럼 블록 밖에서 같은 색을 쓸 때 */
+export function getWaterColor(color: BlockColor, status: Status) {
+    return colors.block[color][STATUS_KEY[status]];
 }
 
 /** 물결 모양: block 홈 블록 · strip 띠 블록(한 겹, 납작) · card 블록 상세 큰 카드(너비 350 기준) */
