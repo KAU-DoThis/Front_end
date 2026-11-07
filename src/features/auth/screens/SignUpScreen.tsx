@@ -142,7 +142,7 @@ export function SignUpScreen() {
 
     const handleSubmit = () => {
         if (!canSubmit || !codeSentEmail || !verifiedTokens) return;
-        setCredentials(codeSentEmail, password, verifiedTokens);
+        setCredentials(codeSentEmail, password);
         router.push('/agreement');
     };
 

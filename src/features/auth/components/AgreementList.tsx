@@ -65,22 +65,25 @@ function CheckBox({ isChecked, size }: CheckBoxProps) {
 interface AgreementRowProps {
     item: AgreementItem;
     isChecked: boolean;
+    disabled: boolean;
     onToggle: () => void;
-    onPressDetail: () => void;
+    /** 없으면 본문 보기 화살표를 숨긴다. */
+    onPressDetail?: () => void;
 }
 
 // 줄을 누르면 체크, 오른쪽 화살표를 누르면 본문 보기
-function AgreementRow({ item, isChecked, onToggle, onPressDetail }: AgreementRowProps) {
+function AgreementRow({ item, isChecked, disabled, onToggle, onPressDetail }: AgreementRowProps) {
     const tag = item.isRequired ? '필수' : '선택';
 
     return (
         <View className="flex-row items-start">
             <Pressable
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked: isChecked }}
+                accessibilityState={{ checked: isChecked, disabled }}
                 accessibilityLabel={`${tag} ${item.label}`}
                 accessibilityHint={item.description}
                 className="flex-1 flex-row items-start gap-3 py-2.5"
+                disabled={disabled}
                 onPress={onToggle}
             >
                 <CheckBox isChecked={isChecked} size="md" />
@@ -101,7 +104,7 @@ function AgreementRow({ item, isChecked, onToggle, onPressDetail }: AgreementRow
                     )}
                 </View>
             </Pressable>
-            {item.hasDetail && (
+            {item.hasDetail && onPressDetail && (
                 <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={`${item.label} 보기`}
@@ -120,11 +123,19 @@ function AgreementRow({ item, isChecked, onToggle, onPressDetail }: AgreementRow
 interface AgreementListProps {
     value: AgreementState;
     onChange: (value: AgreementState) => void;
-    onPressDetail: (type: AgreementType) => void;
+    /** 없으면 본문 보기 화살표를 모두 숨긴다. (약관 본문이 준비되기 전) */
+    onPressDetail?: (type: AgreementType) => void;
+    /** 가입 요청 중·가입 후에는 선택을 바꾸지 못하게 한다. */
+    disabled?: boolean;
 }
 
 /** 전체 동의 + 약관별 동의 */
-export function AgreementList({ value, onChange, onPressDetail }: AgreementListProps) {
+export function AgreementList({
+    value,
+    onChange,
+    onPressDetail,
+    disabled = false,
+}: AgreementListProps) {
     const isAllChecked = AGREEMENT_ITEMS.every(({ type }) => value[type]);
 
     const handleToggleAll = () => {
@@ -138,9 +149,10 @@ export function AgreementList({ value, onChange, onPressDetail }: AgreementListP
         <View className="gap-6">
             <Pressable
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked: isAllChecked }}
+                accessibilityState={{ checked: isAllChecked, disabled }}
                 accessibilityLabel="전체 동의"
                 className="flex-row items-center gap-3 rounded-16 border border-line-control px-4 py-5"
+                disabled={disabled}
                 onPress={handleToggleAll}
             >
                 <CheckBox isChecked={isAllChecked} size="lg" />
@@ -152,8 +164,9 @@ export function AgreementList({ value, onChange, onPressDetail }: AgreementListP
                         key={item.type}
                         item={item}
                         isChecked={value[item.type]}
+                        disabled={disabled}
                         onToggle={() => onChange({ ...value, [item.type]: !value[item.type] })}
-                        onPressDetail={() => onPressDetail(item.type)}
+                        onPressDetail={onPressDetail && (() => onPressDetail(item.type))}
                     />
                 ))}
             </View>

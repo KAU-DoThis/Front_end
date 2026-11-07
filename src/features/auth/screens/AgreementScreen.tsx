@@ -3,29 +3,26 @@ import { useEffect, useState } from 'react';
 import { BackHandler, Image, ScrollView, View } from 'react-native';
 
 import { useSignUpMutation } from '@/features/auth/api/useSignUpMutation';
-import {
-    AGREEMENT_ITEMS,
-    AgreementList,
-    INITIAL_AGREEMENT_STATE,
-    type AgreementState,
-} from '@/features/auth/components/AgreementList';
+import { AGREEMENT_ITEMS, AgreementList } from '@/features/auth/components/AgreementList';
 import { BackButton } from '@/features/auth/components/BackButton';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useSignUpStore } from '@/features/auth/stores/signUpStore';
-import type { AgreementType } from '@/features/auth/types/auth';
+import type { SignUpResponse } from '@/features/auth/types/auth';
 import { Screen } from '@/shared/components/layout/Screen';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Button } from '@/shared/components/ui/Button';
 
 const LOCK_ICON = require('@/assets/icons/auth-lock.png');
 
-/** 00-2 약관 동의: 동의하면 가입 요청을 보내고, 이메일 인증 때 받은 토큰으로 로그인한다. */
+/** 00-2 약관 동의: 동의하면 가입 요청을 보내고, 가입 응답으로 받은 토큰으로 로그인한다. */
 export function AgreementScreen() {
-    const [agreements, setAgreements] = useState<AgreementState>(INITIAL_AGREEMENT_STATE);
-
+    // 화면을 나갔다 다시 들어와도 동의 선택과 가입 여부가 남도록 store에 둔다.
     const email = useSignUpStore((state) => state.email);
     const password = useSignUpStore((state) => state.password);
-    const verifiedTokens = useSignUpStore((state) => state.verifiedTokens);
+    const agreements = useSignUpStore((state) => state.agreements);
+    const setAgreements = useSignUpStore((state) => state.setAgreements);
+    const signedUpTokens = useSignUpStore((state) => state.signedUpTokens);
+    const setSignedUpTokens = useSignUpStore((state) => state.setSignedUpTokens);
     const login = useAuthStore((state) => state.login);
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
@@ -34,7 +31,8 @@ export function AgreementScreen() {
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const isSubmitting = isPending || isLoggingIn;
     // 가입은 됐는데 토큰 저장(login)이 실패하면, 다시 누를 때 가입 요청 없이 로그인만 다시 한다.
-    const [isSignedUp, setIsSignedUp] = useState(false);
+    // (이미 가입된 이메일로 또 요청하면 409로 막힌다)
+    const isSignedUp = signedUpTokens !== null;
     const [hasLoginError, setHasLoginError] = useState(false);
 
     // 가입 요청 중에는 Android 뒤로 가기를 막는다. (도중에 나가도 요청이 끝나면 로그인되어 홈으로 튄다)
@@ -58,19 +56,15 @@ export function AgreementScreen() {
     }
 
     // 입력 화면에서 이메일 인증을 마치지 않고 들어오면 처음부터 다시 입력받는다.
-    if (!email || !verifiedTokens) {
+    if (!email) {
         return <Redirect href="/sign-up" />;
     }
 
-    const handlePressDetail = (_type: AgreementType) => {
-        // TODO: 약관 본문이 나오면 약관 보기 화면을 연결한다.
-    };
-
-    const completeLogin = async () => {
+    const completeLogin = async (tokens: SignUpResponse) => {
         setIsLoggingIn(true);
         setHasLoginError(false);
         try {
-            await login(verifiedTokens.accessToken, verifiedTokens.refreshToken);
+            await login(tokens.accessToken, tokens.refreshToken);
         } catch {
             setHasLoginError(true);
         } finally {
@@ -81,8 +75,8 @@ export function AgreementScreen() {
     const handleSubmit = () => {
         if (!hasRequiredAgreements || isSubmitting) return;
 
-        if (isSignedUp) {
-            completeLogin();
+        if (signedUpTokens) {
+            completeLogin(signedUpTokens);
             return;
         }
 
@@ -98,9 +92,9 @@ export function AgreementScreen() {
             {
                 // 로그인 상태가 바뀌면 루트 레이아웃이 홈으로 보내고, 가입 입력값은 SignUpScreen이 지운다.
                 // TODO: 프로필 입력·온보딩 화면이 생기면 가입 후 그쪽으로 보낸다. (인증 응답 메시지: 프로필을 입력해주세요)
-                onSuccess: () => {
-                    setIsSignedUp(true);
-                    completeLogin();
+                onSuccess: (tokens) => {
+                    setSignedUpTokens(tokens);
+                    completeLogin(tokens);
                 },
             },
         );
@@ -124,10 +118,11 @@ export function AgreementScreen() {
                 </View>
 
                 <View className="mt-6">
+                    {/* TODO: 약관 본문이 나오면 onPressDetail로 약관 보기 화면을 연결한다. (그전에는 화살표를 숨긴다) */}
                     <AgreementList
                         value={agreements}
                         onChange={setAgreements}
-                        onPressDetail={handlePressDetail}
+                        disabled={isSubmitting || isSignedUp}
                     />
                 </View>
 
