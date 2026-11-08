@@ -18,6 +18,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
     const restore = useAuthStore((state) => state.restore);
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+    const needsOnboarding = useAuthStore((state) => state.needsOnboarding);
     const isRestored = useAuthStore((state) => state.isRestored);
     const [isFontLoaded, fontError] = useAppFonts();
     // 로그인 상태를 복원하기 전에 화면을 띄우면 홈이 잠깐 보였다가 로그인으로 튈 수 있다.
@@ -45,7 +46,7 @@ export default function RootLayout() {
                     <StatusBar style="dark" />
                     <Stack screenOptions={{ headerShown: false }}>
                         {/* 로그인한 사용자만 접근. 비로그인 상태면 로그인 화면으로 보낸다. */}
-                        <Stack.Protected guard={isLoggedIn}>
+                        <Stack.Protected guard={isLoggedIn && !needsOnboarding}>
                             <Stack.Screen name="(tabs)" />
                             {/* 가운데 에이전트 버튼: 아래에서 올라오는 전체 화면, 뒤로 가기로 닫힘 */}
                             <Stack.Screen
@@ -56,6 +57,11 @@ export default function RootLayout() {
                                 }}
                             />
                             <Stack.Screen name="block/[blockId]" />
+                        </Stack.Protected>
+                        {/* 가입 직후: 온보딩을 마치기 전까지는 홈 대신 온보딩만 연다. */}
+                        <Stack.Protected guard={isLoggedIn && needsOnboarding}>
+                            <Stack.Screen name="onboarding/connect" />
+                            <Stack.Screen name="onboarding/blocks" />
                         </Stack.Protected>
                         {/* 로그인한 상태면 로그인 화면 대신 홈으로 보낸다. */}
                         <Stack.Protected guard={!isLoggedIn}>
