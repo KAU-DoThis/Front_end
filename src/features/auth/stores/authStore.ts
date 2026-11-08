@@ -39,8 +39,10 @@ async function readNeedsOnboarding(email: string | null) {
     }
 }
 
-// TODO: 온보딩 완료 여부를 서버(로그인 응답 또는 내 정보 API)에서 받으면 restore·login에서 그 값을 쓰고
-//       onboardingStorage는 지운다. 지금은 가입한 기기에 남긴 기록으로만 판단한다.
+// TODO: 온보딩 진행 단계(CONNECT · BLOCK_SETUP · DONE)를 서버(로그인 응답 또는 내 정보 API)에서 받으면
+//       restore·login에서 그 값을 쓰고 onboardingStorage는 지운다. 지금은 가입한 기기에 남긴 기록으로만 판단하고,
+//       단계는 기억하지 않아 블록 구성 중에 로그아웃하면 다시 연동 화면부터 시작한다.
+//       (단계를 받으면 BLOCK_SETUP일 때 블록 구성 화면으로 바로 보낸다)
 export const useAuthStore = create<AuthState>((set) => ({
     isLoggedIn: false,
     needsOnboarding: false,
@@ -67,22 +69,28 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
 
     async login(accessToken, refreshToken, { email, isNewUser = false }) {
+        // 가입 직후에는 온보딩 기록을 토큰보다 먼저 남긴다.
+        // 토큰만 저장된 채 앱이 꺼지면 다음 실행 때 온보딩을 건너뛰고 홈으로 가기 때문이다.
+        // 기록을 남기지 못하면 토큰도 저장하지 않고 실패로 돌려준다. (가입 화면에서 다시 시도한다)
+        if (isNewUser) {
+            await onboardingStorage.markPending(email);
+            await onboardingStorage.setCurrentEmail(email);
+        }
+
         // 이전 세션의 토큰이 남지 않도록 비운 뒤 저장한다.
         await tokenStorage.clear();
         await tokenStorage.setTokens(accessToken, refreshToken);
 
-        // 온보딩 기록을 남기지 못해도 로그인은 막지 않는다. (가입 직후라면 이번에는 온보딩으로 보낸다)
         let needsOnboarding = isNewUser;
-        try {
-            await onboardingStorage.setCurrentEmail(email);
-            if (isNewUser) {
-                await onboardingStorage.markPending(email);
-            } else {
+        if (!isNewUser) {
+            // 온보딩 기록을 읽지 못해도 기존 계정의 로그인은 막지 않는다.
+            try {
+                await onboardingStorage.setCurrentEmail(email);
                 // 가입하고 온보딩을 마치지 않은 채 로그아웃했던 계정이면 이어서 하게 한다.
                 needsOnboarding = await onboardingStorage.isPending(email);
+            } catch {
+                // 기록을 읽거나 쓰지 못하면 홈으로 보낸다.
             }
-        } catch {
-            // 기록을 읽거나 쓰지 못하면 위 기본값을 쓴다.
         }
 
         // 홈이 잠깐 보였다가 온보딩으로 튀지 않도록 두 값을 한 번에 바꾼다.
