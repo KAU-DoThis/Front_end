@@ -32,3 +32,7 @@ export const INSTITUTIONS: Record<InstitutionType, Institution[]> = {
 /** 은행 코드와 카드사 코드는 겹치지 않아 코드만으로 기관을 찾는다. */
 export const findInstitution = (code: string) =>
     [...INSTITUTIONS.BANK, ...INSTITUTIONS.CARD].find((institution) => institution.code === code);
+
+/** 기관 코드 목록을 화면에 보여줄 이름 목록으로 바꾼다. 모르는 코드는 '기관'으로 보여준다. */
+export const toInstitutionNames = (codes: string[]) =>
+    codes.map((code) => findInstitution(code)?.name ?? '기관');
