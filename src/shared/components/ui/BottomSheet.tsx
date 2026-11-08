@@ -22,6 +22,8 @@ interface BottomSheetProps {
     isOpen: boolean;
     onClose: () => void;
     title?: string;
+    /** 제목 아래 한 줄 설명 (예: 현금처럼 자동으로 안 잡히는 지출을 적어요) */
+    description?: string;
     hasCloseButton?: boolean;
     /** 있으면 제목 왼쪽에 뒤로 가기(<)를 보여준다. 시트 안에서 한 단계 들어간 화면용 (예: 블록 고르기) */
     onBack?: () => void;
@@ -37,6 +39,7 @@ export function BottomSheet({
     isOpen,
     onClose,
     title,
+    description,
     hasCloseButton = true,
     onBack,
     children,
@@ -140,7 +143,14 @@ export function BottomSheet({
                                         <Icon name="chevron-left" size={20} />
                                     </Pressable>
                                 )}
-                                <AppText className="font-bold text-17">{title}</AppText>
+                                <View className="flex-1 gap-0.5">
+                                    <AppText className="font-bold text-17">{title}</AppText>
+                                    {description && (
+                                        <AppText className="text-12 text-ink-sub">
+                                            {description}
+                                        </AppText>
+                                    )}
+                                </View>
                             </View>
                             {hasCloseButton && (
                                 <Pressable
