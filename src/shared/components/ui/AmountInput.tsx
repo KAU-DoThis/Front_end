@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { TextInput, View } from 'react-native';
 
 import { cn } from '@/lib/cn';
+import { formatWon } from '@/lib/format';
 import { AppText } from '@/shared/components/ui/AppText';
 import { colors } from '@/styles/tokens';
 
@@ -40,7 +41,9 @@ const FIELD_STATE_CLASS = {
     disabled: 'border border-dashed border-line-disabled bg-surface-input-disabled',
 } as const;
 
-const toDisplay = (value: number | null) => (value === null ? '' : value.toLocaleString('ko-KR'));
+// "원"은 칸 오른쪽에 따로 보여주므로 숫자만 포맷한다.
+const toDisplay = (value: number | null) =>
+    value === null ? '' : formatWon(value, { showUnit: false });
 
 /** 금액 입력칸 (44 · 12). 오른쪽 정렬 굵은 숫자 + "원", 천 단위 쉼표는 입력하면서 붙인다. */
 export function AmountInput({

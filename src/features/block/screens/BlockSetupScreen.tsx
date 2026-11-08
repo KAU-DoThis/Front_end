@@ -49,7 +49,7 @@ export function BlockSetupScreen({
     const proposal = proposalQuery.data;
     const draft = useBlockSetupDraft(proposal?.blocks);
     const previewQuery = useBlockSetupPreviewQuery(draft.request);
-    const preview = previewQuery.data;
+    const preview = previewQuery.data?.preview;
     const { mutate: createBlocks, isPending, isError, isSuccess } = useCreateSetupBlocksMutation();
 
     // null이면 처음 상태: 첫 블록만 펼친다.
@@ -170,14 +170,21 @@ export function BlockSetupScreen({
             setExpandedKeys(new Set([...expanded, ...invalidKeys]));
             return;
         }
+        // 화면에 보이는 합계·경고가 지금 고친 내용으로 계산된 뒤에만 만든다.
+        if (!previewQuery.isCurrent) return;
         createBlocks(draft.request, { onSuccess: onComplete });
     };
+
+    // 고칠 칸이 있으면 눌러서 어디인지 볼 수 있게 열어 두고, 없으면 합계 계산이 끝날 때까지 막는다.
+    const isWaitingPreview = !hasErrors && !previewQuery.isCurrent;
 
     const footerMessage = isError
         ? { text: '블록을 만들지 못했어요. 잠시 후 다시 시도해 주세요', isError: true }
         : isSubmitted && hasErrors
           ? { text: '빨갛게 표시된 칸을 채우면 시작할 수 있어요', isError: true }
-          : { text: '시작하기 전엔 아무것도 저장되지 않아요', isError: false };
+          : isWaitingPreview && previewQuery.isError
+            ? { text: '합계를 다시 계산하면 시작할 수 있어요', isError: true }
+            : { text: '시작하기 전엔 아무것도 저장되지 않아요', isError: false };
 
     return (
         <Screen>
@@ -218,7 +225,7 @@ export function BlockSetupScreen({
 
                 <View className="mt-4">
                     <SetupSummaryCard
-                        preview={preview}
+                        result={previewQuery.data}
                         blocks={blocks}
                         isError={previewQuery.isError}
                         onRetry={() => previewQuery.refetch()}
@@ -323,6 +330,7 @@ export function BlockSetupScreen({
                     loadingTitle="블록 만드는 중"
                     // 성공한 뒤 홈으로 넘어갈 때까지 로딩을 이어서 보여준다.
                     isLoading={isPending || isSuccess}
+                    disabled={isWaitingPreview}
                     onPress={handleSubmit}
                 />
             </View>

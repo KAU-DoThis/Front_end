@@ -24,6 +24,11 @@ function toBlockRule(block: SetupBlock): BlockRule | null {
     }
 }
 
+/** 요청에 담긴 블록 금액 (SetupBlock.amount와 같은 값). 사용형은 한 달 금액, 그 외는 규칙 금액이다. */
+export function getSetupBlockInputAmount(input: SetupBlockInput): number | null {
+    return input.monthlyBudget ?? input.rule?.pay_amount ?? input.rule?.monthly_target ?? null;
+}
+
 /** 화면에서 고친 블록을 요청 모양으로 바꾼다. 유형에 안 쓰는 값은 비워서 보낸다. */
 export function toSetupBlockInput(block: SetupBlock, index: number): SetupBlockInput {
     const isSpending = block.type === 'SPENDING';
