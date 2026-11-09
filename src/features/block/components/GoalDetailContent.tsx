@@ -77,7 +77,7 @@ export function GoalDetailContent({ detail }: { detail: GoalBlockDetail }) {
             <BlockDetailList
                 title="들어온 돈"
                 moreLabel={`${block.name} 블록 기록 전체 보기`}
-                moreHref="/transactions"
+                moreHref={{ pathname: '/transactions', params: { blockId: block.blockId } }}
             >
                 {detail.inflows.map((inflow, index) => (
                     <ListRow

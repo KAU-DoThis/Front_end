@@ -79,6 +79,7 @@ eas build --profile development --platform android
 | 변수 | 설명 |
 | --- | --- |
 | `EXPO_PUBLIC_API_URL` | 백엔드 API 서버 주소 |
+| `EXPO_PUBLIC_USE_MOCK` | 목업 API 사용 여부 (`true`/`false`, 비우면 개발 빌드에서만 사용 · preview 빌드는 `eas.json`에서 `true`) |
 
 > `EXPO_PUBLIC_` 접두사가 붙은 값은 앱 번들에 포함되므로, 비밀 키는 절대 넣지 않습니다.
 >

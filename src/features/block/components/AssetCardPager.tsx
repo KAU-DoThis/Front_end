@@ -103,12 +103,17 @@ interface AccountPageProps {
 }
 
 function AccountPage({ account, width }: AccountPageProps) {
-    // 계좌별 내역(09-2)이 생기면 계좌 필터를 넘긴다.
+    // 계좌별 내역(09-2)으로 연다.
     const transactionLink = (
         <Pressable
             accessibilityRole="link"
             hitSlop={12}
-            onPress={() => router.push('/transactions')}
+            onPress={() =>
+                router.push({
+                    pathname: '/transactions',
+                    params: { accountId: account.linkedAccountId },
+                })
+            }
             className="ml-auto active:opacity-60"
         >
             <AppText className="text-12 leading-[18px] text-primary-300">거래 내역 보기 ›</AppText>

@@ -1,5 +1,13 @@
 import type { AgentRoom } from '@/features/suggestion/types/agentRoom';
 
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+/** 한국 날짜 기준 n일 전 hh:mm (예: 2026-11-08T21:05:00) */
+function kstDaysAgo(days: number, time: string) {
+    const date = new Date(Date.now() + KST_OFFSET_MS - days * 86_400_000);
+    return `${date.toISOString().slice(0, 10)}T${time}:00`;
+}
+
 /**
  * 초불이의 방 목업 (시안 '초불이의 방' 1·1-1 값)
  * 블록 값은 홈 목업(blockHomeMock)과 같게 맞췄다.
@@ -13,8 +21,8 @@ export const AGENT_ROOM_MOCK: AgentRoom = {
     uncheckedTransactionCount: 2,
     quickCommands: ['여행에서 5만 원 생활비로 옮겨줘', '나눌 돈 나눠줘', '이번 달 어땠어?'],
     lastAction: {
-        // 시안처럼 항상 '어제'로 보이게 오늘 기준으로 만든다.
-        performedAt: new Date(Date.now() - 86_400_000).toISOString(),
+        // 시안처럼 항상 '어제'로 보이게 오늘 기준으로 만든다. (서버처럼 오프셋 없는 한국 시간)
+        performedAt: kstDaysAgo(1, '21:05'),
         message: '지난 입금 중 100,000원을 저축에 넣었어요',
         blockColor: 'j',
         blockFillRate: 67,
