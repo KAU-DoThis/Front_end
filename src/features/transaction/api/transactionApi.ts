@@ -1,3 +1,6 @@
+import { request } from '@/lib/apiClient';
+import { USE_MOCK } from '@/lib/mock';
+
 import type { SpendingAnalysis } from '@/features/transaction/types/spendingAnalysis';
 import type {
     AnswerQuestionRequest,
@@ -6,8 +9,15 @@ import type {
     TransactionListPage,
     TransactionListParams,
 } from '@/features/transaction/types/transaction';
+import type {
+    CategoryResponse,
+    TransactionListResponse,
+    TransactionResponse,
+    UpdateTransactionCategoryRequest,
+} from '@/features/transaction/types/transactionResponse';
 
 import { getSpendingAnalysisMock } from './spendingAnalysisMock';
+import { toTransactionListPage, toTransactionListQuery } from './transactionMapper';
 import {
     answerQuestionMock,
     createQuickInputMock,
@@ -33,16 +43,52 @@ function mockResponse<T>(create: () => T): Promise<T> {
     });
 }
 
-// TODO: 거래·소비 분석 API가 정해지면 아래 주석처럼 바꾼다. (URL은 지금은 가정값, 화면·훅은 그대로)
+/**
+ * 거래 목록 (09 · 09-2). page는 0부터 센다.
+ * 목업 모드(USE_MOCK)에서는 목업을 쓴다. 서버 응답은 transactionMapper로 화면 모양으로 바꾼다.
+ */
+export const getTransactionList = async (
+    params: TransactionListParams,
+    page: number,
+): Promise<TransactionListPage> => {
+    if (USE_MOCK) {
+        return mockResponse(() => getTransactionListMock(params, page));
+    }
+    const response = await request<TransactionListResponse>({
+        method: 'GET',
+        url: '/transactions',
+        params: toTransactionListQuery(params, page),
+    });
+    return toTransactionListPage(response);
+};
 
 /**
- * 거래 목록 (09 · 09-2). cursor가 있으면 그 다음 거래를 받는다.
- * request<TransactionListPage>({ method: 'GET', url: '/transactions', params: { ...params, cursor } })
+ * 거래 하나. 없으면 TRANSACTION_NOT_FOUND(404), 다른 사용자 거래면 TRANSACTION_FORBIDDEN(403)
+ * TODO: 거래 상세 화면이 생기면 쓴다.
  */
-export const getTransactionList = (
-    params: TransactionListParams,
-    cursor: string | null,
-): Promise<TransactionListPage> => mockResponse(() => getTransactionListMock(params, cursor));
+export const getTransaction = (transactionId: number) =>
+    request<TransactionResponse>({ method: 'GET', url: `/transactions/${transactionId}` });
+
+/**
+ * 거래 카테고리를 바꾼다. 응답은 바뀐 거래 (classifiedBy가 USER, categoryUncertain은 false)
+ * 없는 카테고리면 TRANSACTION_CATEGORY_NOT_FOUND(404)
+ * TODO: 카테고리 바꾸기 화면이 생기면 쓴다.
+ */
+export const updateTransactionCategory = (
+    transactionId: number,
+    body: UpdateTransactionCategoryRequest,
+) =>
+    request<TransactionResponse>({
+        method: 'PATCH',
+        url: `/transactions/${transactionId}/category`,
+        data: body,
+    });
+
+/** 카테고리 목록 (표시 순서). type을 빼면 16개 전부 */
+export const getCategories = (type?: CategoryResponse['type']) =>
+    request<CategoryResponse[]>({ method: 'GET', url: '/categories', params: { type } });
+
+// TODO: 아래 API는 아직 명세가 없다. 정해지면 주석처럼 바꾼다. (URL은 지금은 가정값, 화면·훅은 그대로)
 
 /**
  * 소비 분석 (11)

@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 
 import { cn } from '@/lib/cn';
-import { formatAmount } from '@/lib/format';
+import { formatWon } from '@/lib/format';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Card } from '@/shared/components/ui/Card';
 import { HorizontalBar } from '@/shared/components/ui/HorizontalBar';
@@ -46,7 +46,7 @@ function CompareBar({ label, amount, maxAmount, isCurrent }: CompareBarProps) {
                     isCurrent ? 'font-bold' : 'text-ink-sub',
                 )}
             >
-                {formatAmount(amount, { showUnit: false })}
+                {formatWon(amount, { showUnit: false })}
             </AppText>
         </View>
     );

@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 
-import { formatAmount, formatDayHeader } from '@/lib/format';
+import { formatDayHeader, formatWon } from '@/lib/format';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Icon } from '@/shared/components/ui/Icon';
 import { colors } from '@/styles/tokens';
@@ -58,7 +58,7 @@ export function TransactionDaySection({
                 <AppText className="font-bold text-13">{formatDayHeader(day.date, today)}</AppText>
                 <AppText className="text-13 text-ink-sub">
                     {hasTransactions
-                        ? formatAmount(-day.dayTotal, { showSign: true, showUnit: false })
+                        ? formatWon(-day.dayTotal, { showSign: true, showUnit: false })
                         : '블록 배분'}
                 </AppText>
             </View>

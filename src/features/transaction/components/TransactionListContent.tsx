@@ -6,6 +6,7 @@ import { getWaterColor } from '@/shared/components/ui/BlockBeaker';
 import { Button } from '@/shared/components/ui/Button';
 import { colors } from '@/styles/tokens';
 
+import { mergeTransactionDays } from '@/features/transaction/api/transactionMapper';
 import { useReviewTransactionMutation } from '@/features/transaction/api/useReviewTransactionMutation';
 import { useTransactionListQuery } from '@/features/transaction/api/useTransactionListQuery';
 import { AgentQuestionBanner } from '@/features/transaction/components/AgentQuestionBanner';
@@ -68,7 +69,7 @@ export function TransactionListContent({
     // 합계·칩 숫자·질문·필터 목록은 첫 쪽 값을 쓴다.
     const [firstPage] = query.data.pages;
     const { period, summary, counts, agentQuestion, filterOptions } = firstPage;
-    const days = query.data.pages.flatMap((page) => page.days);
+    const days = mergeTransactionDays(query.data.pages);
 
     const selectedBlock = filterOptions.blocks.find(({ blockId }) => blockId === params.blockId);
     const selectedAccount = filterOptions.accounts.find(

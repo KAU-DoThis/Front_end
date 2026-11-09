@@ -116,7 +116,7 @@ export function ContextQuestionSheet({
     };
 
     return (
-        <BottomSheet isOpen={isOpen} onClose={handleClose} title="에이전트의 질문">
+        <BottomSheet isOpen={isOpen} onClose={handleClose} title="에이전트의 질문" scrollable>
             <View className="flex-row items-start gap-2 pt-1">
                 <Mascot className="h-12 w-12" />
                 <View className="mt-1 flex-1 gap-1 rounded-16 rounded-tl-[4px] border border-line bg-surface-app px-4 py-3">

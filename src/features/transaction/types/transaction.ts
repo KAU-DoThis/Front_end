@@ -1,7 +1,8 @@
 import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
 import type { Status } from '@/shared/components/ui/StatusTag';
 
-// TODO: 거래 목록 API 명세가 나오면 맞춘다. (지금은 시안 09 · 09-1 · 09-2 기준 가정값)
+// 화면에서 쓰는 거래 모양. 서버 응답(transactionResponse.ts)은 transactionMapper에서 이 모양으로 바꾼다.
+// TODO: 맥락 질문 · 빠른 입력 · 배분 기록은 API가 나오면 맞춘다. (지금은 시안 09 · 09-1 · 10 기준 가정값)
 
 /** 일부를 굵게 보여주는 서버 문장 (예: [네이버페이 38,000원](굵게) + , 무엇을 샀는지 알려줄래요?) */
 export type RichText = { text: string; isBold: boolean }[];
@@ -9,7 +10,7 @@ export type RichText = { text: string; isBold: boolean }[];
 /**
  * 거래 상태
  * - CONFIRMED: 확정
- * - PENDING: 임시 (빠른 입력으로 넣고 카드 내역을 기다리는 중)
+ * - PENDING: 임시 (빠른 입력으로 넣고 카드 내역을 기다리는 중, 서버 값은 PROVISIONAL)
  * - NEEDS_REVIEW: 확인 필요 (분류를 묻거나, 직접 넣은 거래가 카드 내역에 없을 때)
  */
 export type TransactionStatus = 'CONFIRMED' | 'PENDING' | 'NEEDS_REVIEW';
@@ -59,6 +60,8 @@ export interface TransactionItem {
     /** 확인 필요일 때만 있다. */
     review: TransactionReview | null;
     block: TransactionBlock | null;
+    /** 쓴 돈에서 뺀 거래 (체크카드 결제의 은행 쪽 등). 목록에는 흐리게 보여준다. */
+    isExcluded: boolean;
 }
 
 /** 블록 배분 기록 (앱 안에서만 나눈 돈이라 쓴 돈에 안 잡힌다) */
@@ -145,7 +148,10 @@ export interface TransactionListParams {
     accountId: number | null;
 }
 
-/** 거래 목록 한 쪽 (이전 거래 더 보기로 이어서 받는다) */
+/**
+ * 거래 목록 한 쪽 (이전 거래 더 보기로 이어서 받는다)
+ * 페이지는 거래 단위라 같은 날짜가 두 쪽에 걸칠 수 있다. 화면에서 mergeTransactionDays로 이어 붙인다.
+ */
 export interface TransactionListPage {
     period: TransactionPeriod;
     /** 지금 조건(계좌 등)으로 계산한 합계 */
@@ -154,10 +160,14 @@ export interface TransactionListPage {
     counts: { needsReview: number; pending: number };
     /** 지금 물어볼 질문 (없으면 null) */
     agentQuestion: ContextQuestion | null;
+    /**
+     * 블록·계좌 고르기에 쓰는 목록.
+     * TODO: 거래 목록 API에는 없다. 블록 목록 · GET /linked-accounts에서 받을지 백엔드와 정한다. (지금은 빈 목록)
+     */
     filterOptions: TransactionFilterOptions;
     days: TransactionDay[];
-    /** 더 받을 거래가 있으면 다음 요청에 넘길 값 (없으면 null) */
-    nextCursor: string | null;
+    /** 다음 쪽이 있으면 true */
+    hasNext: boolean;
 }
 
 export interface AnswerQuestionRequest {

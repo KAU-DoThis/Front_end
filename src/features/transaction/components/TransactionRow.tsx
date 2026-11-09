@@ -64,46 +64,51 @@ export function TransactionRow({
                 unmatched && 'bg-caution-row-bg',
             )}
         >
-            <View className="flex-row items-center gap-2">
-                <AppText numberOfLines={1} className="shrink font-semibold text-15">
-                    {transaction.merchantOrPayee ?? '알 수 없는 거래'}
-                </AppText>
-                {badge && (
-                    <View className={cn('rounded-8 px-2 py-0.5', badge.container)}>
-                        <AppText className={cn('font-semibold text-12', badge.text)}>
-                            {badge.label}
-                        </AppText>
-                    </View>
-                )}
-                <AmountText
-                    amount={signedAmount}
-                    tone={transaction.direction === 'IN' ? 'up' : 'default'}
-                    showSign={transaction.direction === 'IN'}
-                    showUnit={false}
-                    className="ml-auto text-15"
-                />
-            </View>
-            <View className="flex-row items-center gap-3">
-                <AppText numberOfLines={1} className="flex-1 text-12 text-ink-sub">
-                    {getSubtitle(transaction)}
-                    {transaction.contextTag && (
-                        <AppText className="text-12 text-primary-700">{`  ${transaction.contextTag}`}</AppText>
+            {/* 쓴 돈에서 뺀 거래(체크카드 결제의 은행 쪽 등)는 내용만 흐리게 보여준다. */}
+            <View className={cn('gap-1', transaction.isExcluded && 'opacity-40')}>
+                <View className="flex-row items-center gap-2">
+                    <AppText numberOfLines={1} className="shrink font-semibold text-15">
+                        {transaction.merchantOrPayee ?? '알 수 없는 거래'}
+                    </AppText>
+                    {badge && (
+                        <View className={cn('rounded-8 px-2 py-0.5', badge.container)}>
+                            <AppText className={cn('font-semibold text-12', badge.text)}>
+                                {badge.label}
+                            </AppText>
+                        </View>
                     )}
-                </AppText>
-                {transaction.block && (
-                    <View className="flex-row items-center gap-1.5">
-                        <View
-                            className="h-2 w-2 rounded-[3px]"
-                            style={{
-                                backgroundColor: getWaterColor(
-                                    transaction.block.color,
-                                    transaction.block.status,
-                                ),
-                            }}
-                        />
-                        <AppText className="text-12 text-ink-sub">{transaction.block.name}</AppText>
-                    </View>
-                )}
+                    <AmountText
+                        amount={signedAmount}
+                        tone={transaction.direction === 'IN' ? 'up' : 'default'}
+                        showSign={transaction.direction === 'IN'}
+                        showUnit={false}
+                        className="ml-auto text-15"
+                    />
+                </View>
+                <View className="flex-row items-center gap-3">
+                    <AppText numberOfLines={1} className="flex-1 text-12 text-ink-sub">
+                        {getSubtitle(transaction)}
+                        {transaction.contextTag && (
+                            <AppText className="text-12 text-primary-700">{`  ${transaction.contextTag}`}</AppText>
+                        )}
+                    </AppText>
+                    {transaction.block && (
+                        <View className="flex-row items-center gap-1.5">
+                            <View
+                                className="h-2 w-2 rounded-[3px]"
+                                style={{
+                                    backgroundColor: getWaterColor(
+                                        transaction.block.color,
+                                        transaction.block.status,
+                                    ),
+                                }}
+                            />
+                            <AppText className="text-12 text-ink-sub">
+                                {transaction.block.name}
+                            </AppText>
+                        </View>
+                    )}
+                </View>
             </View>
             {transaction.status === 'PENDING' && (
                 <AppText className="text-12 text-ink-sub">

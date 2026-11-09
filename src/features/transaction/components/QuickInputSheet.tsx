@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { cn } from '@/lib/cn';
-import { formatAmount, formatDayHeader } from '@/lib/format';
+import { formatDayHeader, formatWon } from '@/lib/format';
 import { AppText } from '@/shared/components/ui/AppText';
 import { getWaterColor } from '@/shared/components/ui/BlockBeaker';
 import { BottomSheet, BottomSheetTextInput } from '@/shared/components/ui/BottomSheet';
@@ -120,9 +120,7 @@ function SavePreviewCard({
                         금액을 숫자로 같이 적어주세요
                     </AppText>
                 ) : (
-                    <AppText className="font-semibold text-15">
-                        {formatAmount(preview.amount)}
-                    </AppText>
+                    <AppText className="font-semibold text-15">{formatWon(preview.amount)}</AppText>
                 )}
             </PreviewRow>
             <PreviewRow label="내용">
@@ -311,6 +309,7 @@ export function QuickInputSheet({ isOpen, onClose }: QuickInputSheetProps) {
             onClose={handleClose}
             title="빠른 입력"
             description="현금처럼 자동으로 안 잡히는 지출을 적어요"
+            scrollable
         >
             <AppText className="mt-1 text-13 leading-[19px] text-ink-sub">
                 한 줄로 적어주세요

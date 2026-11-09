@@ -25,8 +25,6 @@ const MOCK_MONTH = '2026-10';
 const MOCK_TODAY = '2026-10-14';
 /** 한 번에 보내는 날 수 (이전 거래 더 보기 확인용) */
 const DAYS_PER_PAGE = 4;
-/** 필터 없이 처음 볼 때 쓴 돈은 시안 숫자다. (목업에 없는 이전 거래까지 포함한 값) */
-const MOCK_TOTAL_SPENT = 588_000;
 
 const LIVING: TransactionBlock = { blockId: 1, name: '생활비', color: 'i', status: 'CAUTION' };
 
@@ -58,6 +56,7 @@ const base = {
     status: 'CONFIRMED',
     review: null,
     block: LIVING,
+    isExcluded: false,
 } as const;
 
 const createTransactions = (): MockTransaction[] => [
@@ -156,6 +155,88 @@ const createTransactions = (): MockTransaction[] => [
         },
         linkedAccountId: null,
     },
+    // 10월 초 거래. 목록 합계가 시안의 쓴 돈(588,000원)과 같아지도록 둔다.
+    {
+        ...base,
+        transactionId: 110,
+        occurredAt: '2026-10-09T18:30:00',
+        amount: 64_000,
+        merchantOrPayee: '이마트 마포점',
+        categoryName: '생활/생필품',
+        linkedAccountId: 3,
+    },
+    {
+        ...base,
+        transactionId: 111,
+        occurredAt: '2026-10-08T08:12:00',
+        amount: 50_000,
+        merchantOrPayee: '티머니 충전',
+        categoryName: '교통',
+        linkedAccountId: 1,
+    },
+    {
+        ...base,
+        transactionId: 112,
+        occurredAt: '2026-10-07T20:45:00',
+        amount: 28_000,
+        merchantOrPayee: '배달의민족',
+        categoryName: '배달/외식',
+        linkedAccountId: 1,
+    },
+    {
+        ...base,
+        transactionId: 113,
+        occurredAt: '2026-10-06T19:10:00',
+        amount: 32_000,
+        merchantOrPayee: 'CGV 홍대',
+        categoryName: '문화/여가',
+        linkedAccountId: 3,
+    },
+    {
+        ...base,
+        transactionId: 114,
+        occurredAt: '2026-10-05T14:20:00',
+        amount: 12_000,
+        merchantOrPayee: '다이소 합정점',
+        categoryName: '생활/생필품',
+        linkedAccountId: 3,
+    },
+    {
+        ...base,
+        transactionId: 115,
+        occurredAt: '2026-10-04T10:05:00',
+        amount: 6_500,
+        merchantOrPayee: '스타벅스 합정점',
+        categoryName: '카페/간식',
+        linkedAccountId: 1,
+    },
+    {
+        ...base,
+        transactionId: 116,
+        occurredAt: '2026-10-03T16:40:00',
+        amount: 89_000,
+        merchantOrPayee: '무신사',
+        categoryName: '쇼핑',
+        linkedAccountId: 3,
+    },
+    {
+        ...base,
+        transactionId: 117,
+        occurredAt: '2026-10-02T09:00:00',
+        amount: 55_000,
+        merchantOrPayee: 'SKT 통신요금',
+        categoryName: '통신',
+        linkedAccountId: 2,
+    },
+    {
+        ...base,
+        transactionId: 118,
+        occurredAt: '2026-10-01T09:00:00',
+        amount: 89_500,
+        merchantOrPayee: '관리비',
+        categoryName: '주거',
+        linkedAccountId: 2,
+    },
 ];
 
 const ALLOCATIONS: Record<string, TransactionDay['allocation']> = {
@@ -244,9 +325,6 @@ const sumSpent = (items: MockTransaction[]) =>
         .filter(({ direction }) => direction === 'OUT')
         .reduce((sum, { amount }) => sum + amount, 0);
 
-/** 시안의 쓴 돈 중 목업 목록에 없는 이전 거래 몫. 목록 합계에 더해 유지·삭제·빠른 입력이 합계에 반영되게 한다. */
-const UNLISTED_SPENT = MOCK_TOTAL_SPENT - sumSpent(createTransactions());
-
 let transactions = createTransactions();
 let pendingQuestion: ContextQuestion | null = QUESTION;
 
@@ -265,7 +343,7 @@ const lastDayOfMonth = (month: string) => {
 
 export function getTransactionListMock(
     params: TransactionListParams,
-    cursor: string | null,
+    page: number,
 ): TransactionListPage {
     const month = params.month ?? MOCK_MONTH;
     const isCurrentMonth = month === MOCK_MONTH;
@@ -283,7 +361,8 @@ export function getTransactionListMock(
     );
 
     const isScoped = params.accountId !== null || params.blockId !== null;
-    const spentAmount = sumSpent(scoped) + (!isScoped && isCurrentMonth ? UNLISTED_SPENT : 0);
+    // 목록에 있는 거래로만 계산해 유지·삭제·빠른 입력이 합계에 그대로 반영된다.
+    const spentAmount = sumSpent(scoped);
 
     // 날짜별로 묶는다. 블록 배분은 상태·계좌 필터가 없을 때만 보여준다.
     const byDate = new Map<string, MockTransaction[]>();
@@ -313,7 +392,7 @@ export function getTransactionListMock(
             allocation: showAllocation ? (ALLOCATIONS[date] ?? null) : null,
         }));
 
-    const start = cursor === null ? 0 : Number(cursor);
+    const start = page * DAYS_PER_PAGE;
     const end = start + DAYS_PER_PAGE;
 
     return {
@@ -339,7 +418,7 @@ export function getTransactionListMock(
         agentQuestion: isCurrentMonth ? pendingQuestion : null,
         filterOptions: FILTER_OPTIONS,
         days: allDays.slice(start, end),
-        nextCursor: end < allDays.length ? String(end) : null,
+        hasNext: end < allDays.length,
     };
 }
 

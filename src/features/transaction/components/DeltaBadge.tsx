@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 
 import { cn } from '@/lib/cn';
-import { formatAmount } from '@/lib/format';
+import { formatWon } from '@/lib/format';
 import { AppText } from '@/shared/components/ui/AppText';
 
 interface DeltaBadgeProps {
@@ -14,7 +14,7 @@ interface DeltaBadgeProps {
 /** 지출 증감 칩 (모서리 8 · 12 SemiBold). 지출이 늘어나는 건 내 돈이 줄어드는 쪽이라 빨강이다. */
 export function DeltaBadge({ diffAmount, diffPercent }: DeltaBadgeProps) {
     const isIncrease = diffAmount > 0;
-    const text = `${isIncrease ? '▲' : '▼'} ${formatAmount(Math.abs(diffAmount), { showUnit: false })}`;
+    const text = `${isIncrease ? '▲' : '▼'} ${formatWon(Math.abs(diffAmount), { showUnit: false })}`;
 
     return (
         <View

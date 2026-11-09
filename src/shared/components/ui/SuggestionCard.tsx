@@ -56,14 +56,16 @@ export function SuggestionCard({
                 isChat ? 'flex-1' : 'pb-5',
             )}
         >
-            {isChat
-                ? title && <AppText className="font-bold text-12 text-primary-700">{title}</AppText>
-                : title && (
-                      <View className="flex-row items-center gap-2">
-                          {mascot}
-                          <AppText className="font-bold text-13 text-primary-700">{title}</AppText>
-                      </View>
-                  )}
+            {isChat ? (
+                title ? (
+                    <AppText className="font-bold text-12 text-primary-700">{title}</AppText>
+                ) : null
+            ) : title ? (
+                <View className="flex-row items-center gap-2">
+                    {mascot}
+                    <AppText className="font-bold text-13 text-primary-700">{title}</AppText>
+                </View>
+            ) : null}
             {!isChat && !title ? (
                 <View className="flex-row items-start gap-3">
                     {mascot}
