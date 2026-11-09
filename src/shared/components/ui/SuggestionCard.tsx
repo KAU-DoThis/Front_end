@@ -13,8 +13,11 @@ export interface SuggestionAction {
 }
 
 interface SuggestionCardProps {
-    /** 말풍선 첫 줄 (예: 제안, 왜 주의인가요?) */
-    title: string;
+    /**
+     * 말풍선 첫 줄 (예: 제안, 왜 주의인가요?)
+     * inline에서 생략하면 마스코트를 본문 왼쪽에 둔다. (시안 11 소비 분석 절약 제안)
+     */
+    title?: string;
     /** 본문. 금액 등을 굵게 하려면 AppText를 섞어 넘긴다. */
     message: ReactNode;
     /** 왼쪽부터 순서대로 그린다. (최대 2개) */
@@ -39,6 +42,12 @@ export function SuggestionCard({
     className,
 }: SuggestionCardProps) {
     const isChat = variant === 'chat';
+    const mascot = (
+        <Mascot
+            showLabel={false}
+            className="h-7 w-7 rounded-12 border border-primary-600 bg-white"
+        />
+    );
 
     const bubble = (
         <View
@@ -48,19 +57,27 @@ export function SuggestionCard({
             )}
         >
             {isChat ? (
-                <AppText className="font-bold text-12 text-primary-700">{title}</AppText>
-            ) : (
+                title ? (
+                    <AppText className="font-bold text-12 text-primary-700">{title}</AppText>
+                ) : null
+            ) : title ? (
                 <View className="flex-row items-center gap-2">
-                    <Mascot
-                        showLabel={false}
-                        className="h-7 w-7 rounded-12 border border-primary-600 bg-white"
-                    />
+                    {mascot}
                     <AppText className="font-bold text-13 text-primary-700">{title}</AppText>
                 </View>
+            ) : null}
+            {!isChat && !title ? (
+                <View className="flex-row items-start gap-3">
+                    {mascot}
+                    <AppText className="flex-1 text-15 leading-[23px]">{message}</AppText>
+                </View>
+            ) : (
+                <AppText
+                    className={cn('text-15 leading-[23px]', title && (isChat ? 'mt-1' : 'mt-2'))}
+                >
+                    {message}
+                </AppText>
             )}
-            <AppText className={cn('text-15 leading-[23px]', isChat ? 'mt-1' : 'mt-2')}>
-                {message}
-            </AppText>
             {actions.length > 0 && (
                 <View className={cn('flex-row gap-2', isChat ? 'mt-4' : 'mt-3')}>
                     {actions.map((action) => (

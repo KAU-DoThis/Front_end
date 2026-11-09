@@ -54,7 +54,7 @@ export function FixedDetailContent({ detail }: { detail: FixedBlockDetail }) {
                         : undefined
                 }
                 moreLabel="납부 기록 전체 보기"
-                moreHref="/transactions"
+                moreHref={{ pathname: '/transactions', params: { blockId: block.blockId } }}
             >
                 {detail.payments.map((payment, index) => (
                     <ListRow

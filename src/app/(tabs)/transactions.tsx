@@ -1,3 +1,3 @@
-import { TransactionListScreen } from '@/features/transaction/screens/TransactionListScreen';
+import { TransactionsScreen } from '@/features/transaction/screens/TransactionsScreen';
 
-export default TransactionListScreen;
+export default TransactionsScreen;

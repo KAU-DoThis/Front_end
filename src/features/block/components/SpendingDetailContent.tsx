@@ -77,7 +77,7 @@ export function SpendingDetailContent({ detail, onFillFromOther }: SpendingDetai
             <BlockDetailList
                 title="최근 거래"
                 moreLabel={`${block.name} 거래 전체 보기`}
-                moreHref="/transactions"
+                moreHref={{ pathname: '/transactions', params: { blockId: block.blockId } }}
             >
                 {detail.recentTransactions.map((transaction, index) => (
                     <ListRow

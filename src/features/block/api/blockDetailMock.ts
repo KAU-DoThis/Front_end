@@ -11,12 +11,17 @@ function homeBlock(blockId: number) {
     return block;
 }
 
-/** 오늘 기준 n일 전 hh:mm (로컬 시간 ISO) — '오늘 12:41', '어제 23:04'처럼 보이게 */
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+/**
+ * 한국 날짜 기준 n일 전 hh:mm (서버처럼 오프셋 없는 한국 시간) — '오늘 12:41', '어제 23:04'처럼 보이게
+ * 휴대폰 시간대가 달라도 formatRelativeDateTime(한국 날짜 비교)과 같은 날로 맞도록 한국 시간으로 계산한다.
+ */
 function daysAgo(days: number, hour: number, minute: number) {
-    const date = new Date();
-    date.setDate(date.getDate() - days);
+    const date = new Date(Date.now() + KST_OFFSET_MS);
+    date.setUTCDate(date.getUTCDate() - days);
     const pad = (value: number) => String(value).padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(hour)}:${pad(minute)}:00`;
+    return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}T${pad(hour)}:${pad(minute)}:00`;
 }
 
 /**
