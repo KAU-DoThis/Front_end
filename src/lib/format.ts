@@ -44,9 +44,7 @@ export function formatMonth(date: string) {
  */
 export function formatRelativeDateTime(dateTime: string, now: Date = new Date()) {
     const date = new Date(dateTime);
-    const startOfDay = (value: Date) =>
-        new Date(value.getFullYear(), value.getMonth(), value.getDate()).getTime();
-    const dayDiff = Math.round((startOfDay(now) - startOfDay(date)) / 86_400_000);
+    const dayDiff = getDayDiff(date, now);
     const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 
     if (dayDiff === 0) {
@@ -56,4 +54,28 @@ export function formatRelativeDateTime(dateTime: string, now: Date = new Date())
         return `어제 ${time}`;
     }
     return `${date.getMonth() + 1}월 ${date.getDate()}일`;
+}
+
+/**
+ * 날짜만 상대 표시로 바꾼다. (초불이가 한 일)
+ * 오늘 → "오늘", 어제 → "어제", 그 전 → "10월 12일"
+ */
+export function formatRelativeDay(dateTime: string, now: Date = new Date()) {
+    const date = new Date(dateTime);
+    const dayDiff = getDayDiff(date, now);
+
+    if (dayDiff === 0) {
+        return '오늘';
+    }
+    if (dayDiff === 1) {
+        return '어제';
+    }
+    return `${date.getMonth() + 1}월 ${date.getDate()}일`;
+}
+
+/** 두 시각이 달력 날짜로 며칠 차이인지 (now − date) */
+function getDayDiff(date: Date, now: Date) {
+    const startOfDay = (value: Date) =>
+        new Date(value.getFullYear(), value.getMonth(), value.getDate()).getTime();
+    return Math.round((startOfDay(now) - startOfDay(date)) / 86_400_000);
 }
