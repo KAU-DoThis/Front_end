@@ -7,9 +7,9 @@ import type { BlockHome } from '@/features/block/types/blockHome';
  */
 export const BLOCK_HOME_MOCK: BlockHome = {
     totalAssets: 4_577_000,
+    unreadNotificationCount: 1,
     balanceUpdatedAt: '2026-10-14T09:00:00',
-    todayAvailable: 52_700,
-    todayBasis: { blockName: '생활비', balance: 950_000, remainingDays: 18 },
+    todayGuide: { available: 52_700, blockName: '생활비', balance: 950_000, remainingDays: 18 },
     accounts: [
         {
             linkedAccountId: 1,

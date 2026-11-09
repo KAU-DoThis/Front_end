@@ -9,15 +9,8 @@ export interface BlockHome {
     totalAssets: number;
     /** 총 자산 기준 시각 — 계좌 잔액 갱신 시각 중 가장 오래된 값 (ISO 8601, 없으면 null) */
     balanceUpdatedAt: string | null;
-    /** 오늘 쓸 수 있는 돈 */
-    todayAvailable: number;
-    /** 오늘 쓸 수 있는 돈의 근거가 된 사용형 블록 */
-    todayBasis: {
-        blockName: string;
-        balance: number;
-        /** 기간 끝까지 남은 날 */
-        remainingDays: number;
-    };
+    /** 오늘 쓸 수 있는 돈. 기본 사용형 블록이 없거나 기간이 지났으면 null */
+    todayGuide: TodayGuide | null;
     /** 연동 계좌·카드 (총 자산 카드에서 넘겨 본다, 01-1) */
     accounts: LinkedAccountSummary[];
     /** 에이전트 배너 (없으면 null) */
@@ -30,6 +23,18 @@ export interface BlockHome {
      */
     nextExpectedIncome: NextExpectedIncome | null;
     blocks: HomeBlock[];
+    /** 읽지 않은 알림 수 (헤더 알림 점). 알림함이 붙기 전까지 서버가 0으로 준다. */
+    unreadNotificationCount: number;
+}
+
+/** 오늘 쓸 수 있는 돈과 그 근거가 된 기본 사용형 블록 */
+export interface TodayGuide {
+    /** 오늘 쓸 수 있는 돈 = 잔액 ÷ 남은 일수 (서버 계산) */
+    available: number;
+    blockName: string;
+    balance: number;
+    /** 기간 끝까지 남은 날 (오늘 포함) */
+    remainingDays: number;
 }
 
 /** linked_accounts.type */

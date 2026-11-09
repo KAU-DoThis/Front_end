@@ -276,9 +276,12 @@ function applyBalance(block: HomeBlock, diff: number, recovers: boolean) {
             available,
             remaining: available - detail.today.spent,
         };
-        if (block.isDefault) {
-            BLOCK_HOME_MOCK.todayAvailable = available;
-            BLOCK_HOME_MOCK.todayBasis = { ...BLOCK_HOME_MOCK.todayBasis, balance: block.balance };
+        if (block.isDefault && BLOCK_HOME_MOCK.todayGuide) {
+            BLOCK_HOME_MOCK.todayGuide = {
+                ...BLOCK_HOME_MOCK.todayGuide,
+                available,
+                balance: block.balance,
+            };
         }
     }
     if (detail?.type === 'GOAL') {
@@ -366,16 +369,17 @@ export function transferBlockMock(request: TransferRequest): TransferResponse {
             status: to.status,
             version: versionOf(to.blockId),
         },
-        dailyGuide: defaultBlock
-            ? {
-                  todayAvailable: BLOCK_HOME_MOCK.todayAvailable,
-                  todayRemaining:
-                      BLOCK_HOME_MOCK.todayAvailable -
-                      (BLOCK_DETAIL_MOCK[defaultBlock.blockId]?.type === 'SPENDING'
-                          ? spendingSpentToday(defaultBlock.blockId)
-                          : 0),
-              }
-            : null,
+        dailyGuide:
+            defaultBlock && BLOCK_HOME_MOCK.todayGuide
+                ? {
+                      todayAvailable: BLOCK_HOME_MOCK.todayGuide.available,
+                      todayRemaining:
+                          BLOCK_HOME_MOCK.todayGuide.available -
+                          (BLOCK_DETAIL_MOCK[defaultBlock.blockId]?.type === 'SPENDING'
+                              ? spendingSpentToday(defaultBlock.blockId)
+                              : 0),
+                  }
+                : null,
         scheduledReturn:
             request.autoReturn.enabled && income
                 ? {

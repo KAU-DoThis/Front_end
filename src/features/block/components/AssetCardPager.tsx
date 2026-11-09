@@ -54,13 +54,19 @@ export function AssetCardPager({ home }: AssetCardPagerProps) {
                     label={`연동 계좌 ${home.accounts.length}개의 총 자산`}
                     updatedAt={home.balanceUpdatedAt}
                     amount={home.totalAssets}
+                    // 기본 사용형 블록이 없거나 기간이 지났으면 서버가 값을 주지 않아 영역을 숨긴다.
                     footer={
-                        <>
-                            <SubAmount label="오늘 쓸 수 있는 돈" amount={home.todayAvailable} />
-                            <AppText className="text-right text-12 leading-[18px] text-primary-100">
-                                {`${home.todayBasis.blockName} ${formatAmount(home.todayBasis.balance)}\n남은 ${home.todayBasis.remainingDays}일 기준`}
-                            </AppText>
-                        </>
+                        home.todayGuide && (
+                            <>
+                                <SubAmount
+                                    label="오늘 쓸 수 있는 돈"
+                                    amount={home.todayGuide.available}
+                                />
+                                <AppText className="text-right text-12 leading-[18px] text-primary-100">
+                                    {`${home.todayGuide.blockName} ${formatAmount(home.todayGuide.balance)}\n남은 ${home.todayGuide.remainingDays}일 기준`}
+                                </AppText>
+                            </>
+                        )
                     }
                 />
                 {home.accounts.map((account) => (

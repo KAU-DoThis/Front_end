@@ -28,7 +28,7 @@ export function BlockHomeScreen() {
 
     return (
         <Screen edges={['top']}>
-            <HomeHeader hasUnreadNotification />
+            <HomeHeader hasUnreadNotification={(home?.unreadNotificationCount ?? 0) > 0} />
             {isPending ? (
                 <View className="flex-1 items-center justify-center">
                     <ActivityIndicator color={colors.primary[700]} />

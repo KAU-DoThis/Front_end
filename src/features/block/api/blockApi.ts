@@ -1,5 +1,6 @@
 import type { BlockDetail } from '@/features/block/types/blockDetail';
 import type { BlockHome } from '@/features/block/types/blockHome';
+import type { HomeResponse } from '@/features/block/types/homeResponse';
 import type {
     BlockSetupPreview,
     BlockSetupProposal,
@@ -16,6 +17,7 @@ import { USE_MOCK } from '@/lib/mock';
 
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
+import { toBlockHome } from './blockHomeMapper';
 import { BLOCK_SETUP_PROPOSAL_MOCK, mockBlockSetupPreview } from './blockSetupMock';
 import { simulateTransferMock, transferBlockMock } from './blockTransferMock';
 
@@ -39,11 +41,18 @@ function mockResponse<T>(create: () => T): Promise<T> {
 }
 
 /**
- * 홈 화면 데이터
- * 백엔드 홈 API가 정해지면 아래처럼 바꾼다. (화면·훅은 그대로)
- * request<BlockHome>({ method: 'GET', url: '/home' })
+ * 홈 화면 데이터. 서버 응답을 화면용 BlockHome으로 바꿔서 준다.
+ * 목업 모드(USE_MOCK)에서는 목업을 준다. 서버 홈의 블록 ID는 상세·자금 이동 목업에 없어서,
+ * 그 화면을 확인하거나 시연할 때는 목업 모드로 본다.
+ * TODO: 블록 상세(v4)·자금 이동(#17) API가 붙으면 목업과 함께 지운다.
  */
-export const getBlockHome = (): Promise<BlockHome> => mockResponse(() => BLOCK_HOME_MOCK);
+export const getBlockHome = async (): Promise<BlockHome> => {
+    if (USE_MOCK) {
+        return mockResponse(() => BLOCK_HOME_MOCK);
+    }
+    const response = await request<HomeResponse>({ method: 'GET', url: '/home' });
+    return toBlockHome(response);
+};
 
 /**
  * 블록 상세 (목업에 없는 블록은 null — 상세 화면이 준비 중으로 보여준다)
