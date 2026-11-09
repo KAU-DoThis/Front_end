@@ -98,8 +98,9 @@ interface SavePreviewCardProps {
     preview: QuickInputPreview;
     date: string;
     block: QuickInputBlock;
-    onPressDate: () => void;
-    onPressBlock: () => void;
+    /** 없으면 날짜·블록 줄을 누를 수 없다. (미리보기가 지금 적힌 내용과 다를 때) */
+    onPressDate?: () => void;
+    onPressBlock?: () => void;
 }
 
 /** 이렇게 저장할게요 (금액 · 내용 · 날짜 · 카테고리 · 블록) */
@@ -135,7 +136,7 @@ function SavePreviewCard({
                     {preview.memo ?? '현금 지출'}
                 </AppText>
             </PreviewRow>
-            <PreviewRow label="날짜" onPress={onPressDate}>
+            <PreviewRow label="날짜" onPress={onPressDate} hasChevron>
                 <AppText className="font-semibold text-15">
                     {formatDayHeader(date, preview.today)}
                 </AppText>
@@ -151,7 +152,7 @@ function SavePreviewCard({
                     {preview.categoryName ?? '분류 없음'}
                 </AppText>
             </PreviewRow>
-            <PreviewRow label="블록" isLast onPress={onPressBlock}>
+            <PreviewRow label="블록" isLast onPress={onPressBlock} hasChevron>
                 <BlockName block={block} />
                 {block.isDefault && <AppText className="text-12 text-ink-sub">기본 블록</AppText>}
             </PreviewRow>
@@ -231,8 +232,9 @@ export function QuickInputSheet({ isOpen, onClose }: QuickInputSheetProps) {
     const canSave = amount !== null;
 
     // 다시 적어서 서버가 나눈 날짜·블록이 바뀌면, 그 전에 직접 고른 값은 버린다.
-    const parsedDate = preview?.date;
-    const parsedBlockId = preview?.block.blockId;
+    // 지금 적힌 내용의 미리보기로만 비교한다. (이전 내용의 미리보기로 고른 값을 지우지 않도록)
+    const parsedDate = isPreviewCurrent ? preview.date : undefined;
+    const parsedBlockId = isPreviewCurrent ? preview.block.blockId : undefined;
     useEffect(() => {
         if (parsedDate === undefined || parsedBlockId === undefined) return;
         clearStalePicks({ date: parsedDate, blockId: parsedBlockId });
@@ -359,8 +361,9 @@ export function QuickInputSheet({ isOpen, onClose }: QuickInputSheetProps) {
                         preview={preview}
                         date={date}
                         block={block}
-                        onPressDate={() => setPicking('date')}
-                        onPressBlock={() => setPicking('block')}
+                        // 미리보기가 지금 적힌 내용과 다르면 고르지 못하게 한다. (고른 값이 이전 내용 기준으로 저장되지 않도록)
+                        onPressDate={isPreviewCurrent ? () => setPicking('date') : undefined}
+                        onPressBlock={isPreviewCurrent ? () => setPicking('block') : undefined}
                     />
                 </View>
             )}
