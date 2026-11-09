@@ -9,6 +9,8 @@ export function useLoginMutation() {
 
     return useMutation({
         mutationFn: login,
-        onSuccess: ({ accessToken, refreshToken }) => saveTokens(accessToken, refreshToken),
+        // 온보딩을 마치지 않은 계정인지 이메일로 확인하므로 같이 넘긴다.
+        onSuccess: ({ accessToken, refreshToken }, { email }) =>
+            saveTokens(accessToken, refreshToken, { email }),
     });
 }
