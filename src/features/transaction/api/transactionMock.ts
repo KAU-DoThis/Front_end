@@ -25,7 +25,7 @@ const MOCK_MONTH = '2026-10';
 const MOCK_TODAY = '2026-10-14';
 /** 한 번에 보내는 날 수 (이전 거래 더 보기 확인용) */
 const DAYS_PER_PAGE = 4;
-/** 필터 없이 볼 때 쓴 돈은 시안 숫자를 쓴다. (목업에 없는 이전 거래까지 포함한 값) */
+/** 필터 없이 처음 볼 때 쓴 돈은 시안 숫자다. (목업에 없는 이전 거래까지 포함한 값) */
 const MOCK_TOTAL_SPENT = 588_000;
 
 const LIVING: TransactionBlock = { blockId: 1, name: '생활비', color: 'i', status: 'CAUTION' };
@@ -239,6 +239,14 @@ const CATEGORY_BY_CODE: Record<string, string> = {
     SPLIT: '나눠서 냄',
 };
 
+const sumSpent = (items: MockTransaction[]) =>
+    items
+        .filter(({ direction }) => direction === 'OUT')
+        .reduce((sum, { amount }) => sum + amount, 0);
+
+/** 시안의 쓴 돈 중 목업 목록에 없는 이전 거래 몫. 목록 합계에 더해 유지·삭제·빠른 입력이 합계에 반영되게 한다. */
+const UNLISTED_SPENT = MOCK_TOTAL_SPENT - sumSpent(createTransactions());
+
 let transactions = createTransactions();
 let pendingQuestion: ContextQuestion | null = QUESTION;
 
@@ -261,7 +269,8 @@ export function getTransactionListMock(
 ): TransactionListPage {
     const month = params.month ?? MOCK_MONTH;
     const isCurrentMonth = month === MOCK_MONTH;
-    const inMonth = isCurrentMonth ? transactions : [];
+    // 빠른 입력은 지난달 날짜로도 넣을 수 있으니 거래 날짜로 고른다.
+    const inMonth = transactions.filter((item) => item.occurredAt.startsWith(month));
 
     // 계좌·블록은 합계까지 바꾸고, 상태 칩은 목록만 거른다.
     const scoped = inMonth.filter(
@@ -274,13 +283,7 @@ export function getTransactionListMock(
     );
 
     const isScoped = params.accountId !== null || params.blockId !== null;
-    const spentAmount = isScoped
-        ? scoped
-              .filter(({ direction }) => direction === 'OUT')
-              .reduce((sum, { amount }) => sum + amount, 0)
-        : isCurrentMonth
-          ? MOCK_TOTAL_SPENT
-          : 0;
+    const spentAmount = sumSpent(scoped) + (!isScoped && isCurrentMonth ? UNLISTED_SPENT : 0);
 
     // 날짜별로 묶는다. 블록 배분은 상태·계좌 필터가 없을 때만 보여준다.
     const byDate = new Map<string, MockTransaction[]>();

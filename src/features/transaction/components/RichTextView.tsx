@@ -1,3 +1,4 @@
+import { cn } from '@/lib/cn';
 import { AppText } from '@/shared/components/ui/AppText';
 
 import type { RichText } from '@/features/transaction/types/transaction';
@@ -13,7 +14,7 @@ export function RichTextView({ parts, className }: RichTextViewProps) {
     return (
         <AppText className={className}>
             {parts.map(({ text, isBold }, index) => (
-                <AppText key={index} className={isBold ? `font-bold ${className}` : className}>
+                <AppText key={index} className={cn(className, isBold && 'font-bold')}>
                     {text}
                 </AppText>
             ))}

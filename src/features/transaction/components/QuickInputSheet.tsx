@@ -31,6 +31,10 @@ const MAX_TEXT_LENGTH = 40;
 const resolvePicked = <T,>(picked: PickedValue<T> | null, parsed: T) =>
     picked && picked.parsed === parsed ? picked.value : parsed;
 
+/** 저장할 수 있는 금액: 1원 이상 원 단위 정수 */
+const isSavableAmount = (amount: number | null): amount is number =>
+    amount !== null && Number.isSafeInteger(amount) && amount > 0;
+
 interface PreviewRowProps {
     label: string;
     /** 마지막 줄(블록)은 아래 선이 없다. */
@@ -205,6 +209,7 @@ export function QuickInputSheet({ isOpen, onClose }: QuickInputSheetProps) {
     const setPicking = useQuickInputStore((state) => state.setPicking);
     const setPickedDate = useQuickInputStore((state) => state.setPickedDate);
     const setPickedBlockId = useQuickInputStore((state) => state.setPickedBlockId);
+    const clearStalePicks = useQuickInputStore((state) => state.clearStalePicks);
     const resetDraft = useQuickInputStore((state) => state.reset);
     const trimmedText = text.trim();
     const debouncedText = useDebouncedValue(trimmedText, PREVIEW_DEBOUNCE_MS);
@@ -222,8 +227,16 @@ export function QuickInputSheet({ isOpen, onClose }: QuickInputSheetProps) {
         debouncedText === trimmedText &&
         previewQuery.isSuccess &&
         !previewQuery.isPlaceholderData;
-    const amount = isPreviewCurrent ? preview.amount : null;
+    const amount = isPreviewCurrent && isSavableAmount(preview.amount) ? preview.amount : null;
     const canSave = amount !== null;
+
+    // 다시 적어서 서버가 나눈 날짜·블록이 바뀌면, 그 전에 직접 고른 값은 버린다.
+    const parsedDate = preview?.date;
+    const parsedBlockId = preview?.block.blockId;
+    useEffect(() => {
+        if (parsedDate === undefined || parsedBlockId === undefined) return;
+        clearStalePicks({ date: parsedDate, blockId: parsedBlockId });
+    }, [parsedDate, parsedBlockId, clearStalePicks]);
 
     const date = preview ? resolvePicked(pickedDate, preview.date) : null;
     const blockId = preview ? resolvePicked(pickedBlockId, preview.block.blockId) : null;

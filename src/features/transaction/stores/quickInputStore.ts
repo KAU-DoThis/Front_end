@@ -20,6 +20,8 @@ interface QuickInputState {
     setPicking: (picking: 'date' | 'block' | null) => void;
     setPickedDate: (pickedDate: PickedValue<string>) => void;
     setPickedBlockId: (pickedBlockId: PickedValue<number>) => void;
+    /** 서버가 나눈 값이 고를 때와 달라졌으면 고른 값을 버린다. (나중에 원래 값으로 돌아와도 되살리지 않는다) */
+    clearStalePicks: (parsed: { date: string; blockId: number }) => void;
     reset: () => void;
 }
 
@@ -47,6 +49,13 @@ export const useQuickInputStore = create<QuickInputState>((set) => ({
 
     setPickedBlockId(pickedBlockId) {
         set({ pickedBlockId, picking: null });
+    },
+
+    clearStalePicks({ date, blockId }) {
+        set((state) => ({
+            pickedDate: state.pickedDate?.parsed === date ? state.pickedDate : null,
+            pickedBlockId: state.pickedBlockId?.parsed === blockId ? state.pickedBlockId : null,
+        }));
     },
 
     reset() {
