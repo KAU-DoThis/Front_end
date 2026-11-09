@@ -15,7 +15,7 @@ import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
 /**
  * 블록 객체(v4)를 화면 블록으로 바꾼다.
  * - 색은 서버가 대문자(I)로 주고 화면 토큰은 소문자(i)라 바꾼다.
- * - 물 높이는 capacity(월 배분액·목표 금액·납부액)가 없으면 null로 와서 가득 찬 것으로 본다.
+ * - 물 높이는 capacity(월 배분액·목표 금액·납부액)가 없으면 null로 온다. (아래 fillRate 참고)
  * - 화면의 남은 일수(daysUntilPay)는 고정지출형 납부일 기준이라, 목표형 dDay는 쓰지 않는다.
  * - 규칙은 화면 타입이 아직 예전 snake_case 키라 옮겨 담는다.
  * TODO: 화면 Block 타입을 v4로 바꾸면 규칙 변환을 지운다. (온보딩 블록 구성 요청도 같이 바꿔야 함)
@@ -43,7 +43,8 @@ function toHomeBlock(block: BlockResponse): HomeBlock {
         displayOrder: block.displayOrder,
         categories: block.categories,
         color: block.color.toLowerCase() as BlockColor,
-        fillRate: block.fillRate ?? 100,
+        // capacity가 없으면 서버가 비율을 주지 않는다. 잔액이 있으면 가득, 없으면 빈 비커로 그린다.
+        fillRate: block.fillRate ?? (block.balance > 0 ? 100 : 0),
         daysUntilPay: block.type === 'FIXED' ? block.dDay : null,
     };
 }
