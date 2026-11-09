@@ -95,7 +95,9 @@ function AgentButton({ badgeCount }: { badgeCount: number }) {
             className="h-17 flex-1 items-center justify-end pb-1.5 active:opacity-80"
             onPress={() => router.push('/agent')}
         >
-            <Mascot className="absolute -top-6.5 h-14.5 w-14.5" />
+            <View className="absolute -top-6.5 h-14.5 w-14.5 items-center justify-center rounded-full border border-primary-100 bg-primary-50">
+                <Mascot className="h-11 w-11" />
+            </View>
             {badgeCount > 0 && (
                 <View className="absolute -top-7 left-1/2 ml-3 h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-primary-700 px-1">
                     <AppText className="font-bold text-11 text-white">{badgeCount}</AppText>

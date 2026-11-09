@@ -191,10 +191,7 @@ export function SetupBlockCard({
                 <View className="gap-4 px-4 pb-1">
                     {block.reason && (
                         <View className="flex-row gap-2 rounded-12 bg-surface-app p-3">
-                            <Mascot
-                                className="h-5.5 w-5.5 rounded-full border bg-white"
-                                showLabel={false}
-                            />
+                            <Mascot className="h-5.5 w-5.5 rounded-full border border-primary-100 bg-white" />
                             <ReasonText reason={block.reason} />
                         </View>
                     )}

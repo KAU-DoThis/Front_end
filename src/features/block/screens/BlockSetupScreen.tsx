@@ -194,7 +194,7 @@ export function BlockSetupScreen({
                 keyboardShouldPersistTaps="handled"
             >
                 <View className="flex-row items-center gap-3">
-                    <Mascot className="h-16 w-16 rounded-full border-2" />
+                    <Mascot className="h-16 w-16 rounded-full border-2 border-primary-100 bg-primary-50" />
                     <AppText className="flex-1 font-bold text-24">
                         {'3개월 거래를 보고\n이렇게 나눠봤어요'}
                     </AppText>

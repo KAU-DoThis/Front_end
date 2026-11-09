@@ -4,11 +4,10 @@ import { cn } from '@/lib/cn';
 import { formatAmount } from '@/lib/format';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Icon } from '@/shared/components/ui/Icon';
+import { MiniBeaker } from '@/shared/components/ui/MiniBeaker';
 import { colors } from '@/styles/tokens';
 
 import type { HomeBlock } from '@/features/block/types/block';
-
-import { MiniBeaker } from './MiniBeaker';
 
 interface TransferBlockCardProps {
     /** 보내는 블록 · 받는 블록 */

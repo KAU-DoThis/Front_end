@@ -19,7 +19,7 @@ interface MiniBeakerProps {
 const clamp = (rate: number) => Math.min(100, Math.max(0, rate));
 
 /**
- * 03-2 블록 카드의 작은 비커 (36 × 44)
+ * 작은 비커 (36 × 44) — 03-2 블록 카드, 초불이의 방 블록 목록
  * 물결 없이 평평한 물 + 이동 전 높이 점선.
  */
 export function MiniBeaker({ color, status, fillRate, beforeFillRate }: MiniBeakerProps) {

@@ -103,3 +103,20 @@ export function formatRelativeDateTime(dateTime: string, now: Date = new Date())
     }
     return `${month}월 ${day}일`;
 }
+
+/**
+ * 날짜만 상대 표시로 바꾼다. (초불이가 한 일) 오늘·어제는 한국 날짜 기준이다.
+ * 오늘 → "오늘", 어제 → "어제", 그 전 → "10월 12일"
+ */
+export function formatRelativeDay(dateTime: string, now: Date = new Date()) {
+    const { dayNumber, month, day } = toDateTimeParts(dateTime);
+    const dayDiff = toKstDayNumber(now) - dayNumber;
+
+    if (dayDiff === 0) {
+        return '오늘';
+    }
+    if (dayDiff === 1) {
+        return '어제';
+    }
+    return `${month}월 ${day}일`;
+}

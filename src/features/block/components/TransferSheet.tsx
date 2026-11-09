@@ -8,6 +8,7 @@ import { BottomSheet, BottomSheetTextInput } from '@/shared/components/ui/Bottom
 import { Button } from '@/shared/components/ui/Button';
 import { Icon } from '@/shared/components/ui/Icon';
 import { ImpactList } from '@/shared/components/ui/ImpactList';
+import { MiniBeaker } from '@/shared/components/ui/MiniBeaker';
 import { Toggle } from '@/shared/components/ui/Toggle';
 import { ApiError } from '@/shared/types/api';
 import { colors, fontFamily } from '@/styles/tokens';
@@ -18,7 +19,6 @@ import { useTransferBlockMutation } from '@/features/block/api/useTransferBlockM
 import type { HomeBlock } from '@/features/block/types/block';
 import { TRANSFER_ERROR_CODE, type TransferResponse } from '@/features/block/types/blockTransfer';
 
-import { MiniBeaker } from './MiniBeaker';
 import { TransferBlockCard } from './TransferBlockCard';
 
 /** 금액 입력 최대 자릿수 (999억 원) */
