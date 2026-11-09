@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { USE_MOCK } from '@/lib/mock';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 
 import { simulateTransfer } from './blockApi';
@@ -25,7 +26,12 @@ export function useSimulateTransferQuery({
     amount,
 }: SimulateTransferParams) {
     const debouncedAmount = useDebouncedValue(amount, SIMULATE_DEBOUNCE_MS);
-    const enabled = fromBlockId !== null && toBlockId !== null && fromBlockId !== toBlockId;
+    // 서버는 금액이 1원 이상이어야 받는다(@Positive). 0원으로는 [부족한 만큼] 값을 먼저 받을 수 없어서,
+    // 서버 모드에서는 금액을 넣은 뒤부터 요청한다.
+    // TODO: 서버가 0원 미리보기를 받아 주면 이 조건을 지운다.
+    const canRequestAmount = USE_MOCK || debouncedAmount > 0;
+    const enabled =
+        fromBlockId !== null && toBlockId !== null && fromBlockId !== toBlockId && canRequestAmount;
 
     const query = useQuery({
         queryKey: blockKeys.simulate(fromBlockId ?? 0, toBlockId ?? 0, debouncedAmount),
