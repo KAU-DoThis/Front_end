@@ -70,6 +70,10 @@ export const login = (body: LoginRequest) => {
     return request<LoginResponse>({ method: 'POST', url: '/auth/login', data: body });
 };
 
+/** 로그아웃. 서버의 리프레시 토큰을 폐기한다. */
+export const logout = (refreshToken: string) =>
+    request<null>({ method: 'POST', url: '/auth/logout', data: { refreshToken } });
+
 /**
  * 회원가입·이메일 인증 API가 아직 없어서, 목업 모드(USE_MOCK)에서는 이메일과 상관없이 모두 목업으로 처리한다.
  * TODO: 회원가입·이메일 인증 API가 붙으면 목업과 함께 제거한다.

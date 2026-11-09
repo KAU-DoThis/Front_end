@@ -1,4 +1,4 @@
-import { AxiosError, create, type AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, create, type AxiosRequestConfig } from 'axios';
 
 import {
     ApiError,
@@ -17,9 +17,12 @@ if (!API_URL) {
     );
 }
 
+const BASE_URL = `${API_URL}/api/v1`;
+const TIMEOUT_MS = 10_000;
+
 export const apiClient = create({
-    baseURL: `${API_URL}/api/v1`,
-    timeout: 10_000,
+    baseURL: BASE_URL,
+    timeout: TIMEOUT_MS,
     headers: { 'Content-Type': 'application/json' },
 });
 
@@ -29,6 +32,80 @@ apiClient.interceptors.request.use(async (config) => {
         config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
+});
+
+/** 재발급까지 실패해 다시 로그인해야 할 때 부른다. authStore가 등록한다. */
+let handleSessionExpired: (() => void) | null = null;
+
+export function setSessionExpiredHandler(handler: () => void) {
+    handleSessionExpired = handler;
+}
+
+interface TokenPair {
+    accessToken: string;
+    refreshToken: string;
+}
+
+/**
+ * 리프레시 토큰은 한 번만 쓸 수 있어서, 여러 요청이 동시에 401을 받아도 재발급은 한 번만 보낸다.
+ * 진행 중인 재발급이 있으면 그 결과를 같이 기다린다.
+ */
+let reissuePromise: Promise<string | null> | null = null;
+
+async function reissueAccessToken(): Promise<string | null> {
+    const refreshToken = await tokenStorage.getRefreshToken();
+    if (!refreshToken) {
+        return null;
+    }
+    try {
+        // 인터셉터가 붙은 apiClient로 보내면 재발급 실패(401)가 다시 재발급을 부르므로 기본 axios로 보낸다.
+        const { data } = await axios.post<ApiResponse<TokenPair>>(
+            `${BASE_URL}/auth/reissue`,
+            { refreshToken },
+            { timeout: TIMEOUT_MS },
+        );
+        if (!data.isSuccess) {
+            return null;
+        }
+        await tokenStorage.setTokens(data.result.accessToken, data.result.refreshToken);
+        return data.result.accessToken;
+    } catch {
+        return null;
+    }
+}
+
+function reissueOnce() {
+    reissuePromise ??= reissueAccessToken().finally(() => {
+        reissuePromise = null;
+    });
+    return reissuePromise;
+}
+
+type RetryableConfig = AxiosRequestConfig & { _retried?: boolean };
+
+/** 로그인·가입·재발급처럼 토큰 없이 부르는 경로는 401이어도 재발급하지 않는다. (로그인 401은 비밀번호 오류) */
+function isAuthPath(url: string | undefined) {
+    return url?.startsWith('/auth/') ?? false;
+}
+
+apiClient.interceptors.response.use(undefined, async (error: unknown) => {
+    if (!(error instanceof AxiosError) || error.response?.status !== 401) {
+        throw error;
+    }
+    const config = error.config as RetryableConfig | undefined;
+    if (!config || config._retried || isAuthPath(config.url)) {
+        throw error;
+    }
+
+    const accessToken = await reissueOnce();
+    if (!accessToken) {
+        handleSessionExpired?.();
+        throw error;
+    }
+
+    config._retried = true;
+    config.headers = { ...config.headers, Authorization: `Bearer ${accessToken}` };
+    return apiClient.request(config);
 });
 
 /**
