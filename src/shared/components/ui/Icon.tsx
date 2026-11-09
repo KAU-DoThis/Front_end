@@ -58,6 +58,16 @@ const ICONS = {
             'M15.8333 10.8333C16.2936 10.8333 16.6667 10.4602 16.6667 10C16.6667 9.53976 16.2936 9.16667 15.8333 9.16667C15.3731 9.16667 15 9.53976 15 10C15 10.4602 15.3731 10.8333 15.8333 10.8333Z',
         ],
     },
+    close: {
+        viewBox: 24,
+        strokeWidth: 2,
+        paths: ['M6 6L18 18M18 6L6 18'],
+    },
+    'arrow-up': {
+        viewBox: 24,
+        strokeWidth: 2,
+        paths: ['M12 19V5M6 11L12 5L18 11'],
+    },
 } as const;
 
 export type IconName = keyof typeof ICONS;
