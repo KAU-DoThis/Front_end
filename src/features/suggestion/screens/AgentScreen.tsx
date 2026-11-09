@@ -21,7 +21,11 @@ import { colors } from '@/styles/tokens';
 import { useAgentRoomQuery } from '@/features/suggestion/api/useAgentRoomQuery';
 import { AgentHomePanel } from '@/features/suggestion/components/AgentHomePanel';
 import { AgentRoomHeader } from '@/features/suggestion/components/AgentRoomHeader';
-import type { RoomObject } from '@/features/suggestion/components/roomLayout';
+import {
+    ROOM_LABEL_SAFE_HEIGHT,
+    ROOM_SIZE,
+    type RoomObject,
+} from '@/features/suggestion/components/roomLayout';
 import { RoomScene, type RoomObjectLabel } from '@/features/suggestion/components/RoomScene';
 import { ShelfPanel } from '@/features/suggestion/components/ShelfPanel';
 import type { AgentRoom } from '@/features/suggestion/types/agentRoom';
@@ -36,20 +40,28 @@ export function AgentScreen() {
     return (
         <Screen edges={['top']} className="bg-primary-900">
             <StatusBar style="light" />
-            {isPending ? (
-                <View className="flex-1 items-center justify-center">
-                    <ActivityIndicator color={colors.white} />
-                </View>
-            ) : isError ? (
-                <View className="flex-1 items-center justify-center gap-4 px-5">
-                    <AppText className="text-primary-100">초불이의 방을 불러오지 못했어요</AppText>
-                    <Button
-                        title="다시 시도"
-                        variant="secondary"
-                        size="sm"
-                        onPress={() => refetch()}
-                    />
-                </View>
+            {isPending || isError ? (
+                // 불러오지 못해도 방을 닫을 수 있게 상단 바는 그대로 둔다.
+                <>
+                    <AgentRoomHeader leading="close" onPressLeading={() => router.back()} />
+                    <View className="flex-1 items-center justify-center gap-4 px-5">
+                        {isPending ? (
+                            <ActivityIndicator color={colors.white} />
+                        ) : (
+                            <>
+                                <AppText className="text-primary-100">
+                                    초불이의 방을 불러오지 못했어요
+                                </AppText>
+                                <Button
+                                    title="다시 시도"
+                                    variant="secondary"
+                                    size="sm"
+                                    onPress={() => refetch()}
+                                />
+                            </>
+                        )}
+                    </View>
+                </>
             ) : (
                 <AgentRoomContent room={room} />
             )}
@@ -61,6 +73,8 @@ function AgentRoomContent({ room }: { room: AgentRoom }) {
     const insets = useSafeAreaInsets();
     const [spot, setSpot] = useState<RoomSpot>('center');
     const { width: screenWidth } = useWindowDimensions();
+    const [areaHeight, setAreaHeight] = useState(0);
+    const [mainPanelHeight, setMainPanelHeight] = useState(0);
     const isAtShelf = spot === 'shelf';
 
     // 선반 앞에서 Android 뒤로 가기를 누르면 방을 닫지 않고 방 가운데로 돌아온다.
@@ -102,6 +116,14 @@ function AgentRoomContent({ room }: { room: AgentRoom }) {
         Keyboard.dismiss();
     };
 
+    // 화면이 낮으면 이름표가 하단 패널에 가려지지 않도록 방을 줄인다. (선반 목록은 더 길어도 기준은 기본 패널)
+    const roomAreaTop = 8;
+    const visibleHeight = areaHeight - roomAreaTop - mainPanelHeight;
+    const roomWidth =
+        areaHeight > 0 && mainPanelHeight > 0
+            ? Math.min(screenWidth, (visibleHeight * ROOM_SIZE.width) / ROOM_LABEL_SAFE_HEIGHT)
+            : screenWidth;
+
     const hasAttention = room.attentionBlockCount > 0;
     const subtitle = isAtShelf
         ? '블록 선반'
@@ -124,10 +146,13 @@ function AgentRoomContent({ room }: { room: AgentRoom }) {
                 onPressLeading={isAtShelf ? () => setSpot('center') : () => router.back()}
             />
 
-            {/* 방은 항상 화면 너비로 그리고, 아래 패널이 방 아랫부분을 덮는다. (시안과 같은 겹침) */}
-            <View className="flex-1 pt-2">
+            {/* 방은 화면 너비로 그리고 아래 패널이 방 바닥을 덮는다. (시안과 같은 겹침) */}
+            <View
+                className="flex-1 items-center pt-2"
+                onLayout={(event) => setAreaHeight(event.nativeEvent.layout.height)}
+            >
                 <RoomScene
-                    width={screenWidth}
+                    width={roomWidth}
                     spot={spot}
                     pose="basic"
                     halo="healthy"
@@ -139,6 +164,9 @@ function AgentRoomContent({ room }: { room: AgentRoom }) {
                 <View
                     className="absolute bottom-0 left-0 right-0 rounded-t-24 bg-surface-app px-5 pt-5"
                     style={{ paddingBottom: insets.bottom + 16 }}
+                    onLayout={(event) => {
+                        if (!isAtShelf) setMainPanelHeight(event.nativeEvent.layout.height);
+                    }}
                 >
                     {isAtShelf ? (
                         <ShelfPanel

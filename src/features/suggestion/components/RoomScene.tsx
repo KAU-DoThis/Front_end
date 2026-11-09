@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, View } from 'react-native';
 import Animated, {
     Easing,
@@ -19,6 +19,7 @@ import {
     CHARACTER_BOX,
     CHARACTER_PARTS,
     CHARACTER_SPOTS,
+    LABEL_EDGE_INSET,
     OBJECT_SPOTS,
     ROOM_SIZE,
     SHELF_BUBBLE,
@@ -75,6 +76,13 @@ export function RoomScene({
 }: RoomSceneProps) {
     const unit = width / ROOM_SIZE.width;
     const isAtShelf = spot === 'shelf';
+    // 글자를 키우거나 화면이 좁아도 이름표가 방 밖으로 나가지 않게 실제 너비를 재서 안쪽으로 당긴다.
+    const [labelWidths, setLabelWidths] = useState<Partial<Record<RoomObject, number>>>({});
+    const getLabelLeft = (object: RoomObject) => {
+        const left = OBJECT_SPOTS[object].x * unit;
+        const labelWidth = labelWidths[object] ?? 0;
+        return Math.max(LABEL_EDGE_INSET, Math.min(left, width - LABEL_EDGE_INSET - labelWidth));
+    };
 
     const progress = useSharedValue(isAtShelf ? 1 : 0);
     useEffect(() => {
@@ -162,8 +170,16 @@ export function RoomScene({
                         key={item.object}
                         style={{
                             position: 'absolute',
-                            left: OBJECT_SPOTS[item.object].x * unit,
+                            left: getLabelLeft(item.object),
                             top: OBJECT_SPOTS[item.object].y * unit,
+                        }}
+                        onLayout={(event) => {
+                            const measured = event.nativeEvent.layout.width;
+                            setLabelWidths((prev) =>
+                                prev[item.object] === measured
+                                    ? prev
+                                    : { ...prev, [item.object]: measured },
+                            );
                         }}
                     >
                         <Animated.View

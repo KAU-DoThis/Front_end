@@ -6,7 +6,8 @@ import { Icon } from '@/shared/components/ui/Icon';
 import { colors } from '@/styles/tokens';
 
 interface AgentRoomHeaderProps {
-    subtitle: string;
+    /** 제목 아래 한 줄 (불러오는 중에는 비운다) */
+    subtitle?: string;
     /** 주의할 블록이 있으면 노란 글씨 */
     isAttention?: boolean;
     /** close: 방에서 나가기 (아래에서 올라온 화면) · back: 방 안 다른 상태에서 돌아오기 */

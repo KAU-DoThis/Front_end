@@ -4,6 +4,15 @@
  */
 export const ROOM_SIZE = { width: 390, height: 372 } as const;
 
+/**
+ * 이름표가 모두 들어가는 방 그림 높이. 이 아래(바닥 끝)는 하단 패널에 가려도 된다.
+ * 화면이 낮으면 이 높이가 패널 위에 다 보이도록 방 전체를 줄인다.
+ */
+export const ROOM_LABEL_SAFE_HEIGHT = 340;
+
+/** 이름표를 화면 가장자리에서 띄우는 거리 (px) */
+export const LABEL_EDGE_INSET = 8;
+
 /** 초불이 묶음(후광·그림자·캐릭터)의 기준 상자 = 후광 크기 */
 export const CHARACTER_BOX = 151;
 
