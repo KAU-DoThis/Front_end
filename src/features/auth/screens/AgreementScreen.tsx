@@ -64,7 +64,8 @@ export function AgreementScreen() {
         setIsLoggingIn(true);
         setHasLoginError(false);
         try {
-            await login(tokens.accessToken, tokens.refreshToken);
+            // 가입 직후라 온보딩(계좌 연동 → 블록 구성)으로 보낸다.
+            await login(tokens.accessToken, tokens.refreshToken, { email, isNewUser: true });
         } catch {
             setHasLoginError(true);
         } finally {
@@ -90,8 +91,7 @@ export function AgreementScreen() {
                 })),
             },
             {
-                // 로그인 상태가 바뀌면 루트 레이아웃이 홈으로 보내고, 가입 입력값은 SignUpScreen이 지운다.
-                // TODO: 프로필 입력·온보딩 화면이 생기면 가입 후 그쪽으로 보낸다. (인증 응답 메시지: 프로필을 입력해주세요)
+                // 로그인 상태가 바뀌면 루트 레이아웃이 온보딩으로 보내고, 가입 입력값은 SignUpScreen이 지운다.
                 onSuccess: (tokens) => {
                     setSignedUpTokens(tokens);
                     completeLogin(tokens);

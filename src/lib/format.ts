@@ -18,9 +18,12 @@ export function formatAmount(
     return `${sign}${Math.abs(amount).toLocaleString('ko-KR')}${unit}`;
 }
 
-/** 원 단위 정수 금액을 표시용 문자열로 변환한다. (252000 → "252,000원") */
-export function formatWon(amount: number) {
-    return formatAmount(amount);
+/**
+ * 원 단위 정수 금액을 표시용 문자열로 변환한다. (252000 → "252,000원")
+ * "원"을 따로 보여주는 곳(금액 입력칸 등)은 { showUnit: false }로 숫자만 받는다.
+ */
+export function formatWon(amount: number, options?: FormatAmountOptions) {
+    return formatAmount(amount, options);
 }
 
 /**

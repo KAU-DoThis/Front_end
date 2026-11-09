@@ -1,14 +1,22 @@
 import type { BlockDetail } from '@/features/block/types/blockDetail';
 import type { BlockHome } from '@/features/block/types/blockHome';
 import type {
+    BlockSetupPreview,
+    BlockSetupProposal,
+    BlockSetupRequest,
+} from '@/features/block/types/blockSetup';
+import type {
     SimulateRequest,
     SimulateResponse,
     TransferRequest,
     TransferResponse,
 } from '@/features/block/types/blockTransfer';
+import { request } from '@/lib/apiClient';
+import { USE_MOCK } from '@/lib/mock';
 
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
+import { BLOCK_SETUP_PROPOSAL_MOCK, mockBlockSetupPreview } from './blockSetupMock';
 import { simulateTransferMock, transferBlockMock } from './blockTransferMock';
 
 /** 목업 응답 지연 (로딩 상태 확인용) */
@@ -57,3 +65,41 @@ export const simulateTransfer = (body: SimulateRequest): Promise<SimulateRespons
  */
 export const transferBlock = (body: TransferRequest): Promise<TransferResponse> =>
     mockResponse(() => transferBlockMock(body));
+
+/**
+ * 온보딩 블록 구성 API가 아직 없어서 목업 모드(USE_MOCK)에서는 목업으로 처리한다.
+ * TODO: API가 붙으면 목업과 함께 제거한다. (URL은 지금은 가정값)
+ */
+const USE_BLOCK_SETUP_MOCK = USE_MOCK;
+
+/** 로딩 상태도 확인할 수 있게 약간 지연한다. */
+const delay = <T>(value: () => T, ms: number) =>
+    new Promise<T>((resolve) => setTimeout(() => resolve(value()), ms));
+
+/** 연동한 3개월 거래로 나눈 AI 블록 제안 */
+export const getBlockSetupProposal = () => {
+    if (USE_BLOCK_SETUP_MOCK) {
+        return delay(() => BLOCK_SETUP_PROPOSAL_MOCK, 800);
+    }
+    return request<BlockSetupProposal>({ method: 'GET', url: '/onboarding/block-proposal' });
+};
+
+/** 고친 블록으로 합계·하루 쓸 돈·경고를 계산한다. (저장하지 않는다) */
+export const previewBlockSetup = (body: BlockSetupRequest) => {
+    if (USE_BLOCK_SETUP_MOCK) {
+        return delay(() => mockBlockSetupPreview(body), 200);
+    }
+    return request<BlockSetupPreview>({
+        method: 'POST',
+        url: '/onboarding/block-preview',
+        data: body,
+    });
+};
+
+/** 블록 구성을 확정해 블록을 만든다. 성공하면 온보딩이 끝난다. */
+export const createSetupBlocks = (body: BlockSetupRequest) => {
+    if (USE_BLOCK_SETUP_MOCK) {
+        return delay<null>(() => null, 800);
+    }
+    return request<null>({ method: 'POST', url: '/onboarding/blocks', data: body });
+};
