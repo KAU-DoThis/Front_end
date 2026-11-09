@@ -19,26 +19,26 @@ interface AgreementItem {
 
 /** 화면에 보여줄 약관 순서. 요청에도 이 순서대로 담는다. */
 export const AGREEMENT_ITEMS: AgreementItem[] = [
-    { type: 'TERMS_OF_SERVICE', label: '서비스 이용약관', isRequired: true, hasDetail: true },
-    { type: 'PRIVACY_POLICY', label: '개인정보 수집·이용', isRequired: true, hasDetail: true },
+    { type: 'TERMS', label: '서비스 이용약관', isRequired: true, hasDetail: true },
+    { type: 'PRIVACY', label: '개인정보 수집·이용', isRequired: true, hasDetail: true },
     {
-        type: 'FINANCIAL_INFO_INQUIRY',
+        type: 'CODEF',
         label: '금융거래정보 조회',
         description: 'CODEF를 통해 연동한 계좌·카드의 잔액과 거래 내역만 조회해요',
         isRequired: true,
         hasDetail: true,
     },
-    { type: 'AGE_OVER_14', label: '만 14세 이상이에요', isRequired: true, hasDetail: false },
+    { type: 'AGE_14', label: '만 14세 이상이에요', isRequired: true, hasDetail: false },
     { type: 'MARKETING', label: '혜택·소식 알림 받기', isRequired: false, hasDetail: true },
 ];
 
 export type AgreementState = Record<AgreementType, boolean>;
 
 export const INITIAL_AGREEMENT_STATE: AgreementState = {
-    TERMS_OF_SERVICE: false,
-    PRIVACY_POLICY: false,
-    FINANCIAL_INFO_INQUIRY: false,
-    AGE_OVER_14: false,
+    TERMS: false,
+    PRIVACY: false,
+    CODEF: false,
+    AGE_14: false,
     MARKETING: false,
 };
 

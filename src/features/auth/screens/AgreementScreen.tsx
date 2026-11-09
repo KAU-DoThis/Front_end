@@ -2,19 +2,27 @@ import { Redirect, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { BackHandler, Image, ScrollView, View } from 'react-native';
 
+import { useSaveSignUpConsentsMutation } from '@/features/auth/api/useSaveSignUpConsentsMutation';
 import { useSignUpMutation } from '@/features/auth/api/useSignUpMutation';
 import { AGREEMENT_ITEMS, AgreementList } from '@/features/auth/components/AgreementList';
 import { BackButton } from '@/features/auth/components/BackButton';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useSignUpStore } from '@/features/auth/stores/signUpStore';
-import type { SignUpResponse } from '@/features/auth/types/auth';
+import { AUTH_ERROR_CODE, type SignUpResponse } from '@/features/auth/types/auth';
 import { Screen } from '@/shared/components/layout/Screen';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Button } from '@/shared/components/ui/Button';
+import { ApiError } from '@/shared/types/api';
 
 const LOCK_ICON = require('@/assets/icons/auth-lock.png');
 
-/** 00-2 약관 동의: 동의하면 가입 요청을 보내고, 가입 응답으로 받은 토큰으로 로그인한다. */
+/** 가입 후 마무리 단계 중 실패한 곳 */
+type FinishError = 'consent' | 'login';
+
+/**
+ * 00-2 약관 동의: 동의하면 가입 요청을 보내고, 가입 응답 토큰으로 동의를 저장한 뒤 로그인한다.
+ * 로그인 상태로 바뀌면 이 화면이 사라지므로, 동의 저장은 로그인보다 먼저 한다.
+ */
 export function AgreementScreen() {
     // 화면을 나갔다 다시 들어와도 동의 선택과 가입 여부가 남도록 store에 둔다.
     const email = useSignUpStore((state) => state.email);
@@ -27,13 +35,15 @@ export function AgreementScreen() {
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
     const { mutate: signUp, isPending, error } = useSignUpMutation();
-    // 가입 요청이 끝나도(isPending=false) 토큰 저장(login)이 끝날 때까지는 다시 누르지 못하게 한다.
-    const [isLoggingIn, setIsLoggingIn] = useState(false);
-    const isSubmitting = isPending || isLoggingIn;
-    // 가입은 됐는데 토큰 저장(login)이 실패하면, 다시 누를 때 가입 요청 없이 로그인만 다시 한다.
+    const { mutateAsync: saveConsents } = useSaveSignUpConsentsMutation();
+    // 가입 요청이 끝나도(isPending=false) 동의 저장·로그인이 끝날 때까지는 다시 누르지 못하게 한다.
+    const [isFinishing, setIsFinishing] = useState(false);
+    const isSubmitting = isPending || isFinishing;
+    // 가입은 됐는데 동의 저장이나 로그인이 실패하면, 다시 누를 때 가입 요청 없이 남은 단계만 다시 한다.
     // (이미 가입된 이메일로 또 요청하면 409로 막힌다)
     const isSignedUp = signedUpTokens !== null;
-    const [hasLoginError, setHasLoginError] = useState(false);
+    const [isConsentSaved, setIsConsentSaved] = useState(false);
+    const [finishError, setFinishError] = useState<FinishError | null>(null);
 
     // 가입 요청 중에는 Android 뒤로 가기를 막는다. (도중에 나가도 요청이 끝나면 로그인되어 홈으로 튄다)
     useEffect(() => {
@@ -45,11 +55,18 @@ export function AgreementScreen() {
     const hasRequiredAgreements = AGREEMENT_ITEMS.every(
         ({ type, isRequired }) => !isRequired || agreements[type],
     );
-    const submitErrorMessage = hasLoginError
-        ? '가입은 완료됐지만 로그인하지 못했어요. 다시 눌러 주세요'
-        : error
-          ? '가입하지 못했어요. 잠시 후 다시 시도해 주세요'
-          : undefined;
+    const isDuplicatedEmail =
+        error instanceof ApiError && error.code === AUTH_ERROR_CODE.EMAIL_ALREADY_EXISTS;
+    const submitErrorMessage =
+        finishError === 'consent'
+            ? '가입은 완료됐지만 동의를 저장하지 못했어요. 다시 눌러 주세요'
+            : finishError === 'login'
+              ? '가입은 완료됐지만 로그인하지 못했어요. 다시 눌러 주세요'
+              : isDuplicatedEmail
+                ? '이미 가입된 이메일이에요. 로그인해 주세요'
+                : error
+                  ? '가입하지 못했어요. 잠시 후 다시 시도해 주세요'
+                  : undefined;
 
     if (isLoggedIn) {
         return null;
@@ -60,16 +77,27 @@ export function AgreementScreen() {
         return <Redirect href="/sign-up" />;
     }
 
-    const completeLogin = async (tokens: SignUpResponse) => {
-        setIsLoggingIn(true);
-        setHasLoginError(false);
+    const finishSignUp = async (tokens: SignUpResponse) => {
+        setIsFinishing(true);
+        setFinishError(null);
         try {
-            // 가입 직후라 온보딩(계좌 연동 → 블록 구성)으로 보낸다.
-            await login(tokens.accessToken, tokens.refreshToken, { email, isNewUser: true });
-        } catch {
-            setHasLoginError(true);
+            if (!isConsentSaved) {
+                try {
+                    await saveConsents({ agreements, accessToken: tokens.accessToken });
+                    setIsConsentSaved(true);
+                } catch {
+                    setFinishError('consent');
+                    return;
+                }
+            }
+            try {
+                // 가입 직후라 온보딩(계좌 연동 → 블록 구성)으로 보낸다.
+                await login(tokens.accessToken, tokens.refreshToken, { email, isNewUser: true });
+            } catch {
+                setFinishError('login');
+            }
         } finally {
-            setIsLoggingIn(false);
+            setIsFinishing(false);
         }
     };
 
@@ -77,24 +105,17 @@ export function AgreementScreen() {
         if (!hasRequiredAgreements || isSubmitting) return;
 
         if (signedUpTokens) {
-            completeLogin(signedUpTokens);
+            finishSignUp(signedUpTokens);
             return;
         }
 
         signUp(
-            {
-                email,
-                password,
-                agreements: AGREEMENT_ITEMS.map(({ type }) => ({
-                    type,
-                    isAgreed: agreements[type],
-                })),
-            },
+            { email, password },
             {
                 // 로그인 상태가 바뀌면 루트 레이아웃이 온보딩으로 보내고, 가입 입력값은 SignUpScreen이 지운다.
                 onSuccess: (tokens) => {
                     setSignedUpTokens(tokens);
-                    completeLogin(tokens);
+                    finishSignUp(tokens);
                 },
             },
         );

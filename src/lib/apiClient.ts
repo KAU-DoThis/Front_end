@@ -27,6 +27,10 @@ export const apiClient = create({
 });
 
 apiClient.interceptors.request.use(async (config) => {
+    // 요청에서 직접 토큰을 넣은 경우(가입 직후 동의 저장 등)는 그대로 둔다.
+    if (config.headers.Authorization) {
+        return config;
+    }
     const accessToken = await tokenStorage.getAccessToken();
     if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
