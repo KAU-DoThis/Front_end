@@ -206,6 +206,7 @@ function toBase(response: BlockDetailResponse) {
         statusReason: response.block.statusSubLabel,
         explanation: response.statusReason,
         ruleText: response.ruleText,
+        actions: response.actions,
     };
 }
 

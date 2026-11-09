@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { formatAmount, formatMonthDay } from '@/lib/format';
+import { Button } from '@/shared/components/ui/Button';
 import { Icon } from '@/shared/components/ui/Icon';
 import { ListRow } from '@/shared/components/ui/ListRow';
 import { colors } from '@/styles/tokens';
@@ -14,8 +15,14 @@ import { PaymentAlertCard, PaymentRuleCard } from './FixedPaymentCards';
 
 const won = (amount: number) => formatAmount(amount, { showUnit: false });
 
+interface FixedDetailContentProps {
+    detail: FixedBlockDetail;
+    /** '다른 블록에서 채우기' → 03-2 자금 이동 시트 */
+    onFillFromOther: () => void;
+}
+
 /** 02-2 블록 상세 · 고정지출형 (월세) */
-export function FixedDetailContent({ detail }: { detail: FixedBlockDetail }) {
+export function FixedDetailContent({ detail, onFillFromOther }: FixedDetailContentProps) {
     const { block } = detail;
     const payDay = block.rule?.pay_day;
 
@@ -43,6 +50,15 @@ export function FixedDetailContent({ detail }: { detail: FixedBlockDetail }) {
                     ]}
                 />
             </View>
+            {/* 모자랄 때 서버가 FILL_FROM_OTHER를 준다. */}
+            {detail.actions.includes('FILL_FROM_OTHER') && (
+                <Button
+                    className="mt-3"
+                    title="다른 블록에서 채우기"
+                    variant="primary"
+                    onPress={onFillFromOther}
+                />
+            )}
             {detail.matchRule && (
                 <View className="mt-3">
                     <PaymentRuleCard rule={detail.matchRule} />

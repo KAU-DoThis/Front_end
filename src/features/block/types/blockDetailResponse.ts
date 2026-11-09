@@ -1,3 +1,4 @@
+import type { BlockDetailAction } from '@/features/block/types/blockDetail';
 import type { BlockResponse } from '@/features/block/types/homeResponse';
 
 /**
@@ -9,7 +10,7 @@ export interface BlockDetailResponse {
     /** '왜 주의인가요?' 문장. 상태 판정(F-11) 전이라 지금은 항상 null */
     statusReason: string | null;
     /** 화면 버튼 (POSTPONE_DUE_DATE, PUT_WAITING_FUND, OPEN_SAVING_SUGGESTIONS, FILL_FROM_OTHER) */
-    actions: string[];
+    actions: BlockDetailAction[];
     /** 규칙 한 줄 */
     ruleText: string | null;
     /** 블록 유형(block.type)에 따라 모양이 다르다. */

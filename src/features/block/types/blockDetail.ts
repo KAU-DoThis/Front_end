@@ -4,6 +4,14 @@ import type { HomeBlock } from '@/features/block/types/block';
  * 블록 상세 화면 데이터. 서버 응답(GET /blocks/{blockId})은 blockDetailMapper에서 이 모양으로 바꾼다.
  * 블록 정보는 홈과 같은 HomeBlock, 나머지는 서버 계산 값이다.
  */
+/**
+ * 서버가 정해 주는 화면 버튼
+ * POSTPONE_DUE_DATE 목표일 미루기 · PUT_WAITING_FUND 절약분 넣기 ·
+ * OPEN_SAVING_SUGGESTIONS 절약 제안 보기 · FILL_FROM_OTHER 다른 블록에서 채우기
+ */
+export type BlockDetailAction =
+    'POSTPONE_DUE_DATE' | 'PUT_WAITING_FUND' | 'OPEN_SAVING_SUGGESTIONS' | 'FILL_FROM_OTHER';
+
 interface BlockDetailBase {
     block: HomeBlock;
     /** 상태 칩 옆 이유 (예: 소진 빠름, 2주 늦어짐) */
@@ -12,6 +20,8 @@ interface BlockDetailBase {
     explanation: string | null;
     /** 규칙 한 줄 (예: 목표 800,000 · 12월 31일 · 매달 200,000). 서버가 만들어 준다. */
     ruleText: string | null;
+    /** 보여줄 버튼. 서버가 상태에 따라 정한다. (예: 고정지출이 모자라면 FILL_FROM_OTHER) */
+    actions: BlockDetailAction[];
 }
 
 /** 블록에 걸린 거래 (transactions 테이블 기준) */
