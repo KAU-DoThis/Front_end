@@ -1,4 +1,6 @@
-import type { Block } from '@/features/block/types/block';
+import type { BlockType } from '@/features/block/types/block';
+import type { PendingMoney } from '@/features/block/types/blockHome';
+import type { Status } from '@/shared/components/ui/StatusTag';
 
 /**
  * GET /home 응답 (Back_end HomeResponse, API 명세 v4 5장)
@@ -16,12 +18,12 @@ export interface HomeResponse {
     accounts: HomeAccountItem[];
     /** 제안 배너. 아직 항상 null (제안 카드 규칙이 붙으면 채워짐) */
     suggestion: unknown;
-    /** 나눌 돈 목록. 아직 항상 빈 배열 (나눌 돈 #16이 붙으면 채워짐) */
-    waitingFunds: unknown[];
+    /** 나눌 돈. 금액이 0보다 큰 것만, 비어 있으면 영역을 숨긴다 */
+    waitingFunds: PendingMoney[];
     /** 블록 합계 + 나눌 돈 > 실제 잔액이면 true */
     overAllocated: boolean;
     /** displayOrder 순. GET /blocks와 같은 형식 */
-    blocks: Block[];
+    blocks: BlockResponse[];
     /** 마지막 동기화 시각. 계좌 중 가장 오래된 값, 계좌가 없으면 null */
     lastSyncedAt: string | null;
     unreadNotificationCount: number;
@@ -53,4 +55,54 @@ export interface HomeAccountItem {
     balance: number | null;
     /** 이번 달 이 계좌에서 쓴 돈. 아직 항상 0 (거래가 붙으면 채워짐) */
     monthSpent: number;
+}
+
+/** 블록 색 코드 (서버는 대문자) */
+export type BlockColorCode = 'I' | 'O' | 'T' | 'S' | 'Z' | 'J' | 'L';
+
+/** 블록 규칙 (v4, camelCase). 유형별로 필요한 값만 온다. */
+export interface BlockRuleResponse {
+    /** 사용형 월 배분액 */
+    monthlyAmount?: number;
+    /** 사용형 기간 시작일 (매월 n일) */
+    startDay?: number;
+    /** 목표형 월 확보 금액 */
+    monthlyTarget?: number;
+    /** 고정지출형 납부일 1~31 */
+    payDay?: number;
+    /** 고정지출형 납부액 */
+    payAmount?: number;
+    /** 고정지출형 납부 확인 조건 */
+    matchCondition?: { payee?: string | null } | null;
+}
+
+/** 블록 객체 (Back_end BlockResponse, API 명세 v4 0장) */
+export interface BlockResponse {
+    blockId: number;
+    type: BlockType;
+    name: string;
+    icon: string | null;
+    color: BlockColorCode;
+    balance: number;
+    /** 비커 크기 기준 금액. 사용형=월 배분액, 목표형=목표 금액, 고정지출형=납부액. 정하지 않았으면 null */
+    capacity: number | null;
+    /** 물 높이 0~100 = 잔액 ÷ capacity. capacity가 없으면 null */
+    fillRate: number | null;
+    isDefault: boolean;
+    targetAmount: number | null;
+    startDate: string;
+    dueDate: string | null;
+    /** 고정지출형=다음 납부일까지, 목표형=목표일까지 남은 일수. 사용형 null */
+    dDay: number | null;
+    rule: BlockRuleResponse | null;
+    status: Status;
+    /** 상태 라벨 (예: 주의) */
+    statusLabel: string;
+    /** 상태 칩 옆 짧은 이유. 없으면 null */
+    statusSubLabel: string | null;
+    displayOrder: number;
+    createdBy: 'AI' | 'USER';
+    /** 낙관적 잠금 버전. 수정·이동 요청에 그대로 보낸다 */
+    version: number;
+    categories: { categoryId: number; code: string; name: string }[];
 }

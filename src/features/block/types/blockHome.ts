@@ -75,21 +75,21 @@ export interface AgentMessage {
 }
 
 /**
- * 나눌 돈 (대기 블록). 저장 테이블이 따로 없고 서버가 모아서 내려준다.
- * - SAVING: 절약분 — saving_goals 중 status CONFIRMED (confirmed_saving)
- * - DEPOSIT: 추가 입금 — 미배분 잔액 (은행 잔액 합 − 블록 잔액 합)
+ * 나눌 돈 (대기 자금). 서버 WaitingFundResponse 그대로.
+ * 금액이 0보다 큰 것만 오고, 다 나누면 목록에서 빠진다.
  */
-export type PendingMoney =
-    | {
-          source: 'SAVING';
-          savingGoalId: number;
-          amount: number;
-          /** 절약 기간 끝 (saving_goals.end_date, yyyy-MM-dd) */
-          periodEndDate: string;
-      }
-    | {
-          source: 'DEPOSIT';
-          amount: number;
-          /** 마지막 입금 시각 (ISO 8601, 없으면 null) */
-          lastDepositAt: string | null;
-      };
+export interface PendingMoney {
+    waitingFundId: number;
+    /** SAVING 절약분 · REGULAR_INCOME 정기 입금 · EXTRA_INCOME 추가 입금 · OTHER 기타 */
+    source: 'SAVING' | 'REGULAR_INCOME' | 'EXTRA_INCOME' | 'OTHER';
+    /** 카드 위 칩 문구 (예: 절약분) */
+    label: string;
+    /** 카드 아래 설명 (예: 9월 절약 확정) */
+    description: string | null;
+    /** 남은 금액 */
+    amount: number;
+    /** 처음 금액 */
+    originalAmount: number;
+    /** ISO 8601 */
+    createdAt: string;
+}

@@ -53,8 +53,24 @@ export const BLOCK_HOME_MOCK: BlockHome = {
         body: '이번 주 배달을 2번만 줄이면 다시 안전으로 돌아와요',
     },
     pendingMoney: [
-        { source: 'SAVING', savingGoalId: 1, amount: 87_000, periodEndDate: '2026-09-30' },
-        { source: 'DEPOSIT', amount: 170_000, lastDepositAt: '2026-10-12T14:20:00' },
+        {
+            waitingFundId: 1,
+            source: 'SAVING',
+            label: '절약분',
+            description: '9월 절약 확정',
+            amount: 87_000,
+            originalAmount: 87_000,
+            createdAt: '2026-10-01T06:00:00',
+        },
+        {
+            waitingFundId: 2,
+            source: 'EXTRA_INCOME',
+            label: '추가 입금',
+            description: '10월 12일 입금',
+            amount: 170_000,
+            originalAmount: 170_000,
+            createdAt: '2026-10-12T14:20:00',
+        },
     ],
     nextExpectedIncome: { label: '월급', expectedDate: '2026-10-25' },
     blocks: [

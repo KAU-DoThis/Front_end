@@ -1,6 +1,10 @@
-import type { Block, HomeBlock } from '@/features/block/types/block';
+import type { HomeBlock } from '@/features/block/types/block';
 import type { BlockHome, LinkedAccountSummary } from '@/features/block/types/blockHome';
-import type { HomeAccountItem, HomeResponse } from '@/features/block/types/homeResponse';
+import type {
+    BlockResponse,
+    HomeAccountItem,
+    HomeResponse,
+} from '@/features/block/types/homeResponse';
 import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
 
 /**
@@ -8,61 +12,39 @@ import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
  * 서버에 아직 없는 값은 여기서 임시로 채운다. 서버가 내려주기 시작하면 이 파일만 고친다.
  */
 
-/** 블록 색 순서. 서버가 색을 내려주기 전까지 displayOrder 순으로 돌려 쓴다. */
-const BLOCK_COLOR_ORDER: BlockColor[] = ['i', 'j', 'o', 'l', 't', 's', 'z'];
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function clampPercent(value: number) {
-    return Math.min(100, Math.max(0, Math.round(value)));
-}
-
 /**
- * 물 높이 0~100 (임시 계산)
- * - 목표형: 잔액 ÷ 목표 금액
- * - 고정지출형: 잔액 ÷ 납부액
- * - 사용형: 이번 기간 배분 금액이 응답에 없어 100으로 둔다.
- * TODO: v4 블록 객체(이건하 #15·#40·#44)에 fillRate가 들어오면 서버 값을 쓴다.
+ * 블록 객체(v4)를 화면 블록으로 바꾼다.
+ * - 색은 서버가 대문자(I)로 주고 화면 토큰은 소문자(i)라 바꾼다.
+ * - 물 높이는 capacity(월 배분액·목표 금액·납부액)가 없으면 null로 와서 가득 찬 것으로 본다.
+ * - 화면의 남은 일수(daysUntilPay)는 고정지출형 납부일 기준이라, 목표형 dDay는 쓰지 않는다.
+ * - 규칙은 화면 타입이 아직 예전 snake_case 키라 옮겨 담는다.
+ * TODO: 화면 Block 타입을 v4로 바꾸면 규칙 변환을 지운다. (온보딩 블록 구성 요청도 같이 바꿔야 함)
  */
-function getFillRate(block: Block) {
-    if (block.type === 'GOAL' && block.targetAmount) {
-        return clampPercent((block.balance / block.targetAmount) * 100);
-    }
-    if (block.type === 'FIXED' && block.rule?.pay_amount) {
-        return clampPercent((block.balance / block.rule.pay_amount) * 100);
-    }
-    return 100;
-}
-
-/**
- * 고정지출형 납부일까지 남은 날 (오늘이면 0). 납부일이 이번 달에 없으면(31일 등) 말일로 본다.
- * TODO: 서버가 daysUntilPay를 내려주면 지운다.
- */
-function getDaysUntilPay(block: Block, today: Date) {
-    const payDay = block.rule?.pay_day;
-    if (block.type !== 'FIXED' || !payDay) {
-        return null;
-    }
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const payDateIn = (monthOffset: number) => {
-        const lastDay = new Date(start.getFullYear(), start.getMonth() + monthOffset + 1, 0);
-        return new Date(
-            lastDay.getFullYear(),
-            lastDay.getMonth(),
-            Math.min(payDay, lastDay.getDate()),
-        );
-    };
-    const thisMonth = payDateIn(0);
-    const next = thisMonth >= start ? thisMonth : payDateIn(1);
-    return Math.round((next.getTime() - start.getTime()) / DAY_MS);
-}
-
-function toHomeBlock(block: Block, index: number, today: Date): HomeBlock {
+function toHomeBlock(block: BlockResponse): HomeBlock {
+    const { rule } = block;
     return {
-        ...block,
-        color: BLOCK_COLOR_ORDER[index % BLOCK_COLOR_ORDER.length],
-        fillRate: getFillRate(block),
-        daysUntilPay: getDaysUntilPay(block, today),
+        blockId: block.blockId,
+        type: block.type,
+        name: block.name,
+        icon: block.icon,
+        balance: block.balance,
+        isDefault: block.isDefault,
+        targetAmount: block.targetAmount,
+        startDate: block.startDate,
+        dueDate: block.dueDate,
+        rule: rule && {
+            pay_day: rule.payDay ?? null,
+            pay_amount: rule.payAmount ?? null,
+            monthly_target: rule.monthlyTarget ?? null,
+            match_condition: rule.matchCondition?.payee ?? null,
+        },
+        status: block.status,
+        createdBy: block.createdBy,
+        displayOrder: block.displayOrder,
+        categories: block.categories,
+        color: block.color.toLowerCase() as BlockColor,
+        fillRate: block.fillRate ?? 100,
+        daysUntilPay: block.type === 'FIXED' ? block.dDay : null,
     };
 }
 
@@ -89,7 +71,7 @@ function toAccountSummary(
     };
 }
 
-export function toBlockHome(response: HomeResponse, today: Date = new Date()): BlockHome {
+export function toBlockHome(response: HomeResponse): BlockHome {
     const { dailyGuide } = response;
     const blocks = [...response.blocks].sort((a, b) => a.displayOrder - b.displayOrder);
 
@@ -107,11 +89,10 @@ export function toBlockHome(response: HomeResponse, today: Date = new Date()): B
         ),
         // TODO: 제안 카드 규칙이 붙으면 suggestion을 배너 문구로 바꾼다.
         agentMessage: null,
-        // TODO: 나눌 돈(#16)이 붙으면 waitingFunds를 바꿔 넣는다.
-        pendingMoney: [],
+        pendingMoney: response.waitingFunds,
         // 홈 응답에는 없다. (거래 목록 summary.nextExpectedIncome, 입금원 분석 전까지 null)
         nextExpectedIncome: null,
-        blocks: blocks.map((block, index) => toHomeBlock(block, index, today)),
+        blocks: blocks.map(toHomeBlock),
         unreadNotificationCount: response.unreadNotificationCount,
     };
 }
