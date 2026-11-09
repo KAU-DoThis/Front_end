@@ -51,10 +51,7 @@ export function SuggestionCard({
                 <AppText className="font-bold text-12 text-primary-700">{title}</AppText>
             ) : (
                 <View className="flex-row items-center gap-2">
-                    <Mascot
-                        showLabel={false}
-                        className="h-7 w-7 rounded-12 border border-primary-600 bg-white"
-                    />
+                    <Mascot className="h-7 w-7 rounded-12 border border-primary-600 bg-white" />
                     <AppText className="font-bold text-13 text-primary-700">{title}</AppText>
                 </View>
             )}
@@ -84,7 +81,7 @@ export function SuggestionCard({
 
     return (
         <View className={cn('flex-row items-start gap-3', className)}>
-            <Mascot showLabel={false} className="h-8 w-8 rounded-16" />
+            <Mascot className="h-8 w-8 rounded-16 bg-primary-50" />
             {bubble}
         </View>
     );
