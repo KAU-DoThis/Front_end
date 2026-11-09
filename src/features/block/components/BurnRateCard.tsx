@@ -10,22 +10,12 @@ import { colors } from '@/styles/tokens';
 import type { SpendingBlockDetail } from '@/features/block/types/blockDetail';
 
 interface BurnRateCardProps {
-    burnRate: SpendingBlockDetail['burnRate'];
-}
-
-function getPaceText(diffPercent: number) {
-    if (diffPercent > 0) {
-        return `계획보다 ${diffPercent}% 빠름`;
-    }
-    if (diffPercent < 0) {
-        return `계획보다 ${Math.abs(diffPercent)}% 느림`;
-    }
-    return '계획대로';
+    burnRate: NonNullable<SpendingBlockDetail['burnRate']>;
 }
 
 /** 소진 속도: 계획선(점선)과 실제 누적 사용(주황 실선) (시안 02) */
 export function BurnRateCard({ burnRate }: BurnRateCardProps) {
-    const { diffPercent, spentAmount, plannedAmount, totalDays, actual } = burnRate;
+    const { diffPercent, paceText, spentAmount, plannedAmount, totalDays, actual } = burnRate;
     const maxActual = Math.max(0, ...actual.map((point) => point.amount));
 
     return (
@@ -38,7 +28,7 @@ export function BurnRateCard({ burnRate }: BurnRateCardProps) {
                         diffPercent > 0 ? 'text-caution-soft-text' : 'text-primary-700',
                     )}
                 >
-                    {getPaceText(diffPercent)}
+                    {paceText}
                 </AppText>
             </View>
             <View className="mt-3">

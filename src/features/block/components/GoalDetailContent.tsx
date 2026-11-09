@@ -35,7 +35,10 @@ export function GoalDetailContent({ detail }: { detail: GoalBlockDetail }) {
             <View className="mt-3">
                 <BlockStatRow
                     stats={[
-                        { label: '이번 달 목표', value: won(monthly.target) },
+                        {
+                            label: '이번 달 목표',
+                            value: monthly.target === null ? '-' : won(monthly.target),
+                        },
                         { label: '이번 달 모음', value: won(monthly.saved) },
                         { label: '더 필요', value: won(monthly.remaining) },
                     ]}
@@ -62,18 +65,11 @@ export function GoalDetailContent({ detail }: { detail: GoalBlockDetail }) {
                     ]}
                 />
             )}
-            <View className="mt-4">
-                <InfoLine
-                    title="규칙"
-                    value={[
-                        `목표 ${won(detail.targetAmount)}`,
-                        dueDate && formatMonthDay(dueDate),
-                        block.rule?.monthly_target && `매달 ${won(block.rule.monthly_target)}`,
-                    ]
-                        .filter(Boolean)
-                        .join('  ')}
-                />
-            </View>
+            {detail.ruleText && (
+                <View className="mt-4">
+                    <InfoLine title="규칙" value={detail.ruleText} />
+                </View>
+            )}
             <BlockDetailList
                 title="들어온 돈"
                 moreLabel={`${block.name} 블록 기록 전체 보기`}
@@ -81,7 +77,8 @@ export function GoalDetailContent({ detail }: { detail: GoalBlockDetail }) {
             >
                 {detail.inflows.map((inflow, index) => (
                     <ListRow
-                        key={inflow.transferId}
+                        // 서버 기록에는 ID가 없어서 순서로 구분한다. (최근 3건, 다시 정렬하지 않음)
+                        key={`${inflow.occurredAt}-${index}`}
                         title={inflow.title}
                         subtitle={[formatMonthDay(inflow.occurredAt), inflow.note]
                             .filter(Boolean)

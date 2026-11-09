@@ -10,7 +10,8 @@ import type { FixedBlockDetail } from '@/features/block/types/blockDetail';
 
 interface RuleRowProps {
     label: string;
-    value: string;
+    /** 값이 없으면 '-' */
+    value: string | null;
     isLast?: boolean;
 }
 
@@ -23,13 +24,13 @@ function RuleRow({ label, value, isLast = false }: RuleRowProps) {
             )}
         >
             <AppText className="text-13 text-ink-sub">{label}</AppText>
-            <AppText className="font-semibold text-15">{value}</AppText>
+            <AppText className="font-semibold text-15">{value ?? '-'}</AppText>
         </View>
     );
 }
 
 interface PaymentRuleCardProps {
-    rule: FixedBlockDetail['matchRule'];
+    rule: NonNullable<FixedBlockDetail['matchRule']>;
     /** 고치기 (블록 규칙 수정 화면에서 연결) */
     onEdit?: () => void;
 }

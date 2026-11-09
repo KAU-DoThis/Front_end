@@ -1,4 +1,5 @@
 import type { BlockDetail } from '@/features/block/types/blockDetail';
+import type { BlockDetailResponse } from '@/features/block/types/blockDetailResponse';
 import type { BlockHome } from '@/features/block/types/blockHome';
 import type { HomeResponse } from '@/features/block/types/homeResponse';
 import type {
@@ -15,6 +16,7 @@ import type {
 import { request } from '@/lib/apiClient';
 import { USE_MOCK } from '@/lib/mock';
 
+import { toBlockDetail } from './blockDetailMapper';
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
 import { toBlockHome } from './blockHomeMapper';
@@ -55,11 +57,19 @@ export const getBlockHome = async (): Promise<BlockHome> => {
 };
 
 /**
- * 블록 상세 (목업에 없는 블록은 null — 상세 화면이 준비 중으로 보여준다)
- * 백엔드 상세 API가 정해지면 request<BlockDetail>({ method: 'GET', url: `/blocks/${blockId}` })
+ * 블록 상세. 서버 응답을 화면용 BlockDetail로 바꿔서 준다.
+ * 목업 모드에서 목업에 없는 블록은 null — 상세 화면이 준비 중으로 보여준다.
  */
-export const getBlockDetail = (blockId: number): Promise<BlockDetail | null> =>
-    mockResponse(() => BLOCK_DETAIL_MOCK[blockId] ?? null);
+export const getBlockDetail = async (blockId: number): Promise<BlockDetail | null> => {
+    if (USE_MOCK) {
+        return mockResponse(() => BLOCK_DETAIL_MOCK[blockId] ?? null);
+    }
+    const response = await request<BlockDetailResponse>({
+        method: 'GET',
+        url: `/blocks/${blockId}`,
+    });
+    return toBlockDetail(response);
+};
 
 /**
  * 이동·배분 미리보기 (03-2 이동 전 검증)

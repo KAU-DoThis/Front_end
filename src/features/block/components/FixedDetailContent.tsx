@@ -34,15 +34,20 @@ export function FixedDetailContent({ detail }: { detail: FixedBlockDetail }) {
             <View className="mt-3">
                 <BlockStatRow
                     stats={[
-                        { label: '다음 납부', value: formatMonthDay(detail.nextPayDate) },
+                        {
+                            label: '다음 납부',
+                            value: detail.nextPayDate ? formatMonthDay(detail.nextPayDate) : '-',
+                        },
                         { label: '납부 금액', value: won(detail.payAmount) },
                         { label: '모자란 돈', value: won(detail.shortfall) },
                     ]}
                 />
             </View>
-            <View className="mt-3">
-                <PaymentRuleCard rule={detail.matchRule} />
-            </View>
+            {detail.matchRule && (
+                <View className="mt-3">
+                    <PaymentRuleCard rule={detail.matchRule} />
+                </View>
+            )}
             <View className="mt-3">
                 <PaymentAlertCard alerts={detail.alerts} />
             </View>
@@ -58,14 +63,15 @@ export function FixedDetailContent({ detail }: { detail: FixedBlockDetail }) {
             >
                 {detail.payments.map((payment, index) => (
                     <ListRow
-                        key={payment.transactionId}
+                        // 서버 납부 기록에는 ID가 없어서 순서로 구분한다. (최근 6건, 다시 정렬하지 않음)
+                        key={`${payment.paidAt}-${index}`}
                         leading={
                             <View className="h-7 w-7 items-center justify-center rounded-12 bg-surface-neutral">
                                 <Icon name="check" size={14} color={colors.primary[700]} />
                             </View>
                         }
                         title={formatMonthDay(payment.paidAt)}
-                        subtitle={`${payment.payee}  ${payment.accountLabel}`}
+                        subtitle={[payment.payee, payment.accountLabel].filter(Boolean).join('  ')}
                         amount={-payment.amount}
                         isLast={index === detail.payments.length - 1}
                     />
