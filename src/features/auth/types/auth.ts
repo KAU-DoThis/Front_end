@@ -49,6 +49,24 @@ export interface ConsentSaveResponse {
     onboardingStep: OnboardingStep;
 }
 
+/** GET /users/me/settings (Back_end UserSettingResponse) */
+export interface UserSettings {
+    /** CONSENT → LINK → TUTORIAL → BLOCKS → DONE */
+    onboardingStep: OnboardingStep;
+    hasLinkedAccount: boolean;
+    tutorialDone: boolean;
+    /** 초기 블록 확정 여부. 초기 블록 확정 API가 바꾼다. */
+    blocksConfirmed: boolean;
+    nickname: string | null;
+    plan: 'FREE' | 'PREMIUM';
+}
+
+/** PATCH /users/me/settings — 바꿀 필드만 보낸다. */
+export interface UserSettingsUpdateRequest {
+    tutorialDone?: boolean;
+    nickname?: string;
+}
+
 /** 백엔드 가입 응답 (TokenResponse). 이 토큰으로 로그인한다. */
 export type SignUpResponse = LoginResponse;
 

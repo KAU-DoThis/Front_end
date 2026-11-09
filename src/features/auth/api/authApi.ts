@@ -8,6 +8,8 @@ import type {
     SendVerificationCodeRequest,
     SignUpRequest,
     SignUpResponse,
+    UserSettings,
+    UserSettingsUpdateRequest,
     VerifyEmailRequest,
     VerifyEmailResponse,
 } from '@/features/auth/types/auth';
@@ -207,3 +209,11 @@ export async function saveSignUpConsents(
         accessToken,
     );
 }
+
+/** 온보딩 상태 */
+export const getUserSettings = () =>
+    request<UserSettings>({ method: 'GET', url: '/users/me/settings' });
+
+/** 온보딩 상태 수정 (튜토리얼 완료 등). 바뀐 상태를 돌려준다. */
+export const updateUserSettings = (body: UserSettingsUpdateRequest) =>
+    request<UserSettings>({ method: 'PATCH', url: '/users/me/settings', data: body });
