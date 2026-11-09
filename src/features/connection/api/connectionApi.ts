@@ -3,24 +3,25 @@ import type {
     ConnectInstitutionsResponse,
 } from '@/features/connection/types/connection';
 import { request } from '@/lib/apiClient';
+import { USE_MOCK } from '@/lib/mock';
 
 /**
- * 연동 API가 아직 없어서 개발 빌드에서는 목업으로 처리한다.
+ * 연동 API가 아직 없어서 목업 모드(USE_MOCK)에서는 목업으로 처리한다.
  * TODO: 연동 API가 붙으면 목업과 함께 제거한다.
  */
-const USE_CONNECTION_MOCK = __DEV__;
+const USE_CONNECTION_MOCK = USE_MOCK;
 
 /** CODEF는 기관 응답이 느려 기본 타임아웃(10초)보다 길게 기다린다. */
 const CONNECT_TIMEOUT_MS = 60_000;
 
 /**
- * 개발 빌드 전용: 항상 연결에 실패하는 기관 (케이뱅크 · 롯데카드)
+ * 목업 모드 전용: 항상 연결에 실패하는 기관 (케이뱅크 · 롯데카드)
  * - 다른 기관과 같이 고르면: 일부 실패 → 성공한 곳만으로 블록 구성으로 넘어가고 빠진 기관 안내가 보인다.
  * - 이 기관만 고르면: 전부 실패 → 연결 화면에 남아 실패 안내가 보인다.
  */
 export const DEV_MOCK_FAILING_INSTITUTION_CODES = new Set(['0089', '0311']);
 
-/** 개발 빌드 전용: DEV_MOCK_FAILING_INSTITUTION_CODES만 실패하고 나머지는 연결된 것으로 응답한다. */
+/** 목업 모드 전용: DEV_MOCK_FAILING_INSTITUTION_CODES만 실패하고 나머지는 연결된 것으로 응답한다. */
 function mockConnectInstitutions(
     body: ConnectInstitutionsRequest,
 ): Promise<ConnectInstitutionsResponse> {

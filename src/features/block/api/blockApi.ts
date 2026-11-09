@@ -12,6 +12,7 @@ import type {
     TransferResponse,
 } from '@/features/block/types/blockTransfer';
 import { request } from '@/lib/apiClient';
+import { USE_MOCK } from '@/lib/mock';
 
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
@@ -66,10 +67,10 @@ export const transferBlock = (body: TransferRequest): Promise<TransferResponse> 
     mockResponse(() => transferBlockMock(body));
 
 /**
- * 온보딩 블록 구성 API가 아직 없어서 개발 빌드에서는 목업으로 처리한다.
+ * 온보딩 블록 구성 API가 아직 없어서 목업 모드(USE_MOCK)에서는 목업으로 처리한다.
  * TODO: API가 붙으면 목업과 함께 제거한다. (URL은 지금은 가정값)
  */
-const USE_BLOCK_SETUP_MOCK = __DEV__;
+const USE_BLOCK_SETUP_MOCK = USE_MOCK;
 
 /** 로딩 상태도 확인할 수 있게 약간 지연한다. */
 const delay = <T>(value: () => T, ms: number) =>

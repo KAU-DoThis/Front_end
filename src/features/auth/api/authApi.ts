@@ -9,10 +9,11 @@ import type {
 } from '@/features/auth/types/auth';
 import { AUTH_ERROR_CODE } from '@/features/auth/types/auth';
 import { request } from '@/lib/apiClient';
+import { USE_MOCK } from '@/lib/mock';
 import { ApiError } from '@/shared/types/api';
 
 /**
- * 개발 빌드 전용 목업 계정. 백엔드 없이 로그인 이후 화면을 확인할 때 쓴다.
+ * 목업 모드(USE_MOCK) 전용 목업 계정. 백엔드 없이 로그인 이후 화면을 확인할 때 쓴다.
  * TODO: 로그인 API가 붙으면 제거한다.
  */
 export const DEV_MOCK_ACCOUNT = {
@@ -24,7 +25,7 @@ export const DEV_MOCK_ACCOUNT = {
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 /**
- * 개발 빌드에서 목업으로 가입한 계정 (이메일 → 비밀번호).
+ * 목업 모드에서 목업으로 가입한 계정 (이메일 → 비밀번호).
  * 가입한 계정으로 다시 로그인하는 흐름을 확인할 수 있게 메모리에만 둔다. 앱을 끄면 사라진다.
  */
 const devSignedUpAccounts = new Map<string, string>();
@@ -63,17 +64,17 @@ function mockLogin(body: LoginRequest): Promise<LoginResponse> {
 }
 
 export const login = (body: LoginRequest) => {
-    if (__DEV__ && isMockLoginEmail(body.email)) {
+    if (USE_MOCK && isMockLoginEmail(body.email)) {
         return mockLogin(body);
     }
     return request<LoginResponse>({ method: 'POST', url: '/auth/login', data: body });
 };
 
 /**
- * 회원가입·이메일 인증 API가 아직 없어서, 개발 빌드에서는 이메일과 상관없이 모두 목업으로 처리한다.
+ * 회원가입·이메일 인증 API가 아직 없어서, 목업 모드(USE_MOCK)에서는 이메일과 상관없이 모두 목업으로 처리한다.
  * TODO: 회원가입·이메일 인증 API가 붙으면 목업과 함께 제거한다.
  */
-const USE_SIGN_UP_MOCK = __DEV__;
+const USE_SIGN_UP_MOCK = USE_MOCK;
 
 /** 목업 인증 코드. 이 코드를 넣으면 인증에 성공한다. */
 export const DEV_MOCK_VERIFICATION_CODE = '123456';
@@ -92,7 +93,7 @@ function delay<T>(run: () => T): Promise<T> {
 }
 
 /**
- * 개발 빌드 전용 회원가입·이메일 인증 목업. 실제 메일은 보내지 않고, 인증번호는 DEV_MOCK_VERIFICATION_CODE다.
+ * 목업 모드 전용 회원가입·이메일 인증 목업. 실제 메일은 보내지 않고, 인증번호는 DEV_MOCK_VERIFICATION_CODE다.
  * 목업 계정(test@example.com)과 목업으로 가입한 이메일은 이미 가입된 이메일로 응답해 중복 오류를 확인할 수 있다.
  * TODO: 회원가입·이메일 인증 API가 붙으면 제거한다.
  */
