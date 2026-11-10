@@ -91,8 +91,8 @@ export function AgreementScreen() {
                 }
             }
             try {
-                // 가입 직후라 온보딩(계좌 연동 → 블록 구성)으로 보낸다.
-                await login(tokens.accessToken, tokens.refreshToken, { email, isNewUser: true });
+                // 서버 온보딩 상태(동의 저장 후 LINK)를 보고 온보딩(계좌 연동 → 블록 구성)으로 보낸다.
+                await login(tokens.accessToken, tokens.refreshToken);
             } catch {
                 setFinishError('login');
             }

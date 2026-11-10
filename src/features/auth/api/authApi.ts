@@ -16,6 +16,7 @@ import type {
 import { AUTH_ERROR_CODE } from '@/features/auth/types/auth';
 import { request } from '@/lib/apiClient';
 import { USE_MOCK } from '@/lib/mock';
+import { tokenStorage } from '@/lib/tokenStorage';
 import { ApiError } from '@/shared/types/api';
 
 /**
@@ -36,6 +37,42 @@ const normalizeEmail = (email: string) => email.trim().toLowerCase();
  */
 const devSignedUpAccounts = new Map<string, string>();
 
+/** 목업 로그인·가입이 주는 액세스 토큰. 저장된 토큰이 이 값이면 목업 세션이다. */
+const DEV_MOCK_ACCESS_TOKEN = 'dev-mock-access-token';
+
+/** 지금 세션이 목업 로그인인지. 앱을 다시 켜도 알 수 있게 저장된 토큰으로 판단한다. */
+async function isMockSession() {
+    return USE_MOCK && (await tokenStorage.getAccessToken()) === DEV_MOCK_ACCESS_TOKEN;
+}
+
+/**
+ * 목업 모드 전용 온보딩 상태. 목업으로 가입한 계정은 온보딩을 마칠 때까지 LINK 단계다.
+ * 메모리에만 두므로 앱을 끄면 사라지고, 그때는 온보딩을 마친 것으로 본다.
+ */
+const devOnboardingPendingEmails = new Set<string>();
+/** 지금 목업으로 로그인한 계정. 앱을 다시 켜면 null이 되고, 그때는 온보딩을 마친 것으로 본다. */
+let devMockCurrentEmail: string | null = null;
+
+/** 목업 모드에서 블록 구성까지 마치면 부른다. */
+export function completeMockOnboarding() {
+    if (devMockCurrentEmail) {
+        devOnboardingPendingEmails.delete(devMockCurrentEmail);
+    }
+}
+
+function mockUserSettings(): UserSettings {
+    const isPending =
+        devMockCurrentEmail !== null && devOnboardingPendingEmails.has(devMockCurrentEmail);
+    return {
+        onboardingStep: isPending ? 'LINK' : 'DONE',
+        hasLinkedAccount: !isPending,
+        tutorialDone: !isPending,
+        blocksConfirmed: !isPending,
+        nickname: null,
+        plan: 'FREE',
+    };
+}
+
 /** 목업으로 로그인할 이메일인지 (목업 계정이거나 목업으로 가입한 계정) */
 const isMockLoginEmail = (email: string) => {
     const normalized = normalizeEmail(email);
@@ -52,8 +89,9 @@ function mockLogin(body: LoginRequest): Promise<LoginResponse> {
                     ? DEV_MOCK_ACCOUNT.password
                     : devSignedUpAccounts.get(email);
             if (expectedPassword !== undefined && body.password === expectedPassword) {
+                devMockCurrentEmail = email;
                 resolve({
-                    accessToken: 'dev-mock-access-token',
+                    accessToken: DEV_MOCK_ACCESS_TOKEN,
                     refreshToken: 'dev-mock-refresh-token',
                 });
             } else {
@@ -134,7 +172,7 @@ function mockVerifyEmail(body: VerifyEmailRequest) {
             );
         }
         return {
-            accessToken: 'dev-mock-access-token',
+            accessToken: DEV_MOCK_ACCESS_TOKEN,
             refreshToken: 'dev-mock-refresh-token',
             email: body.email,
         };
@@ -163,9 +201,12 @@ export const signUp = (body: SignUpRequest) => {
     if (USE_SIGN_UP_MOCK) {
         return delay<SignUpResponse>(() => {
             // 로그아웃 뒤 같은 이메일·비밀번호로 다시 로그인할 수 있게 기억해 둔다.
-            devSignedUpAccounts.set(normalizeEmail(body.email), body.password);
+            const email = normalizeEmail(body.email);
+            devSignedUpAccounts.set(email, body.password);
+            devOnboardingPendingEmails.add(email);
+            devMockCurrentEmail = email;
             return {
-                accessToken: 'dev-mock-access-token',
+                accessToken: DEV_MOCK_ACCESS_TOKEN,
                 refreshToken: 'dev-mock-refresh-token',
             };
         });
@@ -210,10 +251,18 @@ export async function saveSignUpConsents(
     );
 }
 
-/** 온보딩 상태 */
-export const getUserSettings = () =>
-    request<UserSettings>({ method: 'GET', url: '/users/me/settings' });
+/** 온보딩 상태. 목업으로 로그인했으면 목업 상태를 준다. */
+export const getUserSettings = async () => {
+    if (await isMockSession()) {
+        return delay(mockUserSettings);
+    }
+    return request<UserSettings>({ method: 'GET', url: '/users/me/settings' });
+};
 
 /** 온보딩 상태 수정 (튜토리얼 완료 등). 바뀐 상태를 돌려준다. */
-export const updateUserSettings = (body: UserSettingsUpdateRequest) =>
-    request<UserSettings>({ method: 'PATCH', url: '/users/me/settings', data: body });
+export const updateUserSettings = async (body: UserSettingsUpdateRequest) => {
+    if (await isMockSession()) {
+        return delay(mockUserSettings);
+    }
+    return request<UserSettings>({ method: 'PATCH', url: '/users/me/settings', data: body });
+};
