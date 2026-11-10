@@ -1,6 +1,8 @@
-import type {
-    ConnectInstitutionsRequest,
-    ConnectInstitutionsResponse,
+import {
+    CONNECTION_ERROR_CODE,
+    type ConnectInstitutionsRequest,
+    type ConnectInstitutionsResponse,
+    type LinkedAccountListResponse,
 } from '@/features/connection/types/connection';
 import { request } from '@/lib/apiClient';
 import { USE_MOCK } from '@/lib/mock';
@@ -10,9 +12,6 @@ import { USE_MOCK } from '@/lib/mock';
  * TODO: 연동 API가 붙으면 목업과 함께 제거한다.
  */
 const USE_CONNECTION_MOCK = USE_MOCK;
-
-/** CODEF는 기관 응답이 느려 기본 타임아웃(10초)보다 길게 기다린다. */
-const CONNECT_TIMEOUT_MS = 60_000;
 
 /**
  * 목업 모드 전용: 항상 연결에 실패하는 기관 (케이뱅크 · 롯데카드)
@@ -51,19 +50,45 @@ function mockConnectInstitutions(
     });
 }
 
-// TODO: 연동 URL이 명세에 나오면 맞춘다. (지금은 가정값)
+/** 연동된 계좌·카드 목록 */
+export const getLinkedAccounts = () =>
+    request<LinkedAccountListResponse>({ method: 'GET', url: '/linked-accounts' });
+
 /**
- * 고른 기관을 CODEF로 연결한다. 기관마다 성공·실패가 따로 온다.
- * TODO: 간편인증(인증 수단 선택 · 본인 정보 입력 · 앱 승인 대기) 단계는 시안과 명세가 나오면 이 요청 앞뒤에 붙인다.
+ * 고른 기관을 연결한다. 기관마다 성공·실패가 따로 온다.
+ * 실제 연동(POST /linked-accounts)은 기관 아이디·비밀번호·생년월일이 필요한데 앱에 아직 입력 화면이 없다.
+ * 그래서 지금은 이미 연결된 기관(개발 서버 테스트 계좌 등)만 연결된 것으로 보고, 나머지는 연결할 수 없다고 알려준다.
+ * TODO: 기관 인증 입력 화면(간편인증·아이디 로그인)이 나오면 연결되지 않은 기관을 POST /linked-accounts로 연동한다.
  */
-export const connectInstitutions = (body: ConnectInstitutionsRequest) => {
+export const connectInstitutions = async (
+    body: ConnectInstitutionsRequest,
+): Promise<ConnectInstitutionsResponse> => {
     if (USE_CONNECTION_MOCK) {
         return mockConnectInstitutions(body);
     }
-    return request<ConnectInstitutionsResponse>({
-        method: 'POST',
-        url: '/connections',
-        data: body,
-        timeout: CONNECT_TIMEOUT_MS,
-    });
+    const { linkedAccounts } = await getLinkedAccounts();
+    const linkedCodes = new Set(
+        linkedAccounts
+            .filter(({ isActive }) => isActive)
+            .map(({ institutionCode }) => institutionCode),
+    );
+    return {
+        results: body.institutions.map(({ type, institutionCode }) =>
+            linkedCodes.has(institutionCode)
+                ? {
+                      type,
+                      institutionCode,
+                      status: 'CONNECTED',
+                      errorCode: null,
+                      institutionMessage: null,
+                  }
+                : {
+                      type,
+                      institutionCode,
+                      status: 'FAILED',
+                      errorCode: CONNECTION_ERROR_CODE.AUTH_INPUT_UNAVAILABLE,
+                      institutionMessage: '아직 앱에서 이 기관 인증을 할 수 없어요',
+                  },
+        ),
+    };
 };
