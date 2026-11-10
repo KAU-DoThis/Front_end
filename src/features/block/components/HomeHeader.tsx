@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { AppText } from '@/shared/components/ui/AppText';
 import { Icon, type IconName } from '@/shared/components/ui/Icon';
 import { Logo } from '@/shared/components/ui/Logo';
 
@@ -10,18 +9,17 @@ interface HomeHeaderProps {
     hasUnreadNotification?: boolean;
 }
 
-/** 홈 상단: 로고 + 빠른 입력 · 알림 · 마이 */
+/** 홈 상단: 워드마크 로고 + 빠른 입력 · 알림 · 마이 */
 export function HomeHeader({ hasUnreadNotification = false }: HomeHeaderProps) {
     return (
         <View className="flex-row items-center px-5 pb-5 pt-3">
             <Pressable
                 accessibilityRole="header"
-                className="flex-row items-center gap-2"
+                className="flex-row items-center"
                 // 개발 모드에서만: 로고를 길게 누르면 공통 컴포넌트 확인 화면
                 onLongPress={__DEV__ ? () => router.push('/dev/components') : undefined}
             >
                 <Logo />
-                <AppText className="font-bold text-17">핀트리스</AppText>
             </Pressable>
             <View className="ml-auto flex-row items-center gap-[22px]">
                 {/* 빠른 입력 · 알림 · 마이 화면은 각 작업에서 연결한다. */}
