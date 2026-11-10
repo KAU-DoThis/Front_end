@@ -1,15 +1,27 @@
 import type { HomeBlock } from '@/features/block/types/block';
 
 /**
- * 블록 상세 응답 (백엔드 API 미정 — 시안 02 기준 목업 모양)
- * 블록 정보는 GET /blocks/{id}(BlockResponse) + 홈과 같은 표시 값, 나머지는 서버 계산 값이다.
+ * 블록 상세 화면 데이터. 서버 응답(GET /blocks/{blockId})은 blockDetailMapper에서 이 모양으로 바꾼다.
+ * 블록 정보는 홈과 같은 HomeBlock, 나머지는 서버 계산 값이다.
  */
+/**
+ * 서버가 정해 주는 화면 버튼
+ * POSTPONE_DUE_DATE 목표일 미루기 · PUT_WAITING_FUND 절약분 넣기 ·
+ * OPEN_SAVING_SUGGESTIONS 절약 제안 보기 · FILL_FROM_OTHER 다른 블록에서 채우기
+ */
+export type BlockDetailAction =
+    'POSTPONE_DUE_DATE' | 'PUT_WAITING_FUND' | 'OPEN_SAVING_SUGGESTIONS' | 'FILL_FROM_OTHER';
+
 interface BlockDetailBase {
     block: HomeBlock;
     /** 상태 칩 옆 이유 (예: 소진 빠름, 2주 늦어짐) */
     statusReason: string | null;
     /** '왜 주의인가요?' 설명 (안전이면 null) */
     explanation: string | null;
+    /** 규칙 한 줄 (예: 목표 800,000 · 12월 31일 · 매달 200,000). 서버가 만들어 준다. */
+    ruleText: string | null;
+    /** 보여줄 버튼. 서버가 상태에 따라 정한다. (예: 고정지출이 모자라면 FILL_FROM_OTHER) */
+    actions: BlockDetailAction[];
 }
 
 /** 블록에 걸린 거래 (transactions 테이블 기준) */
@@ -42,9 +54,12 @@ export interface SpendingBlockDetail extends BlockDetailBase {
         spent: number;
         remaining: number;
     };
+    /** 소진 속도. 월 배분액이 없으면 null (카드를 그리지 않는다) */
     burnRate: {
         /** 계획 대비 빠르기 % (+ 빠름, − 느림) */
         diffPercent: number;
+        /** 예: 계획보다 17% 빠름 */
+        paceText: string;
         /** 이번 기간 실제 사용 */
         spentAmount: number;
         /** 계획선 끝 금액 (기간 끝까지 쓸 계획) */
@@ -53,13 +68,12 @@ export interface SpendingBlockDetail extends BlockDetailBase {
         totalDays: number;
         /** 누적 사용액 (day: 기간 시작부터 지난 날) */
         actual: { day: number; amount: number }[];
-    };
+    } | null;
     recentTransactions: BlockTransaction[];
 }
 
 /** 목표형 블록에 들어온 돈 (block_transfers 기준) */
 export interface BlockInflow {
-    transferId: number;
     /** 예: 10월 블록 배분, 여행 블록 만듦 */
     title: string;
     /** 예: 월급에서, 첫 배분 */
@@ -76,8 +90,8 @@ export interface GoalBlockDetail extends BlockDetailBase {
     /** 기한까지 남은 날 (기한이 없으면 null) */
     daysLeft: number | null;
     monthly: {
-        /** 이번 달 목표 (rule.monthly_target) */
-        target: number;
+        /** 이번 달 목표 (rule.monthly_target). 정하지 않았으면 null */
+        target: number | null;
         saved: number;
         /** 더 필요 */
         remaining: number;
@@ -102,33 +116,32 @@ export interface GoalBlockDetail extends BlockDetailBase {
 
 /** 고정지출형 납부 기록 (조건에 맞아 '납부 완료'로 처리된 출금) */
 export interface BlockPayment {
-    transactionId: number;
-    /** ISO 8601 */
+    /** yyyy-MM-dd 또는 ISO 8601 */
     paidAt: string;
-    payee: string;
-    /** 예: 국민 ••34 */
-    accountLabel: string;
+    payee: string | null;
+    /** 예: 국민 ••34. 현금 입력이면 null */
+    accountLabel: string | null;
     amount: number;
 }
 
 /** 고정지출형 (02-2 월세) */
 export interface FixedBlockDetail extends BlockDetailBase {
     type: 'FIXED';
-    /** 다음 납부일 (yyyy-MM-dd) */
-    nextPayDate: string;
+    /** 다음 납부일 (yyyy-MM-dd). 납부일을 정하지 않았으면 null */
+    nextPayDate: string | null;
     payAmount: number;
     /** 모자란 돈 */
     shortfall: number;
-    /** 납부 확인 조건 — 서버가 문구까지 만들어 준다. (rule.match_condition 등) */
+    /** 납부 확인 조건 (rule.matchCondition). 조건이 없으면 null (카드를 그리지 않는다) */
     matchRule: {
-        payee: string;
+        payee: string | null;
         /** 예: 600,000원 그대로 */
-        amountText: string;
+        amountText: string | null;
         /** 예: 매월 25일 앞뒤 3일 */
-        dateText: string;
-        /** 예: 국민 ••34 */
-        accountLabel: string;
-    };
+        dateText: string | null;
+        /** 예: 국민 ••34. 서버가 계좌 이름을 주기 전까지 null */
+        accountLabel: string | null;
+    } | null;
     /** 블록별 알림 설정 */
     alerts: {
         /** 납부 3일 전까지 모자라면 알려주기 */

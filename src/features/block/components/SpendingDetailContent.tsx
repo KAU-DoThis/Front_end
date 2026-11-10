@@ -49,9 +49,11 @@ export function SpendingDetailContent({ detail, onFillFromOther }: SpendingDetai
                     ]}
                 />
             </View>
-            <View className="mt-3">
-                <BurnRateCard burnRate={detail.burnRate} />
-            </View>
+            {detail.burnRate && (
+                <View className="mt-3">
+                    <BurnRateCard burnRate={detail.burnRate} />
+                </View>
+            )}
             {detail.explanation && (
                 // 절약 제안 보기는 ⑤ 절약 작업에서 연결한다.
                 <SuggestionCard
@@ -68,12 +70,11 @@ export function SpendingDetailContent({ detail, onFillFromOther }: SpendingDetai
                     ]}
                 />
             )}
-            <View className="mt-4">
-                <InfoLine
-                    title="규칙"
-                    value={`월 ${formatAmount(detail.allocatedAmount)}  매월 ${Number(detail.periodStartDate.slice(8, 10))}일 시작`}
-                />
-            </View>
+            {detail.ruleText && (
+                <View className="mt-4">
+                    <InfoLine title="규칙" value={detail.ruleText} />
+                </View>
+            )}
             <BlockDetailList
                 title="최근 거래"
                 moreLabel={`${block.name} 거래 전체 보기`}

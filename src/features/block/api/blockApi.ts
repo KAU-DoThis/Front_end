@@ -1,4 +1,5 @@
 import type { BlockDetail } from '@/features/block/types/blockDetail';
+import type { BlockDetailResponse } from '@/features/block/types/blockDetailResponse';
 import type { BlockHome } from '@/features/block/types/blockHome';
 import type { HomeResponse } from '@/features/block/types/homeResponse';
 import type {
@@ -12,9 +13,15 @@ import type {
     TransferRequest,
     TransferResponse,
 } from '@/features/block/types/blockTransfer';
+import type {
+    AllocationRequest,
+    AllocationResponse,
+    WaitingFundListResponse,
+} from '@/features/block/types/waitingFund';
 import { request } from '@/lib/apiClient';
 import { USE_MOCK } from '@/lib/mock';
 
+import { toBlockDetail } from './blockDetailMapper';
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
 import { toBlockHome } from './blockHomeMapper';
@@ -42,9 +49,7 @@ function mockResponse<T>(create: () => T): Promise<T> {
 
 /**
  * 홈 화면 데이터. 서버 응답을 화면용 BlockHome으로 바꿔서 준다.
- * 목업 모드(USE_MOCK)에서는 목업을 준다. 서버 홈의 블록 ID는 상세·자금 이동 목업에 없어서,
- * 그 화면을 확인하거나 시연할 때는 목업 모드로 본다.
- * TODO: 블록 상세(v4)·자금 이동(#17) API가 붙으면 목업과 함께 지운다.
+ * 목업 모드(USE_MOCK)에서는 목업을 준다. 상세·자금 이동도 같은 모드를 따라서 블록 ID가 서로 맞는다.
  */
 export const getBlockHome = async (): Promise<BlockHome> => {
     if (USE_MOCK) {
@@ -55,25 +60,61 @@ export const getBlockHome = async (): Promise<BlockHome> => {
 };
 
 /**
- * 블록 상세 (목업에 없는 블록은 null — 상세 화면이 준비 중으로 보여준다)
- * 백엔드 상세 API가 정해지면 request<BlockDetail>({ method: 'GET', url: `/blocks/${blockId}` })
+ * 블록 상세. 서버 응답을 화면용 BlockDetail로 바꿔서 준다.
+ * 목업 모드에서 목업에 없는 블록은 null — 상세 화면이 준비 중으로 보여준다.
  */
-export const getBlockDetail = (blockId: number): Promise<BlockDetail | null> =>
-    mockResponse(() => BLOCK_DETAIL_MOCK[blockId] ?? null);
+export const getBlockDetail = async (blockId: number): Promise<BlockDetail | null> => {
+    if (USE_MOCK) {
+        return mockResponse(() => BLOCK_DETAIL_MOCK[blockId] ?? null);
+    }
+    const response = await request<BlockDetailResponse>({
+        method: 'GET',
+        url: `/blocks/${blockId}`,
+    });
+    return toBlockDetail(response);
+};
+
+/** 이동·배분 미리보기 (03-2 이동 전 검증, 06 나눌 돈 배분). 저장하지 않는다. */
+export const simulateTransfer = (body: SimulateRequest): Promise<SimulateResponse> => {
+    if (USE_MOCK) {
+        return mockResponse(() => simulateTransferMock(body));
+    }
+    return request<SimulateResponse>({ method: 'POST', url: '/blocks/simulate', data: body });
+};
+
+/** 블록 간 이동 확정 (03-2 옮기기) */
+export const transferBlock = (body: TransferRequest): Promise<TransferResponse> => {
+    if (USE_MOCK) {
+        return mockResponse(() => transferBlockMock(body));
+    }
+    return request<TransferResponse>({ method: 'POST', url: '/blocks/transfers', data: body });
+};
+
+/** 나눌 돈 목록 (남은 금액이 있는 것만) */
+export const getWaitingFunds = (): Promise<WaitingFundListResponse> => {
+    if (USE_MOCK) {
+        return mockResponse(() => {
+            const waitingFunds = BLOCK_HOME_MOCK.pendingMoney;
+            const total = waitingFunds.reduce((sum, fund) => sum + fund.amount, 0);
+            return { waitingFunds, total };
+        });
+    }
+    return request<WaitingFundListResponse>({ method: 'GET', url: '/waiting-funds' });
+};
 
 /**
- * 이동·배분 미리보기 (03-2 이동 전 검증)
- * 백엔드가 나오면 request<SimulateResponse>({ method: 'POST', url: '/blocks/simulate', data: body })
+ * 나눌 돈 배분 확정 (06)
+ * TODO: 배분 화면(06)을 붙일 때 목업 모드용 목업도 같이 만든다. 지금은 부르는 화면이 없다.
  */
-export const simulateTransfer = (body: SimulateRequest): Promise<SimulateResponse> =>
-    mockResponse(() => simulateTransferMock(body));
-
-/**
- * 블록 간 이동 확정 (03-2 옮기기)
- * 백엔드가 나오면 request<TransferResponse>({ method: 'POST', url: '/blocks/transfers', data: body })
- */
-export const transferBlock = (body: TransferRequest): Promise<TransferResponse> =>
-    mockResponse(() => transferBlockMock(body));
+export const allocateWaitingFund = (
+    waitingFundId: number,
+    body: AllocationRequest,
+): Promise<AllocationResponse> =>
+    request<AllocationResponse>({
+        method: 'POST',
+        url: `/waiting-funds/${waitingFundId}/allocations`,
+        data: body,
+    });
 
 /**
  * 온보딩 블록 구성 API가 아직 없어서 목업 모드(USE_MOCK)에서는 목업으로 처리한다.

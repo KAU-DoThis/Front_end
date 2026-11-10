@@ -98,6 +98,6 @@ function DetailContent({ detail, onFillFromOther }: DetailContentProps) {
         case 'GOAL':
             return <GoalDetailContent detail={detail} />;
         case 'FIXED':
-            return <FixedDetailContent detail={detail} />;
+            return <FixedDetailContent detail={detail} onFillFromOther={onFillFromOther} />;
     }
 }

@@ -95,10 +95,13 @@ function goalWeeks(block: HomeBlock, amount: number) {
 
 function goalMonthlyDetail(block: HomeBlock, diff: number) {
     const detail = BLOCK_DETAIL_MOCK[block.blockId];
-    if (detail?.type !== 'GOAL' || detail.monthly.target <= 0) {
+    if (detail?.type !== 'GOAL') {
         return undefined;
     }
     const { saved, target } = detail.monthly;
+    if (target === null || target <= 0) {
+        return undefined;
+    }
     // 이번 달 모은 돈보다 많이 보내도 0 아래로는 내려가지 않는다. (나머지는 지난달까지 모은 돈에서 빠짐)
     const savedAfter = Math.max(0, saved + diff);
     const won = (amount: number) => formatAmount(amount, { showUnit: false });
@@ -170,7 +173,10 @@ function impactOf(block: HomeBlock, diff: number, shortfall: number): TransferIm
 
     const detail = BLOCK_DETAIL_MOCK[blockId];
     const payAmount = detail?.type === 'FIXED' ? detail.payAmount : block.balance;
-    const payDate = detail?.type === 'FIXED' ? formatMonthDay(detail.nextPayDate) : '납부일';
+    const payDate =
+        detail?.type === 'FIXED' && detail.nextPayDate
+            ? formatMonthDay(detail.nextPayDate)
+            : '납부일';
     const after = block.balance + diff;
     if (after < payAmount) {
         return {
@@ -289,7 +295,7 @@ function applyBalance(block: HomeBlock, diff: number, recovers: boolean) {
         detail.monthly = {
             ...detail.monthly,
             saved,
-            remaining: Math.max(0, detail.monthly.target - saved),
+            remaining: Math.max(0, (detail.monthly.target ?? 0) - saved),
         };
     }
     if (detail?.type === 'FIXED') {

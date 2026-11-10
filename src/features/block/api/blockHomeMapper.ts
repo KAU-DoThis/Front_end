@@ -20,7 +20,7 @@ import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
  * - 규칙은 화면 타입이 아직 예전 snake_case 키라 옮겨 담는다.
  * TODO: 화면 Block 타입을 v4로 바꾸면 규칙 변환을 지운다. (온보딩 블록 구성 요청도 같이 바꿔야 함)
  */
-function toHomeBlock(block: BlockResponse): HomeBlock {
+export function toHomeBlock(block: BlockResponse): HomeBlock {
     const { rule } = block;
     return {
         blockId: block.blockId,

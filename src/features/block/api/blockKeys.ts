@@ -6,6 +6,7 @@ export const blockKeys = {
     detail: (blockId: number) => [...blockKeys.all, blockId] as const,
     simulate: (fromBlockId: number, toBlockId: number, amount: number) =>
         [...blockKeys.all, 'simulate', fromBlockId, toBlockId, amount] as const,
+    waitingFunds: () => [...blockKeys.all, 'waiting-funds'] as const,
     setupProposal: () => [...blockKeys.all, 'setup', 'proposal'] as const,
     setupPreview: (body: BlockSetupRequest) =>
         [...blockKeys.all, 'setup', 'preview', body] as const,

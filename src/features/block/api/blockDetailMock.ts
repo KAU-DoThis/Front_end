@@ -36,6 +36,8 @@ export const BLOCK_DETAIL_MOCK: Record<number, BlockDetail> = {
         statusReason: '소진 빠름',
         explanation:
             '배달·카페 지출이 지난달 같은 기간보다 9만 원 늘었어요. 이대로면 28일쯤 생활비가 바닥나요.',
+        ruleText: '월 1,500,000원 · 매월 1일 시작',
+        actions: [],
         allocatedAmount: 1_500_000,
         periodStartDate: '2026-10-01',
         periodEndDate: '2026-10-31',
@@ -43,6 +45,7 @@ export const BLOCK_DETAIL_MOCK: Record<number, BlockDetail> = {
         today: { available: 52_700, spent: 12_300, remaining: 40_400 },
         burnRate: {
             diffPercent: 17,
+            paceText: '계획보다 17% 빠름',
             spentAmount: 550_000,
             plannedAmount: 1_000_000,
             totalDays: 31,
@@ -109,20 +112,20 @@ export const BLOCK_DETAIL_MOCK: Record<number, BlockDetail> = {
         block: homeBlock(2),
         statusReason: null,
         explanation: null,
+        ruleText: '목표 3,000,000 · 매달 300,000',
+        actions: [],
         targetAmount: 3_000_000,
         daysLeft: null,
         monthly: { target: 300_000, saved: 300_000, remaining: 0 },
         projection: null,
         inflows: [
             {
-                transferId: 201,
                 title: '10월 블록 배분',
                 note: '월급에서',
                 occurredAt: '2026-10-01',
                 amount: 300_000,
             },
             {
-                transferId: 202,
                 title: '9월 블록 배분',
                 note: '월급에서',
                 occurredAt: '2026-09-01',
@@ -136,6 +139,8 @@ export const BLOCK_DETAIL_MOCK: Record<number, BlockDetail> = {
         statusReason: '2주 늦어짐',
         explanation:
             '이번 달에 모은 돈이 월 목표보다 80,000원 적어요. 이대로면 1월 중순에 다 모여요. 9월 절약분 50,000원을 넣으면 12월 31일에 맞출 수 있어요.',
+        ruleText: '목표 800,000 · 12월 31일 · 매달 200,000',
+        actions: [],
         targetAmount: 800_000,
         daysLeft: 78,
         monthly: { target: 200_000, saved: 120_000, remaining: 80_000 },
@@ -155,21 +160,18 @@ export const BLOCK_DETAIL_MOCK: Record<number, BlockDetail> = {
         },
         inflows: [
             {
-                transferId: 301,
                 title: '10월 블록 배분',
                 note: '월급에서',
                 occurredAt: '2026-10-01',
                 amount: 120_000,
             },
             {
-                transferId: 302,
                 title: '9월 블록 배분',
                 note: '월급에서',
                 occurredAt: '2026-09-01',
                 amount: 100_000,
             },
             {
-                transferId: 303,
                 title: '여행 블록 만듦',
                 note: '첫 배분',
                 occurredAt: '2026-08-01',
@@ -182,13 +184,14 @@ export const BLOCK_DETAIL_MOCK: Record<number, BlockDetail> = {
         block: homeBlock(5),
         statusReason: '목표 달성',
         explanation: null,
+        ruleText: '목표 500,000',
+        actions: [],
         targetAmount: 500_000,
         daysLeft: null,
-        monthly: { target: 0, saved: 0, remaining: 0 },
+        monthly: { target: null, saved: 0, remaining: 0 },
         projection: null,
         inflows: [
             {
-                transferId: 501,
                 title: '저금통 블록 만듦',
                 note: '첫 배분',
                 occurredAt: '2026-06-01',
@@ -201,6 +204,8 @@ export const BLOCK_DETAIL_MOCK: Record<number, BlockDetail> = {
         block: homeBlock(4),
         statusReason: '납부 준비 끝',
         explanation: null,
+        ruleText: '매월 25일 · 600,000원',
+        actions: [],
         nextPayDate: '2026-10-25',
         payAmount: 600_000,
         shortfall: 0,
@@ -214,28 +219,24 @@ export const BLOCK_DETAIL_MOCK: Record<number, BlockDetail> = {
         onTimeStreak: 6,
         payments: [
             {
-                transactionId: 401,
                 paidAt: '2026-09-25T09:00:00',
                 payee: '김*수',
                 accountLabel: '국민 ••34',
                 amount: 600_000,
             },
             {
-                transactionId: 402,
                 paidAt: '2026-08-25T09:00:00',
                 payee: '김*수',
                 accountLabel: '국민 ••34',
                 amount: 600_000,
             },
             {
-                transactionId: 403,
                 paidAt: '2026-07-25T09:00:00',
                 payee: '김*수',
                 accountLabel: '국민 ••34',
                 amount: 600_000,
             },
             {
-                transactionId: 404,
                 paidAt: '2026-06-25T09:00:00',
                 payee: '김*수',
                 accountLabel: '국민 ••34',

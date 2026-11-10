@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { formatAmount, formatMonthDay } from '@/lib/format';
+import { Button } from '@/shared/components/ui/Button';
 import { Icon } from '@/shared/components/ui/Icon';
 import { ListRow } from '@/shared/components/ui/ListRow';
 import { colors } from '@/styles/tokens';
@@ -14,8 +15,14 @@ import { PaymentAlertCard, PaymentRuleCard } from './FixedPaymentCards';
 
 const won = (amount: number) => formatAmount(amount, { showUnit: false });
 
+interface FixedDetailContentProps {
+    detail: FixedBlockDetail;
+    /** '다른 블록에서 채우기' → 03-2 자금 이동 시트 */
+    onFillFromOther: () => void;
+}
+
 /** 02-2 블록 상세 · 고정지출형 (월세) */
-export function FixedDetailContent({ detail }: { detail: FixedBlockDetail }) {
+export function FixedDetailContent({ detail, onFillFromOther }: FixedDetailContentProps) {
     const { block } = detail;
     const payDay = block.rule?.pay_day;
 
@@ -34,15 +41,29 @@ export function FixedDetailContent({ detail }: { detail: FixedBlockDetail }) {
             <View className="mt-3">
                 <BlockStatRow
                     stats={[
-                        { label: '다음 납부', value: formatMonthDay(detail.nextPayDate) },
+                        {
+                            label: '다음 납부',
+                            value: detail.nextPayDate ? formatMonthDay(detail.nextPayDate) : '-',
+                        },
                         { label: '납부 금액', value: won(detail.payAmount) },
                         { label: '모자란 돈', value: won(detail.shortfall) },
                     ]}
                 />
             </View>
-            <View className="mt-3">
-                <PaymentRuleCard rule={detail.matchRule} />
-            </View>
+            {/* 모자랄 때 서버가 FILL_FROM_OTHER를 준다. */}
+            {detail.actions.includes('FILL_FROM_OTHER') && (
+                <Button
+                    className="mt-3"
+                    title="다른 블록에서 채우기"
+                    variant="primary"
+                    onPress={onFillFromOther}
+                />
+            )}
+            {detail.matchRule && (
+                <View className="mt-3">
+                    <PaymentRuleCard rule={detail.matchRule} />
+                </View>
+            )}
             <View className="mt-3">
                 <PaymentAlertCard alerts={detail.alerts} />
             </View>
@@ -58,14 +79,15 @@ export function FixedDetailContent({ detail }: { detail: FixedBlockDetail }) {
             >
                 {detail.payments.map((payment, index) => (
                     <ListRow
-                        key={payment.transactionId}
+                        // 서버 납부 기록에는 ID가 없어서 순서로 구분한다. (최근 6건, 다시 정렬하지 않음)
+                        key={`${payment.paidAt}-${index}`}
                         leading={
                             <View className="h-7 w-7 items-center justify-center rounded-12 bg-surface-neutral">
                                 <Icon name="check" size={14} color={colors.primary[700]} />
                             </View>
                         }
                         title={formatMonthDay(payment.paidAt)}
-                        subtitle={`${payment.payee}  ${payment.accountLabel}`}
+                        subtitle={[payment.payee, payment.accountLabel].filter(Boolean).join('  ')}
                         amount={-payment.amount}
                         isLast={index === detail.payments.length - 1}
                     />
