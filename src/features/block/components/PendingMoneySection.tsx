@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
 
-import { formatMonth, formatMonthDay, formatWon } from '@/lib/format';
+import { formatWon } from '@/lib/format';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Icon } from '@/shared/components/ui/Icon';
@@ -13,18 +13,9 @@ interface PendingMoneySectionProps {
     onSplit?: (item: PendingMoney) => void;
 }
 
-const SOURCE_LABEL = { SAVING: '절약분', DEPOSIT: '추가 입금' } as const;
-
-function getDetail(item: PendingMoney) {
-    if (item.source === 'SAVING') {
-        return `${formatMonth(item.periodEndDate)} 절약 확정`;
-    }
-    return item.lastDepositAt ? `${formatMonthDay(item.lastDepositAt)} 입금` : '블록에 안 넣은 돈';
-}
-
-/** 절약분은 절약 목표마다 따로, 추가 입금(미배분 잔액)은 하나만 온다. */
+/** 칩·설명 문구는 서버가 만들어 준다. */
 function getKey(item: PendingMoney) {
-    return item.source === 'SAVING' ? `saving-${item.savingGoalId}` : 'deposit';
+    return item.waitingFundId;
 }
 
 /** 나눌 돈 (대기 블록). 다 나누면 섹션이 사라진다. */
@@ -72,15 +63,13 @@ function PendingMoneyCard({ item, onPress }: PendingMoneyCardProps) {
     return (
         <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${SOURCE_LABEL[item.source]} ${formatWon(item.amount)} 나누기`}
+            accessibilityLabel={`${item.label} ${formatWon(item.amount)} 나누기`}
             onPress={onPress}
             className="flex-1 rounded-16 border-1.5 border-dashed border-line-control bg-white p-[11.5px] active:bg-surface-neutral"
         >
             <View className="flex-row items-center justify-between">
                 <View className="rounded-8 bg-surface-neutral px-2 py-0.5">
-                    <AppText className="font-semibold text-12 text-ink-sub">
-                        {SOURCE_LABEL[item.source]}
-                    </AppText>
+                    <AppText className="font-semibold text-12 text-ink-sub">{item.label}</AppText>
                 </View>
                 <View className="flex-row items-center">
                     <AppText className="font-bold text-13">나누기</AppText>
@@ -88,7 +77,9 @@ function PendingMoneyCard({ item, onPress }: PendingMoneyCardProps) {
                 </View>
             </View>
             <AmountText amount={item.amount} showUnit={false} className="mt-1.5 text-17" />
-            <AppText className="text-12 text-ink-sub">{getDetail(item)}</AppText>
+            {item.description && (
+                <AppText className="text-12 text-ink-sub">{item.description}</AppText>
+            )}
         </Pressable>
     );
 }

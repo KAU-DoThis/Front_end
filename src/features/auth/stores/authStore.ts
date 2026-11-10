@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 
+import { logout as logoutApi } from '@/features/auth/api/authApi';
+import { closeSession, setSessionExpiredHandler } from '@/lib/apiClient';
+import { USE_MOCK } from '@/lib/mock';
 import { onboardingStorage } from '@/lib/onboardingStorage';
 import { queryClient } from '@/lib/queryClient';
 import { tokenStorage } from '@/lib/tokenStorage';
@@ -26,7 +29,21 @@ interface AuthState {
     ) => Promise<void>;
     /** 블록 구성까지 마치면 부른다. 상태가 바뀌면 루트 레이아웃이 홈으로 보낸다. */
     completeOnboarding: () => Promise<void>;
+    /** 서버의 리프레시 토큰을 폐기하고 로그아웃한다. 서버 요청이 실패해도 앱에서는 로그아웃한다. */
     logout: () => Promise<void>;
+    /** 토큰 재발급까지 실패했을 때. 서버에 알리지 않고 저장된 토큰만 지운다. */
+    expireSession: () => Promise<void>;
+}
+
+/**
+ * 저장된 토큰과 이전 계정의 조회 결과를 지운다.
+ * 토큰 삭제가 실패해도 나머지는 정리하고, 부르는 쪽이 로그아웃 상태로 바꿀 수 있게 오류를 넘기지 않는다.
+ */
+async function clearSession() {
+    await tokenStorage.clear().catch(() => undefined);
+    await onboardingStorage.clearCurrentEmail().catch(() => undefined);
+    // 다른 계정으로 로그인했을 때 이전 계정의 데이터(블록 제안·홈 등)가 보이지 않도록 캐시를 비운다.
+    queryClient.clear();
 }
 
 /** 저장된 기록으로 이 계정이 온보딩을 마쳤는지 본다. 읽지 못하면 홈으로 보낸다. */
@@ -111,10 +128,26 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
 
     async logout() {
-        await tokenStorage.clear();
-        await onboardingStorage.clearCurrentEmail().catch(() => undefined);
+        await closeSession(async () => {
+            // 토큰을 읽지 못해도 앱에서는 로그아웃한다.
+            const refreshToken = await tokenStorage.getRefreshToken().catch(() => null);
+            // 목업 토큰은 서버가 모르는 값이라 목업 모드에서는 서버에 보내지 않는다.
+            if (refreshToken && !USE_MOCK) {
+                // 이미 만료된 토큰이면 서버가 거절하지만, 앱에서는 그대로 로그아웃한다.
+                await logoutApi(refreshToken).catch(() => undefined);
+            }
+            await clearSession();
+        });
         set({ isLoggedIn: false, needsOnboarding: false });
-        // 다른 계정으로 로그인했을 때 이전 계정의 데이터(블록 제안·홈 등)가 보이지 않도록 캐시를 비운다.
-        queryClient.clear();
+    },
+
+    async expireSession() {
+        await closeSession(clearSession);
+        set({ isLoggedIn: false, needsOnboarding: false });
     },
 }));
+
+// 재발급까지 실패하면 로그인 화면으로 보낸다. (루트 레이아웃 가드가 isLoggedIn을 보고 이동)
+setSessionExpiredHandler(() => {
+    void useAuthStore.getState().expireSession();
+});
