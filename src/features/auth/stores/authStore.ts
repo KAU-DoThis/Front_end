@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { logout as logoutApi } from '@/features/auth/api/authApi';
-import { setSessionExpiredHandler, waitForPendingReissue } from '@/lib/apiClient';
+import { closeSession, setSessionExpiredHandler } from '@/lib/apiClient';
 import { USE_MOCK } from '@/lib/mock';
 import { onboardingStorage } from '@/lib/onboardingStorage';
 import { queryClient } from '@/lib/queryClient';
@@ -128,21 +128,21 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
 
     async logout() {
-        // 진행 중인 재발급이 있으면 끝난 뒤의 최신 토큰을 폐기한다.
-        await waitForPendingReissue();
-        // 토큰을 읽지 못해도 앱에서는 로그아웃한다.
-        const refreshToken = await tokenStorage.getRefreshToken().catch(() => null);
-        // 목업 토큰은 서버가 모르는 값이라 목업 모드에서는 서버에 보내지 않는다.
-        if (refreshToken && !USE_MOCK) {
-            // 이미 만료된 토큰이면 서버가 거절하지만, 앱에서는 그대로 로그아웃한다.
-            await logoutApi(refreshToken).catch(() => undefined);
-        }
-        await clearSession();
+        await closeSession(async () => {
+            // 토큰을 읽지 못해도 앱에서는 로그아웃한다.
+            const refreshToken = await tokenStorage.getRefreshToken().catch(() => null);
+            // 목업 토큰은 서버가 모르는 값이라 목업 모드에서는 서버에 보내지 않는다.
+            if (refreshToken && !USE_MOCK) {
+                // 이미 만료된 토큰이면 서버가 거절하지만, 앱에서는 그대로 로그아웃한다.
+                await logoutApi(refreshToken).catch(() => undefined);
+            }
+            await clearSession();
+        });
         set({ isLoggedIn: false, needsOnboarding: false });
     },
 
     async expireSession() {
-        await clearSession();
+        await closeSession(clearSession);
         set({ isLoggedIn: false, needsOnboarding: false });
     },
 }));

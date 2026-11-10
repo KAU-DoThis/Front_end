@@ -69,7 +69,17 @@ type ReissueResult =
  */
 let reissuePromise: Promise<ReissueResult> | null = null;
 
+/**
+ * 로그아웃·세션 만료로 토큰을 지우는 작업 수. 0보다 크면 재발급을 시작하지 않고 결과도 저장하지 않는다.
+ * (동시에 401이 여러 번 와서 세션 만료가 겹쳐도, 먼저 끝난 쪽이 표시를 풀지 않도록 개수로 센다)
+ */
+let closingSessionCount = 0;
+const isClosingSession = () => closingSessionCount > 0;
+
 async function reissueAccessToken(): Promise<ReissueResult> {
+    if (isClosingSession()) {
+        return { status: 'stale' };
+    }
     try {
         const refreshToken = await tokenStorage.getRefreshToken();
         if (!refreshToken) {
@@ -81,8 +91,8 @@ async function reissueAccessToken(): Promise<ReissueResult> {
             { refreshToken },
             { timeout: TIMEOUT_MS },
         );
-        // 응답을 기다리는 사이 로그아웃했으면 지운 토큰을 다시 저장하지 않는다.
-        if ((await tokenStorage.getRefreshToken()) !== refreshToken) {
+        // 응답을 기다리는 사이 로그아웃·세션 만료가 시작됐거나 토큰이 바뀌었으면 저장하지 않는다.
+        if (isClosingSession() || (await tokenStorage.getRefreshToken()) !== refreshToken) {
             return { status: 'stale' };
         }
         if (!data.isSuccess) {
@@ -107,11 +117,19 @@ function reissueOnce() {
 }
 
 /**
- * 진행 중인 재발급이 끝날 때까지 기다린다.
- * 로그아웃은 이걸 기다린 뒤 최신 리프레시 토큰을 읽어서 폐기한다. (재발급 직전 토큰만 폐기되지 않게)
+ * 로그아웃·세션 만료 때 토큰을 지우는 작업(close)을 재발급과 겹치지 않게 실행한다.
+ * - 새 재발급은 시작하지 않고, 진행 중인 재발급의 결과는 저장하지 않는다.
+ * - 진행 중인 재발급이 끝난 뒤에 close를 실행한다. (끝나지 않은 재발급이 지운 토큰을 다시 저장하지 않게)
+ * 버린 재발급 토큰은 앱 어디에도 저장되지 않아 다시 쓸 수 없다.
  */
-export async function waitForPendingReissue() {
-    await reissuePromise;
+export async function closeSession(close: () => Promise<void>) {
+    closingSessionCount += 1;
+    try {
+        await reissuePromise;
+        await close();
+    } finally {
+        closingSessionCount -= 1;
+    }
 }
 
 type RetryableConfig = AxiosRequestConfig & { _retried?: boolean };
