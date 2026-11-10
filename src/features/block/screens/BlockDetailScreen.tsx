@@ -12,6 +12,7 @@ import { colors } from '@/styles/tokens';
 import { useBlockDetailQuery } from '@/features/block/api/useBlockDetailQuery';
 import { FixedDetailContent } from '@/features/block/components/FixedDetailContent';
 import { GoalDetailContent } from '@/features/block/components/GoalDetailContent';
+import { RenameBlockSheet } from '@/features/block/components/RenameBlockSheet';
 import { SpendingDetailContent } from '@/features/block/components/SpendingDetailContent';
 import { TransferSheet } from '@/features/block/components/TransferSheet';
 import type { BlockDetail } from '@/features/block/types/blockDetail';
@@ -24,17 +25,27 @@ export function BlockDetailScreen() {
     const isValidId = Number.isInteger(id) && id > 0;
     const { data: detail, isPending, isError, refetch } = useBlockDetailQuery(id);
     const [isTransferOpen, setIsTransferOpen] = useState(false);
+    const [isRenameOpen, setIsRenameOpen] = useState(false);
+    // 이름 바꾸기 시트를 열 때마다 입력칸을 지금 이름으로 새로 시작한다.
+    const [renameFormKey, setRenameFormKey] = useState(0);
+
+    const openRename = () => {
+        setRenameFormKey((key) => key + 1);
+        setIsRenameOpen(true);
+    };
 
     return (
         <Screen>
             <ScreenHeader
                 title={detail?.block.name ?? ''}
                 right={
-                    // 블록 수정·삭제 메뉴는 블록 관리 작업에서 연결한다.
+                    // 지금은 이름 바꾸기만 연다. 블록 수정·삭제 메뉴는 블록 관리 작업에서 붙인다.
                     <Pressable
                         accessibilityRole="button"
-                        accessibilityLabel="더보기"
+                        accessibilityLabel="블록 이름 바꾸기"
                         hitSlop={12}
+                        disabled={!detail}
+                        onPress={openRename}
                         className="active:opacity-60"
                     >
                         <Icon name="more" size={20} />
@@ -74,6 +85,15 @@ export function BlockDetailScreen() {
                 initialToBlockId={isValidId ? id : null}
                 lockedSide="to"
             />
+            {detail && (
+                <RenameBlockSheet
+                    isOpen={isRenameOpen}
+                    onClose={() => setIsRenameOpen(false)}
+                    blockId={detail.block.blockId}
+                    currentName={detail.block.name}
+                    formKey={renameFormKey}
+                />
+            )}
         </Screen>
     );
 }

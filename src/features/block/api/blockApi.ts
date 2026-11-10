@@ -87,6 +87,23 @@ export const simulateTransfer = (body: SimulateRequest): Promise<SimulateRespons
     return request<SimulateResponse>({ method: 'POST', url: '/blocks/simulate', data: body });
 };
 
+/**
+ * 블록 이름 바꾸기 (PATCH /blocks/{blockId}). 보낸 필드만 바뀐다.
+ * 목업 모드에서는 홈·상세 목업의 이름을 바꾼다.
+ */
+export const renameBlock = ({ blockId, name }: { blockId: number; name: string }) => {
+    if (USE_MOCK) {
+        return mockResponse(() => {
+            const homeBlock = BLOCK_HOME_MOCK.blocks.find((block) => block.blockId === blockId);
+            if (homeBlock) homeBlock.name = name;
+            const detail = BLOCK_DETAIL_MOCK[blockId];
+            if (detail) detail.block.name = name;
+            return null;
+        });
+    }
+    return request<unknown>({ method: 'PATCH', url: `/blocks/${blockId}`, data: { name } });
+};
+
 /** 블록 간 이동 확정 (03-2 옮기기) */
 export const transferBlock = (body: TransferRequest): Promise<TransferResponse> => {
     if (USE_MOCK) {
