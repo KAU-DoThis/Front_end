@@ -1,4 +1,5 @@
 import { request } from '@/lib/apiClient';
+import { ApiError } from '@/shared/types/api';
 import { USE_MOCK } from '@/lib/mock';
 
 import type { SpendingAnalysis } from '@/features/transaction/types/spendingAnalysis';
@@ -9,15 +10,24 @@ import type {
     TransactionListPage,
     TransactionListParams,
 } from '@/features/transaction/types/transaction';
-import type {
-    CategoryResponse,
-    TransactionListResponse,
-    TransactionResponse,
-    UpdateTransactionCategoryRequest,
+import {
+    TRANSACTION_ERROR_CODE,
+    type CategoryResponse,
+    type ManualPreviewResponse,
+    type ManualSaveRequest,
+    type TransactionBlockSourceResponse,
+    type TransactionListResponse,
+    type TransactionResponse,
+    type TransactionReviewRequest,
+    type UpdateTransactionCategoryRequest,
 } from '@/features/transaction/types/transactionResponse';
 
 import { getSpendingAnalysisMock } from './spendingAnalysisMock';
-import { toTransactionListPage, toTransactionListQuery } from './transactionMapper';
+import {
+    toQuickInputPreview,
+    toTransactionListPage,
+    toTransactionListQuery,
+} from './transactionMapper';
 import {
     answerQuestionMock,
     createQuickInputMock,
@@ -54,12 +64,27 @@ export const getTransactionList = async (
     if (USE_MOCK) {
         return mockResponse(() => getTransactionListMock(params, page));
     }
-    const response = await request<TransactionListResponse>({
+    const [response, blocks] = await Promise.all([
+        request<TransactionListResponse>({
+            method: 'GET',
+            url: '/transactions',
+            params: toTransactionListQuery(params, page),
+        }),
+        getBlocksForTransactions(),
+    ]);
+    return toTransactionListPage(response, blocks);
+};
+
+/**
+ * 거래 화면에서 쓰는 블록 목록 (GET /blocks). 거래 응답의 블록에는 이름만 있어서 점 색·상태와 블록 필터 목록을 여기서 채운다.
+ * TODO: 거래 응답의 블록에 색·상태가 오면 목록 조회는 블록 필터에만 쓴다.
+ */
+const getBlocksForTransactions = async () => {
+    const { blocks } = await request<{ blocks: TransactionBlockSourceResponse[] }>({
         method: 'GET',
-        url: '/transactions',
-        params: toTransactionListQuery(params, page),
+        url: '/blocks',
     });
-    return toTransactionListPage(response);
+    return blocks;
 };
 
 /**
@@ -88,7 +113,7 @@ export const updateTransactionCategory = (
 export const getCategories = (type?: CategoryResponse['type']) =>
     request<CategoryResponse[]>({ method: 'GET', url: '/categories', params: { type } });
 
-// TODO: 아래 API는 아직 명세가 없다. 정해지면 주석처럼 바꾼다. (URL은 지금은 가정값, 화면·훅은 그대로)
+// TODO: 소비 분석·맥락 질문은 서버에 아직 없어 목업만 쓴다. 정해지면 주석처럼 바꾼다. (URL은 지금은 가정값)
 
 /**
  * 소비 분석 (11)
@@ -104,30 +129,82 @@ export const getSpendingAnalysis = (month: string | null): Promise<SpendingAnaly
 export const answerQuestion = (body: AnswerQuestionRequest): Promise<null> =>
     mockResponse(() => answerQuestionMock(body));
 
-/**
- * 직접 넣은 거래가 카드 내역에 없을 때 그대로 둔다.
- * request<null>({ method: 'POST', url: `/transactions/${transactionId}/keep` })
- */
-export const keepTransaction = (transactionId: number): Promise<null> =>
-    mockResponse(() => keepTransactionMock(transactionId));
+// 아래는 서버에 있는 API다. 목업 모드(USE_MOCK)에서는 목업을 쓴다.
 
-/**
- * 직접 넣은 거래를 지운다.
- * request<null>({ method: 'DELETE', url: `/transactions/${transactionId}` })
- */
-export const deleteTransaction = (transactionId: number): Promise<null> =>
-    mockResponse(() => deleteTransactionMock(transactionId));
+/** 확인 필요 거래 처리 (PATCH /transactions/{transactionId}/review) */
+const reviewTransaction = (transactionId: number, action: TransactionReviewRequest['action']) =>
+    request<unknown>({
+        method: 'PATCH',
+        url: `/transactions/${transactionId}/review`,
+        data: { action } satisfies TransactionReviewRequest,
+    });
+
+/** 확인 필요 거래를 맞는 거래로 유지한다. 확인 필요 상태가 아니면 TRANSACTION_NOT_REVIEWABLE(409) */
+export const keepTransaction = async (transactionId: number): Promise<null> => {
+    if (USE_MOCK) {
+        return mockResponse(() => keepTransactionMock(transactionId));
+    }
+    await reviewTransaction(transactionId, 'KEEP');
+    return null;
+};
+
+/** 확인 필요 거래를 지운다. 서버가 블록 잔액을 되돌린다. */
+export const deleteTransaction = async (transactionId: number): Promise<null> => {
+    if (USE_MOCK) {
+        return mockResponse(() => deleteTransactionMock(transactionId));
+    }
+    await reviewTransaction(transactionId, 'DELETE');
+    return null;
+};
 
 /**
  * 빠른 입력 (10): 한 줄로 적은 내용을 금액·내용·날짜·분류·블록으로 나눠 미리 보여준다. 저장하지 않는다.
- * request<QuickInputPreview>({ method: 'POST', url: '/transactions/quick-input/preview', data: { text } })
+ * 금액을 못 읽으면 서버가 MANUAL_PARSE_FAILED(400)를 주는데, 화면은 금액 없는 미리보기로 보여준다.
  */
-export const previewQuickInput = (text: string): Promise<QuickInputPreview> =>
-    mockResponse(() => previewQuickInputMock(text));
+export const previewQuickInput = async (text: string): Promise<QuickInputPreview> => {
+    if (USE_MOCK) {
+        return mockResponse(() => previewQuickInputMock(text));
+    }
+    const [response, blocks] = await Promise.all([
+        request<ManualPreviewResponse>({
+            method: 'POST',
+            url: '/transactions/manual/preview',
+            data: { text },
+        }).catch((error: unknown) => {
+            if (
+                error instanceof ApiError &&
+                error.code === TRANSACTION_ERROR_CODE.MANUAL_PARSE_FAILED
+            ) {
+                return null;
+            }
+            throw error;
+        }),
+        getBlocksForTransactions(),
+    ]);
+    const preview = toQuickInputPreview(response, blocks);
+    if (!preview) {
+        throw new ApiError('NO_BLOCK', '먼저 블록을 만들어 주세요');
+    }
+    return preview;
+};
 
 /**
- * 빠른 입력 (10): 현금 지출을 저장한다. 카드 내역과 맞춰볼 필요가 없어 바로 확정된다.
- * request<null>({ method: 'POST', url: '/transactions/quick-input', data: body })
+ * 빠른 입력 (10): 현금 지출을 저장한다. 바로 확정 거래가 되고 서버가 분류로 정한 블록에서 뺀다.
+ * 서버는 블록을 따로 받지 않는다. (blockId는 목업에서만 쓴다)
  */
-export const createQuickInput = (body: CreateQuickInputRequest): Promise<null> =>
-    mockResponse(() => createQuickInputMock(body));
+export const createQuickInput = async (body: CreateQuickInputRequest): Promise<null> => {
+    if (USE_MOCK) {
+        return mockResponse(() => createQuickInputMock(body));
+    }
+    await request<unknown>({
+        method: 'POST',
+        url: '/transactions/manual',
+        data: {
+            amount: body.amount,
+            description: body.memo,
+            occurredDate: body.date,
+            categoryId: body.categoryId,
+        } satisfies ManualSaveRequest,
+    });
+    return null;
+};

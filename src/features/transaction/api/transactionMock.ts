@@ -512,6 +512,8 @@ export function previewQuickInputMock(text: string): QuickInputPreview {
         date,
         today: MOCK_TODAY,
         categoryName,
+        // 목업은 분류 이름만 쓴다. (서버 저장에만 ID가 필요하다)
+        categoryId: null,
         block: { ...LIVING, isDefault: true },
         blockOptions: FILTER_OPTIONS.blocks.map((block) => ({
             ...block,

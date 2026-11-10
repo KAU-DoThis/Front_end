@@ -259,6 +259,7 @@ export function QuickInputSheet({ isOpen, onClose }: QuickInputSheetProps) {
                 memo: preview.memo,
                 date,
                 categoryName: preview.categoryName,
+                categoryId: preview.categoryId,
                 blockId: block.blockId,
             },
             { onSuccess: handleClose },

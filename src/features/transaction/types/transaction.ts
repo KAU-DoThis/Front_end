@@ -2,7 +2,7 @@ import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
 import type { Status } from '@/shared/components/ui/StatusTag';
 
 // 화면에서 쓰는 거래 모양. 서버 응답(transactionResponse.ts)은 transactionMapper에서 이 모양으로 바꾼다.
-// TODO: 맥락 질문 · 빠른 입력 · 배분 기록은 API가 나오면 맞춘다. (지금은 시안 09 · 09-1 · 10 기준 가정값)
+// TODO: 맥락 질문은 API가 나오면 맞춘다. (지금은 시안 09-1 기준 가정값)
 
 /** 일부를 굵게 보여주는 서버 문장 (예: [네이버페이 38,000원](굵게) + , 무엇을 샀는지 알려줄래요?) */
 export type RichText = { text: string; isBold: boolean }[];
@@ -180,7 +180,6 @@ export interface AnswerQuestionRequest {
     saveRule: boolean;
 }
 
-// TODO: 빠른 입력 API 명세가 나오면 맞춘다. (지금은 시안 10 기준 가정값)
 /** 빠른 입력에서 고를 수 있는 블록 */
 export type QuickInputBlock = TransactionBlock & {
     /** 따로 고르지 않으면 넣는 블록 (예: 생활비) */
@@ -199,9 +198,11 @@ export interface QuickInputPreview {
     today: string;
     /** 서버가 짐작한 분류 (못 정하면 null) */
     categoryName: string | null;
+    /** 저장할 때 그대로 보내는 분류 ID (못 정하면 null) */
+    categoryId: number | null;
     /** 넣을 블록 */
     block: QuickInputBlock;
-    /** 블록 줄을 눌러 바꿀 수 있는 블록 */
+    /** 블록 줄을 눌러 바꿀 수 있는 블록. 서버는 분류로 블록을 정하므로 지금은 정해진 블록 하나만 온다. */
     blockOptions: QuickInputBlock[];
 }
 
@@ -211,5 +212,7 @@ export interface CreateQuickInputRequest {
     /** yyyy-MM-dd */
     date: string;
     categoryName: string | null;
+    /** 서버 저장에 쓰는 분류 ID. 서버는 이 분류로 뺄 블록을 정한다. */
+    categoryId: number | null;
     blockId: number;
 }
