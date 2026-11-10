@@ -55,6 +55,7 @@ export const useBlockSetupDraftStore = create<BlockSetupDraftState>((set, get) =
                 reason: null,
                 amount: null,
                 targetAmount: null,
+                dueDate: null,
                 payDay: null,
                 paymentMatch: null,
                 notifyShortage: initial.type === 'FIXED',

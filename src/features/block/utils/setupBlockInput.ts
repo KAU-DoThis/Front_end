@@ -46,5 +46,7 @@ export function toSetupBlockInput(block: SetupBlock, index: number): SetupBlockI
         monthlyBudget: isSpending ? block.amount : null,
         periodStartDay: isSpending ? (block.periodStartDay ?? 1) : null,
         notifyShortage: block.type === 'FIXED' && block.notifyShortage,
+        paymentMatch: block.type === 'FIXED' ? block.paymentMatch : null,
+        dueDate: block.type === 'GOAL' ? block.dueDate : null,
     };
 }

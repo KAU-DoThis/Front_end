@@ -17,6 +17,7 @@ import { Toggle } from '@/shared/components/ui/Toggle';
 import { colors } from '@/styles/tokens';
 
 import { DayPickerSheet } from './DayPickerSheet';
+import { MonthPickerSheet, formatYearMonth } from './MonthPickerSheet';
 
 /** − / + 한 번에 바뀌는 금액 */
 const AMOUNT_STEP = 10_000;
@@ -27,6 +28,7 @@ export interface SetupBlockErrors {
     name?: string;
     amount?: string;
     targetAmount?: string;
+    dueDate?: string;
     payDay?: string;
 }
 
@@ -41,6 +43,9 @@ export function getSetupBlockErrors(block: SetupBlock): SetupBlockErrors {
     }
     if (block.type === 'GOAL' && (block.targetAmount === null || block.targetAmount <= 0)) {
         errors.targetAmount = '0원보다 큰 금액을 넣어주세요';
+    }
+    if (block.type === 'GOAL' && block.dueDate === null) {
+        errors.dueDate = '기한을 골라주세요';
     }
     if (block.type === 'FIXED' && block.payDay === null) {
         errors.payDay = '납부일을 골라주세요';
@@ -112,7 +117,7 @@ interface NameFieldProps {
     onChange: (value: string) => void;
 }
 
-/** 직접 추가한 블록의 이름 칸 (금액 칸과 같은 상태 규칙) */
+/** 블록 이름 칸 (금액 칸과 같은 상태 규칙). AI가 제안한 블록도 이름을 바꿀 수 있다. */
 function NameField({ value, errorMessage, onChange }: NameFieldProps) {
     const [isFocused, setIsFocused] = useState(false);
 
@@ -232,7 +237,7 @@ interface SetupBlockFieldsProps {
     onChange: (patch: BlockPatch) => void;
 }
 
-type OpenSheet = 'payDay' | 'periodStartDay' | null;
+type OpenSheet = 'payDay' | 'periodStartDay' | 'dueDate' | null;
 
 /** 펼친 블록 카드의 유형별 입력 칸 (시안 04 월세 · 생활비) */
 export function SetupBlockFields({
@@ -252,13 +257,11 @@ export function SetupBlockFields({
 
     return (
         <View className="gap-3">
-            {block.createdBy === 'USER' && (
-                <NameField
-                    value={block.name}
-                    errorMessage={visibleErrors.name}
-                    onChange={(name) => onChange({ name })}
-                />
-            )}
+            <NameField
+                value={block.name}
+                errorMessage={visibleErrors.name}
+                onChange={(name) => onChange({ name })}
+            />
 
             {block.type === 'FIXED' && (
                 <>
@@ -365,7 +368,7 @@ export function SetupBlockFields({
                 </>
             )}
 
-            {/* 목표형 입력은 시안이 없어 목표 금액·한 달 모을 금액·색만 받는다. TODO: 기한은 목표형 시안이 나오면 붙인다. */}
+            {/* 목표형 입력은 시안이 없어 목표 금액·기한·한 달 모을 금액·색을 받는다. 기한은 달만 고르고 그달 말일로 보낸다. */}
             {block.type === 'GOAL' && (
                 <>
                     <AmountInput
@@ -373,6 +376,13 @@ export function SetupBlockFields({
                         value={block.targetAmount}
                         onChangeValue={(targetAmount) => onChange({ targetAmount })}
                         errorMessage={visibleErrors.targetAmount}
+                    />
+                    <SelectField
+                        label="기한"
+                        value={block.dueDate ? `${formatYearMonth(block.dueDate)}까지` : null}
+                        placeholder="언제까지 모을지 고르기"
+                        errorMessage={visibleErrors.dueDate}
+                        onPress={() => setOpenSheet('dueDate')}
                     />
                     <AmountInput
                         label="한 달 모을 금액"
@@ -384,6 +394,13 @@ export function SetupBlockFields({
                 </>
             )}
 
+            <MonthPickerSheet
+                isOpen={openSheet === 'dueDate'}
+                onClose={() => setOpenSheet(null)}
+                title="언제까지 모을까요?"
+                value={block.dueDate}
+                onSelect={(dueDate) => onChange({ dueDate })}
+            />
             <DayPickerSheet
                 isOpen={openSheet === 'payDay'}
                 onClose={() => setOpenSheet(null)}
