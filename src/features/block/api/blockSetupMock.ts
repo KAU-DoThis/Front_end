@@ -13,6 +13,8 @@ import { formatAmount } from '@/lib/format';
 export const BLOCK_SETUP_PROPOSAL_MOCK: BlockSetupProposal = {
     monthlyIncome: 3_500_000,
     recurringPaymentCount: 3,
+    // 아래 LINKED_BALANCE_MOCK과 같은 값
+    linkedBalance: 4_920_000,
     blocks: [
         {
             key: 'proposal-rent',

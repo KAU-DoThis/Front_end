@@ -52,6 +52,8 @@ export interface BlockSetupProposal {
     monthlyIncome: number | null;
     /** 찾은 반복 송금·결제 수 */
     recurringPaymentCount: number;
+    /** 구성안을 받을 때의 연동 계좌 잔액 (미리보기에서 잔액을 새로 받지 못하면 쓴다) */
+    linkedBalance: number;
     blocks: SetupBlock[];
 }
 

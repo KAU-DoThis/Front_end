@@ -68,6 +68,7 @@ export function toBlockSetupProposal(response: BlockProposalResponse): BlockSetu
     return {
         monthlyIncome: response.summary.monthlyAvgIncome,
         recurringPaymentCount: response.summary.recurringCount,
+        linkedBalance: response.summary.linkedBalance,
         blocks: response.proposals.map(toSetupBlock),
     };
 }
