@@ -1,6 +1,9 @@
 import { request } from '@/lib/apiClient';
+import { queryClient } from '@/lib/queryClient';
 import { ApiError } from '@/shared/types/api';
 import { USE_MOCK } from '@/lib/mock';
+
+import { blockKeys } from '@/features/block/api/blockKeys';
 
 import type { SpendingAnalysis } from '@/features/transaction/types/spendingAnalysis';
 import type {
@@ -70,7 +73,8 @@ export const getTransactionList = async (
             url: '/transactions',
             params: toTransactionListQuery(params, page),
         }),
-        getBlocksForTransactions(),
+        // 블록 목록은 점 색·블록 필터에만 쓴다. 받지 못해도 거래 목록은 보여준다. (점은 기본 색)
+        getBlocksForTransactions().catch(() => []),
     ]);
     return toTransactionListPage(response, blocks);
 };
@@ -79,13 +83,18 @@ export const getTransactionList = async (
  * 거래 화면에서 쓰는 블록 목록 (GET /blocks). 거래 응답의 블록에는 이름만 있어서 점 색·상태와 블록 필터 목록을 여기서 채운다.
  * TODO: 거래 응답의 블록에 색·상태가 오면 목록 조회는 블록 필터에만 쓴다.
  */
-const getBlocksForTransactions = async () => {
-    const { blocks } = await request<{ blocks: TransactionBlockSourceResponse[] }>({
-        method: 'GET',
-        url: '/blocks',
+const getBlocksForTransactions = () =>
+    // 페이지·미리보기마다 다시 받지 않도록 캐시를 같이 쓴다. (기본 staleTime 동안 재사용, 블록이 바뀌면 blockKeys.all로 무효화)
+    queryClient.fetchQuery({
+        queryKey: blockKeys.list(),
+        queryFn: async () => {
+            const { blocks } = await request<{ blocks: TransactionBlockSourceResponse[] }>({
+                method: 'GET',
+                url: '/blocks',
+            });
+            return blocks;
+        },
     });
-    return blocks;
-};
 
 /**
  * 거래 하나. 없으면 TRANSACTION_NOT_FOUND(404), 다른 사용자 거래면 TRANSACTION_FORBIDDEN(403)
