@@ -9,6 +9,7 @@ import { BottomSheet, BottomSheetTextInput } from '@/shared/components/ui/Bottom
 import { Button } from '@/shared/components/ui/Button';
 import { Icon } from '@/shared/components/ui/Icon';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
+import { ApiError } from '@/shared/types/api';
 import { colors, fontFamily } from '@/styles/tokens';
 
 import { useCreateQuickInputMutation } from '@/features/transaction/api/useCreateQuickInputMutation';
@@ -259,6 +260,7 @@ export function QuickInputSheet({ isOpen, onClose }: QuickInputSheetProps) {
                 memo: preview.memo,
                 date,
                 categoryName: preview.categoryName,
+                categoryId: preview.categoryId,
                 blockId: block.blockId,
             },
             { onSuccess: handleClose },
@@ -300,7 +302,9 @@ export function QuickInputSheet({ isOpen, onClose }: QuickInputSheetProps) {
     const footerError = isError
         ? '저장하지 못했어요. 잠시 후 다시 시도해 주세요'
         : trimmedText !== '' && previewQuery.isError
-          ? '내용을 나누지 못했어요. 잠시 후 다시 적어 주세요'
+          ? previewQuery.error instanceof ApiError && previewQuery.error.code === 'NO_BLOCK'
+              ? previewQuery.error.message
+              : '내용을 나누지 못했어요. 잠시 후 다시 적어 주세요'
           : null;
 
     return (
