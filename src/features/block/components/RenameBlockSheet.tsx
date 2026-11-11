@@ -82,6 +82,8 @@ function RenameBlockForm({ blockId, currentName, onSaved }: RenameBlockFormProps
                     accessibilityLabel="블록 이름"
                     value={name}
                     onChangeText={setName}
+                    // 저장 중에 고친 이름은 저장되지 않고 시트가 닫히므로 입력을 잠근다.
+                    editable={!isPending}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     maxLength={MAX_NAME_LENGTH}
