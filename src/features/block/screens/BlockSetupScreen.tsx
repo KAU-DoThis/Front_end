@@ -200,11 +200,17 @@ export function BlockSetupScreen({
                     </AppText>
                 </View>
                 <AppText className="mt-2 text-15 text-ink-sub">
-                    {'월 평균 수입 '}
-                    <AppText className="font-bold text-15">
-                        {formatAmount(proposal.monthlyIncome)}
-                    </AppText>
-                    {`  반복 송금·결제 ${proposal.recurringPaymentCount}건 발견`}
+                    {/* 거래 분석 전이면 수입을 모른다. */}
+                    {proposal.monthlyIncome !== null && (
+                        <>
+                            {'월 평균 수입 '}
+                            <AppText className="font-bold text-15">
+                                {formatAmount(proposal.monthlyIncome)}
+                            </AppText>
+                            {'  '}
+                        </>
+                    )}
+                    {`반복 송금·결제 ${proposal.recurringPaymentCount}건 발견`}
                 </AppText>
 
                 {/* 빠진 기관이 있으면 제안이 실제와 다를 수 있어 알려준다. */}

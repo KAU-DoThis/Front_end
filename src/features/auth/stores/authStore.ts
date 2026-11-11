@@ -1,34 +1,35 @@
 import { create } from 'zustand';
 
-import { logout as logoutApi } from '@/features/auth/api/authApi';
+import {
+    completeMockOnboarding,
+    getUserSettings,
+    logout as logoutApi,
+} from '@/features/auth/api/authApi';
 import { closeSession, setSessionExpiredHandler } from '@/lib/apiClient';
 import { USE_MOCK } from '@/lib/mock';
-import { onboardingStorage } from '@/lib/onboardingStorage';
 import { queryClient } from '@/lib/queryClient';
 import { tokenStorage } from '@/lib/tokenStorage';
-
-interface LoginOptions {
-    /** 로그인한 계정 이메일. 이 계정이 온보딩을 마쳤는지 확인하는 데 쓴다. */
-    email: string;
-    /** 방금 가입했으면 true. 온보딩(계좌 연동 → 블록 구성)을 거친 뒤 홈으로 간다. */
-    isNewUser?: boolean;
-}
+import { ApiError } from '@/shared/types/api';
 
 interface AuthState {
     isLoggedIn: boolean;
     /** 로그인했지만 온보딩을 아직 마치지 않았는지. true면 홈 대신 온보딩 화면만 열린다. */
     needsOnboarding: boolean;
+    /**
+     * 앱 시작 때 서버 온보딩 상태를 받지 못했는지. true면 홈·온보딩 대신 다시 시도 화면을 연다.
+     * (온보딩 중인 사용자가 홈으로 들어가면 다시 온보딩으로 돌아올 길이 없어서)
+     */
+    onboardingCheckFailed: boolean;
     /** restore()가 끝났는지. 끝나기 전에는 로그인/홈 중 어디로 갈지 정할 수 없다. */
     isRestored: boolean;
     /** 앱 시작 시 저장된 토큰으로 로그인 상태 복원 */
     restore: () => Promise<void>;
-    login: (
-        accessToken: string,
-        refreshToken: string | undefined,
-        options: LoginOptions,
-    ) => Promise<void>;
+    /** 온보딩 상태를 다시 받는다. 또 실패하면 onboardingCheckFailed를 그대로 둔다. */
+    retryOnboardingCheck: () => Promise<void>;
+    /** 토큰을 저장하고 서버 온보딩 상태를 받아 로그인한다. 온보딩 상태를 받지 못하면 실패한다. */
+    login: (accessToken: string, refreshToken: string | undefined) => Promise<void>;
     /** 블록 구성까지 마치면 부른다. 상태가 바뀌면 루트 레이아웃이 홈으로 보낸다. */
-    completeOnboarding: () => Promise<void>;
+    completeOnboarding: () => void;
     /** 서버의 리프레시 토큰을 폐기하고 로그아웃한다. 서버 요청이 실패해도 앱에서는 로그아웃한다. */
     logout: () => Promise<void>;
     /** 토큰 재발급까지 실패했을 때. 서버에 알리지 않고 저장된 토큰만 지운다. */
@@ -41,90 +42,92 @@ interface AuthState {
  */
 async function clearSession() {
     await tokenStorage.clear().catch(() => undefined);
-    await onboardingStorage.clearCurrentEmail().catch(() => undefined);
     // 다른 계정으로 로그인했을 때 이전 계정의 데이터(블록 제안·홈 등)가 보이지 않도록 캐시를 비운다.
     queryClient.clear();
 }
 
-/** 저장된 기록으로 이 계정이 온보딩을 마쳤는지 본다. 읽지 못하면 홈으로 보낸다. */
-async function readNeedsOnboarding(email: string | null) {
-    if (!email) return false;
-    try {
-        return await onboardingStorage.isPending(email);
-    } catch {
-        return false;
-    }
+/**
+ * 서버 온보딩 상태(GET /users/me/settings)로 온보딩을 거쳐야 하는지 정한다.
+ * 서버 단계는 동의 → 연동 → 튜토리얼 → 블록 확정 순으로 계산되는데, 앱에는 튜토리얼 화면이 없다.
+ * 그래서 블록을 이미 확정했으면 튜토리얼 여부와 상관없이 홈으로 보낸다. (다시 확정하면 서버가 거절한다)
+ * TODO: 동의(CONSENT) 단계면 동의 화면으로 보낸다. 지금은 연결 화면부터 시작한다.
+ */
+async function fetchNeedsOnboarding() {
+    const settings = await getUserSettings();
+    return !settings.blocksConfirmed && settings.onboardingStep !== 'DONE';
 }
 
-// TODO: 온보딩 진행 단계(CONNECT · BLOCK_SETUP · DONE)를 서버(로그인 응답 또는 내 정보 API)에서 받으면
-//       restore·login에서 그 값을 쓰고 onboardingStorage는 지운다. 지금은 가입한 기기에 남긴 기록으로만 판단하고,
-//       단계는 기억하지 않아 블록 구성 중에 로그아웃하면 다시 연동 화면부터 시작한다.
-//       (단계를 받으면 BLOCK_SETUP일 때 블록 구성 화면으로 바로 보낸다)
 export const useAuthStore = create<AuthState>((set) => ({
     isLoggedIn: false,
     needsOnboarding: false,
+    onboardingCheckFailed: false,
     isRestored: false,
 
     async restore() {
         try {
             const accessToken = await tokenStorage.getAccessToken();
             if (!accessToken) {
-                set({ isLoggedIn: false, needsOnboarding: false });
+                set({ isLoggedIn: false, needsOnboarding: false, onboardingCheckFailed: false });
                 return;
             }
-            // 온보딩 중에 앱을 껐다 켜도 온보딩으로 돌아가게 한다.
-            const email = await onboardingStorage.getCurrentEmail().catch(() => null);
-            const needsOnboarding = await readNeedsOnboarding(email);
-            set({ isLoggedIn: true, needsOnboarding });
+            try {
+                // 온보딩 중에 앱을 껐다 켜도 서버 단계를 보고 온보딩으로 돌아간다.
+                const needsOnboarding = await fetchNeedsOnboarding();
+                set({ isLoggedIn: true, needsOnboarding, onboardingCheckFailed: false });
+            } catch (error) {
+                // 토큰이 만료돼 재발급까지 실패했으면(401) 세션 만료 처리가 로그인 화면으로 보낸다.
+                if (error instanceof ApiError && error.status === 401) {
+                    set({
+                        isLoggedIn: false,
+                        needsOnboarding: false,
+                        onboardingCheckFailed: false,
+                    });
+                    return;
+                }
+                // 네트워크 오류 등으로 상태를 받지 못하면 로그인은 유지하고 다시 시도 화면을 연다.
+                set({ isLoggedIn: true, needsOnboarding: false, onboardingCheckFailed: true });
+            }
         } catch {
             // 토큰을 읽지 못하면 비로그인 상태로 시작한다.
-            set({ isLoggedIn: false, needsOnboarding: false });
+            set({ isLoggedIn: false, needsOnboarding: false, onboardingCheckFailed: false });
         } finally {
             // 토큰을 읽다 실패해도 로그인 화면으로라도 진입할 수 있게 한다.
             set({ isRestored: true });
         }
     },
 
-    async login(accessToken, refreshToken, { email, isNewUser = false }) {
-        // 가입 직후에는 온보딩 기록을 토큰보다 먼저 남긴다.
-        // 토큰만 저장된 채 앱이 꺼지면 다음 실행 때 온보딩을 건너뛰고 홈으로 가기 때문이다.
-        // 기록을 남기지 못하면 토큰도 저장하지 않고 실패로 돌려준다. (가입 화면에서 다시 시도한다)
-        if (isNewUser) {
-            await onboardingStorage.markPending(email);
-            await onboardingStorage.setCurrentEmail(email);
+    async retryOnboardingCheck() {
+        try {
+            const needsOnboarding = await fetchNeedsOnboarding();
+            set({ needsOnboarding, onboardingCheckFailed: false });
+        } catch {
+            // 재발급까지 실패했으면(401) 세션 만료 처리가 로그인 화면으로 보낸다. 그 밖에는 다시 시도 화면에 머문다.
         }
+    },
 
-        // 이전 세션의 토큰이 남지 않도록 비운 뒤 저장한다.
+    async login(accessToken, refreshToken) {
+        // 이전 세션의 토큰이 남지 않도록 비운 뒤 저장한다. (온보딩 상태 요청에 이 토큰을 쓴다)
         await tokenStorage.clear();
         await tokenStorage.setTokens(accessToken, refreshToken);
 
-        let needsOnboarding = isNewUser;
-        if (!isNewUser) {
-            // 온보딩 기록을 읽지 못해도 기존 계정의 로그인은 막지 않는다.
-            try {
-                await onboardingStorage.setCurrentEmail(email);
-                // 가입하고 온보딩을 마치지 않은 채 로그아웃했던 계정이면 이어서 하게 한다.
-                needsOnboarding = await onboardingStorage.isPending(email);
-            } catch {
-                // 기록을 읽거나 쓰지 못하면 홈으로 보낸다.
-            }
+        let needsOnboarding: boolean;
+        try {
+            needsOnboarding = await fetchNeedsOnboarding();
+        } catch (error) {
+            // 어느 화면으로 갈지 모른 채 로그인 상태로 두지 않는다. 토큰을 지우고 다시 시도하게 한다.
+            await clearSession();
+            throw error;
         }
 
         // 홈이 잠깐 보였다가 온보딩으로 튀지 않도록 두 값을 한 번에 바꾼다.
-        set({ isLoggedIn: true, needsOnboarding });
+        set({ isLoggedIn: true, needsOnboarding, onboardingCheckFailed: false });
     },
 
-    async completeOnboarding() {
-        try {
-            const email = await onboardingStorage.getCurrentEmail();
-            if (email) {
-                await onboardingStorage.clearPending(email);
-            }
-        } catch {
-            // 기록을 지우지 못해도 블록은 이미 만들어졌으니 홈으로 보낸다.
-        } finally {
-            set({ needsOnboarding: false });
+    completeOnboarding() {
+        if (USE_MOCK) {
+            completeMockOnboarding();
         }
+        set({ needsOnboarding: false });
     },
 
     async logout() {
@@ -138,12 +141,12 @@ export const useAuthStore = create<AuthState>((set) => ({
             }
             await clearSession();
         });
-        set({ isLoggedIn: false, needsOnboarding: false });
+        set({ isLoggedIn: false, needsOnboarding: false, onboardingCheckFailed: false });
     },
 
     async expireSession() {
         await closeSession(clearSession);
-        set({ isLoggedIn: false, needsOnboarding: false });
+        set({ isLoggedIn: false, needsOnboarding: false, onboardingCheckFailed: false });
     },
 }));
 

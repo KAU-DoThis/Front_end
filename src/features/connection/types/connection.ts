@@ -41,4 +41,28 @@ export interface ConnectInstitutionsResponse {
 export const CONNECTION_ERROR_CODE = {
     /** CODEF 호출 제한에 걸림 */
     RATE_LIMITED: 'CONNECTION_429',
+    /** 아직 연결하지 않은 기관. 앱에 기관 인증 입력 화면이 없어 연결할 수 없다. */
+    AUTH_INPUT_UNAVAILABLE: 'CONNECTION_AUTH_INPUT_UNAVAILABLE',
 } as const;
+
+/** 연동된 계좌·카드 한 건 (Back_end LinkedAccountResponse) */
+export interface LinkedAccountResponse {
+    linkedAccountId: number;
+    institutionCode: string;
+    institutionName: string;
+    type: InstitutionType;
+    accountName: string | null;
+    accountNumberLast4: string | null;
+    /** 카드는 null */
+    balance: number | null;
+    isActive: boolean;
+    status: string;
+    lastSyncedAt: string | null;
+}
+
+/** GET /linked-accounts (해제된 계좌는 빠진다) */
+export interface LinkedAccountListResponse {
+    totalBalance: number;
+    lastSyncedAt: string | null;
+    linkedAccounts: LinkedAccountResponse[];
+}

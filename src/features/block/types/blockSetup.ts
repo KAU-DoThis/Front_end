@@ -1,7 +1,7 @@
 import type { Block, BlockType } from '@/features/block/types/block';
 import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
 
-// TODO: 온보딩 블록 구성 API 명세가 나오면 맞춘다. (지금은 시안 04 기준 가정값)
+// 서버 응답(GET /blocks/proposals)은 blockSetupMapper에서 이 모양으로 바꾼다.
 
 /** AI가 블록을 제안한 근거 문장 */
 export interface ProposalReason {
@@ -35,6 +35,8 @@ export interface SetupBlock {
     amount: number | null;
     /** 목표형: 모을 목표 금액 (그 외 null) */
     targetAmount: number | null;
+    /** 목표형: 기한 (고른 달의 말일, yyyy-MM-dd. 그 외 null) */
+    dueDate: string | null;
     /** 고정지출형 납부일 1~31 */
     payDay: number | null;
     paymentMatch: PaymentMatch | null;
@@ -46,10 +48,12 @@ export interface SetupBlock {
 
 /** 3개월 거래를 보고 나눈 AI 제안 */
 export interface BlockSetupProposal {
-    /** 월 평균 수입 */
-    monthlyIncome: number;
+    /** 월 평균 수입. 거래 분석 전이면 null */
+    monthlyIncome: number | null;
     /** 찾은 반복 송금·결제 수 */
     recurringPaymentCount: number;
+    /** 구성안을 받을 때의 연동 계좌 잔액 (미리보기에서 잔액을 새로 받지 못하면 쓴다) */
+    linkedBalance: number;
     blocks: SetupBlock[];
 }
 
@@ -91,6 +95,10 @@ export type SetupBlockInput = Pick<
     periodStartDay: number | null;
     /** 고정지출형: 납부 3일 전까지 돈이 모자라면 알려주기 */
     notifyShortage: boolean;
+    /** 고정지출형: 납부 확인 조건 (받는 분·금액 범위). 확정 요청에 그대로 보낸다. */
+    paymentMatch: PaymentMatch | null;
+    /** 목표형: 기한 (yyyy-MM-dd) */
+    dueDate: string | null;
 };
 
 export interface BlockSetupRequest {

@@ -13,6 +13,8 @@ import { formatAmount } from '@/lib/format';
 export const BLOCK_SETUP_PROPOSAL_MOCK: BlockSetupProposal = {
     monthlyIncome: 3_500_000,
     recurringPaymentCount: 3,
+    // 아래 LINKED_BALANCE_MOCK과 같은 값
+    linkedBalance: 4_920_000,
     blocks: [
         {
             key: 'proposal-rent',
@@ -27,6 +29,7 @@ export const BLOCK_SETUP_PROPOSAL_MOCK: BlockSetupProposal = {
             },
             amount: 600_000,
             targetAmount: null,
+            dueDate: null,
             payDay: 25,
             paymentMatch: { counterparty: '김*수', minAmount: 540_000, maxAmount: 660_000 },
             notifyShortage: true,
@@ -45,6 +48,7 @@ export const BLOCK_SETUP_PROPOSAL_MOCK: BlockSetupProposal = {
             },
             amount: 1_500_000,
             targetAmount: null,
+            dueDate: null,
             payDay: null,
             paymentMatch: null,
             notifyShortage: false,
@@ -63,6 +67,7 @@ export const BLOCK_SETUP_PROPOSAL_MOCK: BlockSetupProposal = {
             },
             amount: 55_000,
             targetAmount: null,
+            dueDate: null,
             payDay: 15,
             paymentMatch: { counterparty: 'SK텔레콤', minAmount: 49_500, maxAmount: 60_500 },
             notifyShortage: true,
@@ -81,6 +86,7 @@ export const BLOCK_SETUP_PROPOSAL_MOCK: BlockSetupProposal = {
             },
             amount: 17_000,
             targetAmount: null,
+            dueDate: null,
             payDay: 3,
             paymentMatch: { counterparty: '넷플릭스', minAmount: 15_300, maxAmount: 18_700 },
             notifyShortage: true,
