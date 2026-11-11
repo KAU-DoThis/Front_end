@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { OnboardingCheckErrorScreen } from '@/features/auth/screens/OnboardingCheckErrorScreen';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { queryClient } from '@/lib/queryClient';
 import { useAppFonts } from '@/shared/hooks/useAppFonts';
@@ -19,6 +20,7 @@ export default function RootLayout() {
     const restore = useAuthStore((state) => state.restore);
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
     const needsOnboarding = useAuthStore((state) => state.needsOnboarding);
+    const onboardingCheckFailed = useAuthStore((state) => state.onboardingCheckFailed);
     const isRestored = useAuthStore((state) => state.isRestored);
     const [isFontLoaded, fontError] = useAppFonts();
     // 로그인 상태를 복원하기 전에 화면을 띄우면 홈이 잠깐 보였다가 로그인으로 튈 수 있다.
@@ -44,33 +46,38 @@ export default function RootLayout() {
             <QueryClientProvider client={queryClient}>
                 <BottomSheetModalProvider>
                     <StatusBar style="dark" />
-                    <Stack screenOptions={{ headerShown: false }}>
-                        {/* 로그인한 사용자만 접근. 비로그인 상태면 로그인 화면으로 보낸다. */}
-                        <Stack.Protected guard={isLoggedIn && !needsOnboarding}>
-                            <Stack.Screen name="(tabs)" />
-                            {/* 가운데 에이전트 버튼: 아래에서 올라오는 전체 화면, 뒤로 가기로 닫힘 */}
-                            <Stack.Screen
-                                name="agent"
-                                options={{
-                                    presentation: 'fullScreenModal',
-                                    animation: 'slide_from_bottom',
-                                }}
-                            />
-                            <Stack.Screen name="block/[blockId]" />
-                        </Stack.Protected>
-                        {/* 가입 직후: 온보딩을 마치기 전까지는 홈 대신 온보딩만 연다. */}
-                        <Stack.Protected guard={isLoggedIn && needsOnboarding}>
-                            <Stack.Screen name="onboarding/connect" />
-                            <Stack.Screen name="onboarding/blocks" />
-                        </Stack.Protected>
-                        {/* 로그인한 상태면 로그인 화면 대신 홈으로 보낸다. */}
-                        <Stack.Protected guard={!isLoggedIn}>
-                            <Stack.Screen name="(auth)/login" />
-                            <Stack.Screen name="(auth)/sign-up" />
-                            <Stack.Screen name="(auth)/agreement" />
-                        </Stack.Protected>
-                        <Stack.Screen name="dev/components" />
-                    </Stack>
+                    {/* 온보딩 상태를 받지 못하면 홈·온보딩 어느 쪽도 열지 않고 다시 시도하게 한다. */}
+                    {isLoggedIn && onboardingCheckFailed ? (
+                        <OnboardingCheckErrorScreen />
+                    ) : (
+                        <Stack screenOptions={{ headerShown: false }}>
+                            {/* 로그인한 사용자만 접근. 비로그인 상태면 로그인 화면으로 보낸다. */}
+                            <Stack.Protected guard={isLoggedIn && !needsOnboarding}>
+                                <Stack.Screen name="(tabs)" />
+                                {/* 가운데 에이전트 버튼: 아래에서 올라오는 전체 화면, 뒤로 가기로 닫힘 */}
+                                <Stack.Screen
+                                    name="agent"
+                                    options={{
+                                        presentation: 'fullScreenModal',
+                                        animation: 'slide_from_bottom',
+                                    }}
+                                />
+                                <Stack.Screen name="block/[blockId]" />
+                            </Stack.Protected>
+                            {/* 가입 직후: 온보딩을 마치기 전까지는 홈 대신 온보딩만 연다. */}
+                            <Stack.Protected guard={isLoggedIn && needsOnboarding}>
+                                <Stack.Screen name="onboarding/connect" />
+                                <Stack.Screen name="onboarding/blocks" />
+                            </Stack.Protected>
+                            {/* 로그인한 상태면 로그인 화면 대신 홈으로 보낸다. */}
+                            <Stack.Protected guard={!isLoggedIn}>
+                                <Stack.Screen name="(auth)/login" />
+                                <Stack.Screen name="(auth)/sign-up" />
+                                <Stack.Screen name="(auth)/agreement" />
+                            </Stack.Protected>
+                            <Stack.Screen name="dev/components" />
+                        </Stack>
+                    )}
                 </BottomSheetModalProvider>
             </QueryClientProvider>
         </GestureHandlerRootView>
