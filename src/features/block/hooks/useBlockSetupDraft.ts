@@ -38,10 +38,7 @@ export function useBlockSetupDraft(proposedBlocks: SetupBlock[] | undefined) {
     const base = proposedBlocks ?? EMPTY_BLOCKS;
     const blocks = draftBlocks ?? proposedBlocks ?? null;
 
-    const proposedByKey = useMemo(
-        () => new Map(base.map((block) => [block.key, block])),
-        [base],
-    );
+    const proposedByKey = useMemo(() => new Map(base.map((block) => [block.key, block])), [base]);
 
     const isModified = (block: SetupBlock) => {
         const proposed = proposedByKey.get(block.key);
