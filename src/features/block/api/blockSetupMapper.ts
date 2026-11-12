@@ -8,6 +8,8 @@ import type {
 import type {
     BlockProposal,
     BlockProposalConfirmItem,
+    BlockProposalPreviewItem,
+    BlockProposalPreviewResponse,
     BlockProposalResponse,
     ProposalRule,
 } from '@/features/block/types/blockProposalResponse';
@@ -117,32 +119,21 @@ export function toConfirmItems(request: BlockSetupRequest): BlockProposalConfirm
     });
 }
 
-/** 하루 약 얼마 (월 금액 ÷ 이번 달 일수, 100원 내림). 서버 구성안 dailyApprox와 같은 계산이다. */
-function toDailyApprox(monthlyAmount: number, today: Date) {
-    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    return Math.floor(monthlyAmount / daysInMonth / 100) * 100;
+/** 미리보기 요청 블록. 확정 요청과 같은 모양에 구성안 키를 붙인다. */
+export function toPreviewItems(request: BlockSetupRequest): BlockProposalPreviewItem[] {
+    const items = toConfirmItems(request);
+    return items.map((item, index) => ({ ...item, proposalKey: request.blocks[index].key }));
 }
 
-/**
- * 서버 미리보기 API가 나오기 전 임시 계산. 연동 잔액은 서버 값을 쓰고, 나머지는 서버 구성안과 같은 식으로 계산한다.
- * 경고 문장은 서버가 만들어야 해서 비워 둔다.
- * TODO: POST /blocks/proposals/preview가 생기면 이 함수를 지우고 서버 값을 쓴다.
- */
-export function toInterimPreview(
-    request: BlockSetupRequest,
-    linkedBalance: number,
-    today: Date = new Date(),
-): BlockSetupPreview {
-    const amounts = request.blocks.map((input) => getSetupBlockInputAmount(input) ?? 0);
-    const allocatedAmount = amounts.reduce((sum, amount) => sum + amount, 0);
+export function toBlockSetupPreview(response: BlockProposalPreviewResponse): BlockSetupPreview {
     return {
-        linkedBalance,
-        allocatedAmount,
-        remainingAmount: linkedBalance - allocatedAmount,
-        blocks: request.blocks.map((input, index) => ({
-            key: input.key,
-            dailyBudget: input.type === 'SPENDING' ? toDailyApprox(amounts[index], today) : null,
-            warning: null,
+        linkedBalance: response.linkedBalance,
+        allocatedAmount: response.allocated,
+        remainingAmount: response.unallocated,
+        blocks: response.blocks.map((block) => ({
+            key: block.proposalKey,
+            dailyBudget: block.dailyApprox,
+            warning: block.warning,
         })),
     };
 }

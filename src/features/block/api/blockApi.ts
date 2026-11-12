@@ -2,6 +2,7 @@ import type { BlockDetail } from '@/features/block/types/blockDetail';
 import type { BlockDetailResponse } from '@/features/block/types/blockDetailResponse';
 import type {
     BlockProposalConfirmResponse,
+    BlockProposalPreviewResponse,
     BlockProposalResponse,
 } from '@/features/block/types/blockProposalResponse';
 import type { BlockHome } from '@/features/block/types/blockHome';
@@ -24,14 +25,17 @@ import type {
 } from '@/features/block/types/waitingFund';
 import { request } from '@/lib/apiClient';
 import { USE_MOCK } from '@/lib/mock';
-import { queryClient } from '@/lib/queryClient';
 
 import { toBlockDetail } from './blockDetailMapper';
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
 import { toBlockHome } from './blockHomeMapper';
-import { blockKeys } from './blockKeys';
-import { toBlockSetupProposal, toConfirmItems, toInterimPreview } from './blockSetupMapper';
+import {
+    toBlockSetupPreview,
+    toBlockSetupProposal,
+    toConfirmItems,
+    toPreviewItems,
+} from './blockSetupMapper';
 import { BLOCK_SETUP_PROPOSAL_MOCK, mockBlockSetupPreview } from './blockSetupMock';
 import { simulateTransferMock, transferBlockMock } from './blockTransferMock';
 
@@ -159,29 +163,17 @@ export const getBlockSetupProposal = async (): Promise<BlockSetupProposal> => {
     return toBlockSetupProposal(response);
 };
 
-/**
- * 고친 블록으로 합계·하루 쓸 돈·경고를 계산한다. (저장하지 않는다)
- * TODO: 서버 미리보기 API(POST /blocks/proposals/preview)가 생기면 그 응답을 쓴다.
- *       지금은 연동 잔액만 서버(GET /linked-accounts)에서 받고 나머지는 임시로 계산한다.
- *       잔액을 받지 못하면 구성안을 받을 때의 잔액을 쓴다. (잔액 조회 실패로 확정이 막히지 않도록)
- */
+/** 고친 블록으로 서버가 합계·하루 쓸 돈·경고를 계산한다. (저장하지 않는다) */
 export const previewBlockSetup = async (body: BlockSetupRequest): Promise<BlockSetupPreview> => {
     if (USE_BLOCK_SETUP_MOCK) {
         return delay(() => mockBlockSetupPreview(body), 200);
     }
-    const linkedBalance = await request<{ totalBalance: number }>({
-        method: 'GET',
-        url: '/linked-accounts',
-    })
-        .then(({ totalBalance }) => totalBalance)
-        .catch((error: unknown) => {
-            const proposal = queryClient.getQueryData<BlockSetupProposal>(
-                blockKeys.setupProposal(),
-            );
-            if (!proposal) throw error;
-            return proposal.linkedBalance;
-        });
-    return toInterimPreview(body, linkedBalance);
+    const response = await request<BlockProposalPreviewResponse>({
+        method: 'POST',
+        url: '/blocks/proposals/preview',
+        data: { blocks: toPreviewItems(body) },
+    });
+    return toBlockSetupPreview(response);
 };
 
 /** 블록 구성을 확정해 블록을 만든다. 남는 돈은 서버가 나눌 돈으로 만든다. */

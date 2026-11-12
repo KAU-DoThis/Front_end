@@ -50,6 +50,8 @@ export function BlockSetupScreen({
     const draft = useBlockSetupDraft(proposal?.blocks);
     const previewQuery = useBlockSetupPreviewQuery(draft.request);
     const preview = previewQuery.data?.preview;
+    // 잔액보다 더 나누면 서버가 거절하므로 미리 막는다. (지금 고친 내용으로 계산된 값일 때만)
+    const isOverAllocated = previewQuery.isCurrent && (preview?.remainingAmount ?? 0) < 0;
     const { mutate: createBlocks, isPending, isError, isSuccess } = useCreateSetupBlocksMutation();
 
     // null이면 처음 상태: 첫 블록만 펼친다.
@@ -171,7 +173,7 @@ export function BlockSetupScreen({
             return;
         }
         // 화면에 보이는 합계·경고가 지금 고친 내용으로 계산된 뒤에만 만든다.
-        if (!previewQuery.isCurrent) return;
+        if (!previewQuery.isCurrent || isOverAllocated) return;
         createBlocks(draft.request, { onSuccess: onComplete });
     };
 
@@ -184,7 +186,9 @@ export function BlockSetupScreen({
           ? { text: '빨갛게 표시된 칸을 채우면 시작할 수 있어요', isError: true }
           : isWaitingPreview && previewQuery.isError
             ? { text: '합계를 다시 계산하면 시작할 수 있어요', isError: true }
-            : { text: '시작하기 전엔 아무것도 저장되지 않아요', isError: false };
+            : isOverAllocated
+              ? { text: '잔액보다 더 나눈 만큼 줄이면 시작할 수 있어요', isError: true }
+              : { text: '시작하기 전엔 아무것도 저장되지 않아요', isError: false };
 
     return (
         <Screen>
@@ -336,7 +340,7 @@ export function BlockSetupScreen({
                     loadingTitle="블록 만드는 중"
                     // 성공한 뒤 홈으로 넘어갈 때까지 로딩을 이어서 보여준다.
                     isLoading={isPending || isSuccess}
-                    disabled={isWaitingPreview}
+                    disabled={isWaitingPreview || isOverAllocated}
                     onPress={handleSubmit}
                 />
             </View>

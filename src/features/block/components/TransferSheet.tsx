@@ -72,8 +72,6 @@ export function TransferSheet({
     const [fromBlockId, setFromBlockId] = useState<number | null>(initialFromBlockId);
     const [toBlockId, setToBlockId] = useState<number | null>(initialToBlockId);
     const [amount, setAmount] = useState(0);
-    // 처음 열 때 받는 블록이 모자란 만큼 금액을 채워 둔다. 사용자가 금액을 건드리면 다시 채우지 않는다.
-    const [isAmountTouched, setIsAmountTouched] = useState(false);
     const [isAutoReturn, setIsAutoReturn] = useState(true);
     const [picking, setPicking] = useState<PickingSide | null>(() =>
         firstPicking(initialFromBlockId, initialToBlockId),
@@ -88,7 +86,6 @@ export function TransferSheet({
             setFromBlockId(initialFromBlockId);
             setToBlockId(initialToBlockId);
             setAmount(0);
-            setIsAmountTouched(false);
             setIsAutoReturn(true);
             setPicking(firstPicking(initialFromBlockId, initialToBlockId));
             setErrorMessage(null);
@@ -106,21 +103,9 @@ export function TransferSheet({
     const shortfall =
         result?.shortfall?.blockId === toBlockId ? (result?.shortfall?.amount ?? 0) : 0;
 
-    // 처음 금액 채우기는 이번 조합으로 새로 받은 응답일 때만 한다.
-    if (
-        isOpen &&
-        !isAmountTouched &&
-        !simulation.isPlaceholderData &&
-        shortfall > 0 &&
-        amount !== shortfall
-    ) {
-        setAmount(shortfall);
-    }
-
     const transfer = useTransferBlockMutation();
 
     const changeAmount = (next: number) => {
-        setIsAmountTouched(true);
         setErrorMessage(null);
         setAmount(Math.max(0, next));
     };
