@@ -315,6 +315,7 @@ export function SetupBlockFields({
                             accessibilityLabel="납부 3일 전까지 돈이 모자라면 알려주기"
                         />
                     </View>
+                    <ColorField value={block.color} onChange={(color) => onChange({ color })} />
                 </>
             )}
 
