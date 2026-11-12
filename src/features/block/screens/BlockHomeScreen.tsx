@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
 import { cn } from '@/lib/cn';
+import { formatWon } from '@/lib/format';
 import { Screen } from '@/shared/components/layout/Screen';
 import { DropletLayerProvider, useDragState } from '@/shared/components/motion/DropletLayer';
 import { AppText } from '@/shared/components/ui/AppText';
@@ -20,7 +21,12 @@ import { HomeHeader } from '@/features/block/components/HomeHeader';
 import { PendingMoneySection } from '@/features/block/components/PendingMoneySection';
 import { TransferSheet } from '@/features/block/components/TransferSheet';
 import type { HomeBlock } from '@/features/block/types/block';
-import type { BlockHome } from '@/features/block/types/blockHome';
+import type { AgentMessage, BlockHome } from '@/features/block/types/blockHome';
+import {
+    useCoachActivityStore,
+    type CoachMove,
+} from '@/features/suggestion/stores/coachActivityStore';
+import { withRo } from '@/features/suggestion/utils/coachText';
 
 /** 01 홈 · 블록 탭 */
 export function BlockHomeScreen() {
@@ -67,6 +73,10 @@ function HomeContent({ home }: { home: BlockHome }) {
     const hoverBlock = home.blocks.find((block) => block.blockId === hoverId) ?? null;
     // 드래그 중엔 블록 말고는 흐리게 (03-1)
     const dimClass = sourceBlock ? 'opacity-40' : undefined;
+    // 4-1: 방금 초불이가 옮긴 일이 있으면 배너를 그 이야기로 바꾼다. (되돌렸으면 원래 배너)
+    const lastMove = useCoachActivityStore((state) => state.moves[0]);
+    const recentMove = lastMove && !lastMove.undoResult ? lastMove : null;
+    const agentMessage = recentMove ? toMoveMessage(recentMove) : home.agentMessage;
 
     const handlePressBlock = (block: HomeBlock) => {
         router.push({ pathname: '/block/[blockId]', params: { blockId: String(block.blockId) } });
@@ -78,11 +88,20 @@ function HomeContent({ home }: { home: BlockHome }) {
                 <View className={dimClass}>
                     <AssetCardPager home={home} />
                 </View>
-                {home.agentMessage && (
+                {agentMessage && (
                     <View className={cn('mt-3', dimClass)}>
                         <AgentBanner
-                            message={home.agentMessage}
-                            onPress={() => router.push('/agent')}
+                            message={agentMessage}
+                            onPress={() =>
+                                router.push(
+                                    recentMove
+                                        ? {
+                                              pathname: '/agent',
+                                              params: { proposalId: String(recentMove.proposalId) },
+                                          }
+                                        : '/agent',
+                                )
+                            }
                         />
                     </View>
                 )}
@@ -148,4 +167,14 @@ function HomeContent({ home }: { home: BlockHome }) {
             />
         </View>
     );
+}
+
+/** 초불이가 옮긴 일 배너 문구 (4-1) */
+function toMoveMessage({ result, dailyBudget }: CoachMove): AgentMessage {
+    return {
+        title: `방금 ${withRo(result.to.name)} ${formatWon(result.amount)} 옮겼어요`,
+        body: dailyBudget
+            ? `하루 쓸 수 있는 돈이 ${formatWon(dailyBudget.after)}이 됐어요`
+            : `${result.to.name}에 ${formatWon(result.to.balanceAfter)} 있어요`,
+    };
 }
