@@ -186,5 +186,32 @@ export const createSetupBlocks = async (body: BlockSetupRequest): Promise<null> 
         url: '/blocks/proposals/confirm',
         data: { blocks: toConfirmItems(body) },
     });
+    if (DEMO_BACKDATE) {
+        await backdateConfirmedAt();
+    }
     return null;
 };
+
+/**
+ * 시연 빌드에서만: 확정 직후 확정일을 이번 달 1일로 옮겨 홈·상세 소진 그래프를 채운다.
+ * shortcut: 개발 서버 전용 API를 앱이 부른다. 시연 뒤 지우거나, 백엔드가 개발 서버에서 확정일을 잡아주면 지운다.
+ */
+const DEMO_BACKDATE = process.env.EXPO_PUBLIC_DEMO_BACKDATE === 'true';
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+async function backdateConfirmedAt() {
+    const month = new Date(Date.now() + KST_OFFSET_MS).toISOString().slice(0, 7);
+    try {
+        // 서버가 한 번에 다 옮기지 못하면(skipped > 0) 한 번 더 부른다.
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+            const { skipped } = await request<{ skipped: number }>({
+                method: 'PUT',
+                url: '/dev/blocks-confirmed-at',
+                data: { confirmedAt: `${month}-01T00:00:00` },
+            });
+            if (skipped === 0) return;
+        }
+    } catch {
+        // 그래프보다 온보딩 완료가 중요하다. 실패해도 홈으로 넘어간다.
+    }
+}

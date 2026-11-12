@@ -18,7 +18,8 @@
             },
             "env": {
                 "EXPO_PUBLIC_USE_MOCK": "false",
-                "EXPO_PUBLIC_API_URL": "https://api.fintris.xyz"
+                "EXPO_PUBLIC_API_URL": "https://api.fintris.xyz",
+                "EXPO_PUBLIC_DEMO_BACKDATE": "true"
             }
         },
         "production": {
