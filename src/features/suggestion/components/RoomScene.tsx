@@ -19,6 +19,7 @@ import { withAlpha } from '@/lib/color';
 import { colors } from '@/styles/tokens';
 
 import {
+    CENTER_BUBBLE,
     CHARACTER_BOX,
     CHARACTER_SPRITE,
     CHARACTER_FEET,
@@ -94,6 +95,8 @@ interface RoomSceneProps {
     labels: RoomObjectLabel[];
     /** 선반 앞에 섰을 때 말풍선 */
     shelfMessage?: string;
+    /** 방 가운데에서 초불이가 하는 말 (대화 응답). 있으면 이름표를 숨기고 제자리에 선다. */
+    message?: string;
     onPressObject: (object: RoomObject) => void;
 }
 
@@ -109,10 +112,12 @@ export function RoomScene({
     halo,
     labels,
     shelfMessage,
+    message,
     onPressObject,
 }: RoomSceneProps) {
     const unit = width / ROOM_SIZE.width;
     const isAtShelf = spot === 'shelf';
+    const centerMessage = isAtShelf ? undefined : message;
     // 글자를 키우거나 화면이 좁아도 이름표가 방 밖으로 나가지 않게 실제 너비를 재서 안쪽으로 당긴다.
     const [labelWidths, setLabelWidths] = useState<Partial<Record<RoomObject, number>>>({});
     const getLabelLeft = (object: RoomObject) => {
@@ -131,7 +136,7 @@ export function RoomScene({
     const facing = useSharedValue(1);
     const isReducedMotion = useReducedMotion();
     // 자고 있거나 동작 줄이기를 켰으면 제자리에 있는다.
-    const canWander = !isAtShelf && !offline && !isReducedMotion;
+    const canWander = !isAtShelf && !centerMessage && !offline && !isReducedMotion;
 
     useEffect(() => {
         const target = CHARACTER_SPOTS[spot];
@@ -268,6 +273,7 @@ export function RoomScene({
             </Animated.View>
 
             {!isAtShelf &&
+                !centerMessage &&
                 labels.map((item) => (
                     <View
                         key={item.object}
@@ -298,6 +304,21 @@ export function RoomScene({
                         </Animated.View>
                     </View>
                 ))}
+
+            {centerMessage && (
+                <SpeechBubble
+                    // 문장이 바뀌면 다시 나타나게 한다.
+                    key={centerMessage}
+                    message={centerMessage}
+                    tailLeft={CENTER_BUBBLE.tailLeft}
+                    style={{
+                        position: 'absolute',
+                        left: CENTER_BUBBLE.x * unit,
+                        top: CENTER_BUBBLE.y * unit,
+                        width: Math.min(CENTER_BUBBLE.width, width - CENTER_BUBBLE.x * unit - 16),
+                    }}
+                />
+            )}
 
             {isAtShelf && shelfMessage && (
                 <SpeechBubble

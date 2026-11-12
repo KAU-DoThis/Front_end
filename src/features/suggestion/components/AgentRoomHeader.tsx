@@ -13,14 +13,17 @@ interface AgentRoomHeaderProps {
     /** close: 방에서 나가기 (아래에서 올라온 화면) · back: 방 안 다른 상태에서 돌아오기 */
     leading: 'close' | 'back';
     onPressLeading: () => void;
+    /** 있으면 오른쪽에 기록(시계) 버튼 (8. 초불이가 한 일) */
+    onPressHistory?: () => void;
 }
 
-/** 초불이의 방 상단 바 (높이 64, 어두운 배경 위). 오른쪽 기록 버튼은 기록 화면과 함께 붙인다. */
+/** 초불이의 방 상단 바 (높이 64, 어두운 배경 위) */
 export function AgentRoomHeader({
     subtitle,
     isAttention = false,
     leading,
     onPressLeading,
+    onPressHistory,
 }: AgentRoomHeaderProps) {
     return (
         <View className="h-16 flex-row items-center gap-1 px-2 pt-2.5">
@@ -44,6 +47,16 @@ export function AgentRoomHeader({
                     {subtitle}
                 </AppText>
             </View>
+            {onPressHistory && (
+                <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="초불이가 한 일 보기"
+                    onPress={onPressHistory}
+                    className="h-11 w-11 items-center justify-center rounded-full active:bg-primary-800"
+                >
+                    <Icon name="clock" size={24} color={colors.white} />
+                </Pressable>
+            )}
         </View>
     );
 }
