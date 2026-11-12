@@ -24,6 +24,20 @@ export interface AgentRoom {
     lastAction: AgentAction | null;
     /** 선반을 눌렀을 때 보여줄 블록 요약 (1-1) */
     shelfBlocks: ShelfBlock[];
+    /** 초불이 기분. 그림은 앱이 code로 고른다. (명세 초안 GET /coach/room) */
+    mood: AgentMood;
+    /** false면 AI가 꺼져 있어 초불이가 자러 간 모습을 보여준다. */
+    aiAvailable: boolean;
+}
+
+/** 위에서부터 먼저 맞는 하나를 서버가 고른다. */
+export type AgentMoodCode = 'ALERT' | 'SAD' | 'WORRIED' | 'PROUD' | 'HAPPY';
+
+export interface AgentMood {
+    code: AgentMoodCode;
+    label: string;
+    /** 이 기분이 된 블록. HAPPY면 null */
+    reason: { blockId: number; blockName: string; status: Status } | null;
 }
 
 export interface RoomGoal {

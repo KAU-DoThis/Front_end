@@ -22,7 +22,7 @@ export function AgentQuestionBanner({ message, onPress }: AgentQuestionBannerPro
             onPress={onPress}
             className="flex-row items-center gap-3 rounded-24 rounded-tl-[4px] border border-primary-100 bg-primary-50 px-4 py-3 active:opacity-80"
         >
-            <Mascot className="h-8 w-8 rounded-16 bg-white" />
+            <Mascot className="h-8 w-8" />
             <View className="flex-1">
                 <RichTextView parts={message} className="text-13 leading-[19px]" />
                 <AppText className="text-13 leading-[19px] text-ink-sub">

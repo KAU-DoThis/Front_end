@@ -16,11 +16,24 @@ export const LABEL_EDGE_INSET = 8;
 /** 초불이 묶음(후광·그림자·캐릭터)의 기준 상자 = 후광 크기 */
 export const CHARACTER_BOX = 151;
 
-/** 묶음 안에서의 위치 (기준 상자 151 기준) */
-export const CHARACTER_PARTS = {
-    character: { x: 34, y: 20, width: 85, height: 112 },
-    shadow: { x: 44, y: 123, width: 64, height: 14 },
-} as const;
+/**
+ * 스프라이트 프레임 위치 (기준 상자 151 기준)
+ * 캐릭터 키(그림자 제외)가 예전 그림과 같은 112가 되게 프레임을 146으로 두고,
+ * 발바닥(프레임 y 93.36%)을 예전 발 위치(x 76.5, y 132)에 맞췄다.
+ */
+export const CHARACTER_SPRITE = { x: 5, y: -4, size: 146 } as const;
+
+/** 바닥 그림자 (기준 상자 151 기준). 발바닥 아래에 붙어 있고 캐릭터와 같이 숨쉬지 않는다. */
+export const CHARACTER_SHADOW = { x: 44, y: 123, width: 64, height: 14 } as const;
+
+/** 묶음 안 발바닥 위치 (기준 상자 151 기준). 돌아다닐 때 발 위치로 묶음 위치를 구한다. */
+export const CHARACTER_FEET = { x: 76.5, y: 132 } as const;
+
+/**
+ * 돌아다니는 범위: 러그 위 마름모 (발바닥 기준, 방 좌표)
+ * 가운데는 방 가운데 자리의 발 위치와 같다. depthScale: 맨 안쪽 0.94배 ~ 맨 앞 1.06배
+ */
+export const WANDER_AREA = { cx: 190.5, cy: 272, rx: 70, ry: 38, depthScale: 0.06 } as const;
 
 /** 방 상태별 초불이 묶음 위치와 크기 */
 export const CHARACTER_SPOTS = {

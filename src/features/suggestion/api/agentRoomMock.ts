@@ -20,6 +20,13 @@ export const AGENT_ROOM_MOCK: AgentRoom = {
     confirmedSaving: 87_000,
     uncheckedTransactionCount: 2,
     quickCommands: ['여행에서 5만 원 생활비로 옮겨줘', '나눌 돈 나눠줘', '이번 달 어땠어?'],
+    // 생활비가 주의라서 걱정 (선반 첫 블록과 맞춤)
+    mood: {
+        code: 'WORRIED',
+        label: '걱정',
+        reason: { blockId: 1, blockName: '생활비', status: 'CAUTION' },
+    },
+    aiAvailable: true,
     lastAction: {
         // 시안처럼 항상 '어제'로 보이게 오늘 기준으로 만든다. (서버처럼 오프셋 없는 한국 시간)
         performedAt: kstDaysAgo(1, '21:05'),

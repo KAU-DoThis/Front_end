@@ -6,3 +6,6 @@ ios
 pnpm-lock.yaml
 README.md
 .github
+
+# pnpm이 2칸 들여쓰기로 다시 쓰는 파일
+package.json
