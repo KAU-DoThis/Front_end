@@ -95,6 +95,27 @@ export interface BlockProposalConfirmItem {
     createdBy?: 'AI' | 'USER';
 }
 
+/** POST /blocks/proposals/preview 요청 블록. 확정 요청 블록에 구성안 키를 붙인다. */
+export interface BlockProposalPreviewItem extends BlockProposalConfirmItem {
+    proposalKey: string;
+}
+
+/** POST /blocks/proposals/preview 응답 */
+export interface BlockProposalPreviewResponse {
+    linkedBalance: number;
+    /** 블록에 나눈 돈 (요청 금액 합) */
+    allocated: number;
+    /** 나눌 돈으로 남는 돈. 넘치면 음수 */
+    unallocated: number;
+    blocks: {
+        proposalKey: string;
+        /** 하루 약 얼마. 사용형만 */
+        dailyApprox: number | null;
+        /** 경고 문장. 없으면 null */
+        warning: string | null;
+    }[];
+}
+
 /** POST /blocks/proposals/confirm 응답 */
 export interface BlockProposalConfirmResponse {
     blocks: BlockResponse[];
