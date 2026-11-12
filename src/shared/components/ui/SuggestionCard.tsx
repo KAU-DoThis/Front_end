@@ -42,7 +42,7 @@ export function SuggestionCard({
     className,
 }: SuggestionCardProps) {
     const isChat = variant === 'chat';
-    const mascot = <Mascot className="h-7 w-7 rounded-12 border border-primary-600 bg-white" />;
+    const mascot = <Mascot className="h-7 w-7" />;
 
     const bubble = (
         <View
@@ -96,7 +96,7 @@ export function SuggestionCard({
 
     return (
         <View className={cn('flex-row items-start gap-3', className)}>
-            <Mascot className="h-8 w-8 rounded-16 bg-primary-50" />
+            <Mascot className="h-8 w-8" />
             {bubble}
         </View>
     );

@@ -21,9 +21,7 @@ export function AgentHomePanel({ room, onCommand }: AgentHomePanelProps) {
     return (
         <View className="gap-4.5">
             <View className="flex-row items-center gap-3">
-                <View className="h-11 w-11 items-center justify-center rounded-full bg-primary-50">
-                    <Mascot className="h-9 w-9" />
-                </View>
+                <Mascot className="h-11 w-11" />
                 <View className="flex-1 gap-0.75">
                     <AppText className="font-bold text-17 leading-[23px]">
                         오늘 쓸 수 있는 돈은 {formatWon(room.todayAvailable)}이에요

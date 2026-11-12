@@ -91,7 +91,7 @@ function AgentButton({ badgeCount }: { badgeCount: number }) {
     return (
         <Pressable
             accessibilityRole="button"
-            accessibilityLabel="에이전트 열기"
+            accessibilityLabel="초불이의 방 열기"
             className="h-17 flex-1 items-center justify-end pb-1.5 active:opacity-80"
             onPress={() => router.push('/agent')}
         >
@@ -103,7 +103,7 @@ function AgentButton({ badgeCount }: { badgeCount: number }) {
                     <AppText className="font-bold text-11 text-white">{badgeCount}</AppText>
                 </View>
             )}
-            <AppText className="font-bold text-12 text-primary-700">에이전트</AppText>
+            <AppText className="font-bold text-12 text-primary-700">초불이의 방</AppText>
         </Pressable>
     );
 }
