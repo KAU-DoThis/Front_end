@@ -41,9 +41,11 @@ export function SpendingOverviewCard({ analysis }: SpendingOverviewCardProps) {
                     <DeltaBadge diffAmount={spent.diffAmount} diffPercent={spent.diffPercent} />
                 )}
             </View>
-            <AppText className="mt-0.5 text-12 text-ink-sub">
-                {`${analysis.compareLabel} ${formatWon(spent.previousAmount)}`}
-            </AppText>
+            {spent.previousAmount !== null && (
+                <AppText className="mt-0.5 text-12 text-ink-sub">
+                    {`${analysis.compareLabel} ${formatWon(spent.previousAmount)}`}
+                </AppText>
+            )}
 
             {categories.length > 0 && (
                 <>
@@ -79,7 +81,7 @@ export function SpendingOverviewCard({ analysis }: SpendingOverviewCardProps) {
                                     {category.categoryName}
                                     <AppText className="text-12 text-ink-sub">{` ${category.count}회`}</AppText>
                                 </AppText>
-                                {category.diffAmount === 0 ? (
+                                {category.diffAmount === null ? null : category.diffAmount === 0 ? (
                                     <AppText className="text-12 text-ink-sub">변화 없음</AppText>
                                 ) : (
                                     <DeltaBadge diffAmount={category.diffAmount} />
