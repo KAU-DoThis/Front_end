@@ -6,8 +6,8 @@ export interface SpendingCategoryStat {
     categoryName: string;
     count: number;
     amount: number;
-    /** 지난달 같은 기간 대비 증감 (0이면 변화 없음) */
-    diffAmount: number;
+    /** 지난달 같은 기간 대비 증감 (0이면 변화 없음, 비교할 수 없으면 null) */
+    diffAmount: number | null;
 }
 
 /** 하루 시간대별 횟수 (아침 6~11시 · 점심 11~15시 · 저녁 15~22시 · 밤 22시~) */

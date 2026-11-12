@@ -81,7 +81,7 @@ export function SpendingOverviewCard({ analysis }: SpendingOverviewCardProps) {
                                     {category.categoryName}
                                     <AppText className="text-12 text-ink-sub">{` ${category.count}회`}</AppText>
                                 </AppText>
-                                {category.diffAmount === 0 ? (
+                                {category.diffAmount === null ? null : category.diffAmount === 0 ? (
                                     <AppText className="text-12 text-ink-sub">변화 없음</AppText>
                                 ) : (
                                     <DeltaBadge diffAmount={category.diffAmount} />

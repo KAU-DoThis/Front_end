@@ -38,7 +38,7 @@ export function toSpendingAnalysis(
             categoryName: category.name,
             count: category.count,
             amount: category.amount,
-            diffAmount: category.changeAmount ?? 0,
+            diffAmount: category.changeAmount,
         })),
         topIncrease: biggestIncrease && {
             categoryName: biggestIncrease.name,
