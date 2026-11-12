@@ -59,3 +59,6 @@ export const SHELF_RING = { x: 53, y: 140, size: 74 } as const;
 
 /** 선반 앞 말풍선 (1-1) */
 export const SHELF_BUBBLE = { x: 120, y: 48, width: 240, tailLeft: 38 } as const;
+
+/** 방 가운데 초불이 위 말풍선 (2·4·8-2 응답) */
+export const CENTER_BUBBLE = { x: 70, y: 52, width: 250, tailLeft: 120 } as const;
