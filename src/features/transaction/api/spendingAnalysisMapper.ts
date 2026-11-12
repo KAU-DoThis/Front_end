@@ -18,6 +18,10 @@ export function toSpendingAnalysis(
     const { period, compareTo, biggestIncrease } = response;
     const month = period.from.slice(0, 7);
     const comparable = response.previousAvailable;
+    // 가장 늘어난 곳의 이번 금액은 분류 목록의 서버 금액을 그대로 쓴다. (두 카드가 같은 값)
+    const increasedCategory = biggestIncrease
+        ? response.categories.find(({ categoryId }) => categoryId === biggestIncrease.categoryId)
+        : undefined;
 
     const slots = biggestIncrease?.timeOfDay ?? [];
     const peakCount = Math.max(0, ...slots.map(({ count }) => count));
@@ -47,7 +51,10 @@ export function toSpendingAnalysis(
             previousLabel: `${monthNumber(compareTo.from)}월`,
             currentLabel: `${monthNumber(period.from)}월`,
             previousAmount: biggestIncrease.previousAmount,
-            currentAmount: biggestIncrease.previousAmount + biggestIncrease.changeAmount,
+            // 분류 목록에 없을 때만(서버 응답 이상) 지난 금액 + 증가액으로 대신한다.
+            currentAmount:
+                increasedCategory?.amount ??
+                biggestIncrease.previousAmount + biggestIncrease.changeAmount,
             message: biggestIncrease.explanation,
         },
         timeOfDay:
