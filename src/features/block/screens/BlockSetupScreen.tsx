@@ -22,6 +22,7 @@ import { Mascot } from '@/shared/components/ui/Mascot';
 import { ScreenState } from '@/shared/components/ui/ScreenState';
 import { ONBOARDING_STEP, ONBOARDING_TOTAL_STEPS } from '@/shared/constants/onboarding';
 import { useDelayedFlag } from '@/shared/hooks/useDelayedFlag';
+import { ApiError } from '@/shared/types/api';
 import { colors } from '@/styles/tokens';
 
 /** CODEF 응답이 이보다 오래 걸리면 늦어지고 있다고 알려준다. (디자인 시스템 '화면 상태') */
@@ -174,7 +175,18 @@ export function BlockSetupScreen({
         }
         // 화면에 보이는 합계·경고가 지금 고친 내용으로 계산된 뒤에만 만든다.
         if (!previewQuery.isCurrent || isOverAllocated) return;
-        createBlocks(draft.request, { onSuccess: onComplete });
+        createBlocks(draft.request, {
+            onSuccess: onComplete,
+            // 확정 응답을 못 받고 다시 누른 경우: 이미 만들어졌으니 넘어간다.
+            onError: (error) => {
+                if (
+                    error instanceof ApiError &&
+                    error.code === 'BLOCK_PROPOSAL_ALREADY_CONFIRMED'
+                ) {
+                    onComplete();
+                }
+            },
+        });
     };
 
     // 고칠 칸이 있으면 눌러서 어디인지 볼 수 있게 열어 두고, 없으면 합계 계산이 끝날 때까지 막는다.
