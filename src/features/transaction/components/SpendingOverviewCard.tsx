@@ -41,9 +41,11 @@ export function SpendingOverviewCard({ analysis }: SpendingOverviewCardProps) {
                     <DeltaBadge diffAmount={spent.diffAmount} diffPercent={spent.diffPercent} />
                 )}
             </View>
-            <AppText className="mt-0.5 text-12 text-ink-sub">
-                {`${analysis.compareLabel} ${formatWon(spent.previousAmount)}`}
-            </AppText>
+            {spent.previousAmount !== null && (
+                <AppText className="mt-0.5 text-12 text-ink-sub">
+                    {`${analysis.compareLabel} ${formatWon(spent.previousAmount)}`}
+                </AppText>
+            )}
 
             {categories.length > 0 && (
                 <>

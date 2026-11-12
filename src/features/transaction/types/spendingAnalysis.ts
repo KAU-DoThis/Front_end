@@ -1,7 +1,6 @@
 import type { RichText } from '@/features/transaction/types/transaction';
 
-// TODO: 소비 분석 API 명세가 나오면 맞춘다. (지금은 시안 11 기준 가정값)
-// 금액·증감·비율·횟수는 모두 서버가 계산한 값이다.
+// 금액·증감·비율·횟수는 모두 서버가 계산한 값이다. (GET /analysis/spending → spendingAnalysisMapper)
 
 export interface SpendingCategoryStat {
     categoryName: string;
@@ -31,9 +30,10 @@ export interface SpendingAnalysis {
     isCurrentMonth: boolean;
     spent: {
         amount: number;
-        previousAmount: number;
+        /** 지난 기간과 비교할 수 없으면 null */
+        previousAmount: number | null;
         diffAmount: number;
-        diffPercent: number;
+        diffPercent?: number;
     };
     /** 많이 쓴 순서 (화면 순서 그대로) */
     categories: SpendingCategoryStat[];
@@ -41,7 +41,8 @@ export interface SpendingAnalysis {
     topIncrease: {
         categoryName: string;
         diffAmount: number;
-        diffPercent: number;
+        /** 지난 기간이 0원이면 없음 */
+        diffPercent?: number;
         /** 예: 9월 · 10월 */
         previousLabel: string;
         currentLabel: string;
