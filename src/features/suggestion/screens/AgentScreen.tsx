@@ -7,6 +7,7 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
+    Pressable,
     useWindowDimensions,
     View,
 } from 'react-native';
@@ -28,7 +29,7 @@ import {
 } from '@/features/suggestion/components/roomLayout';
 import { RoomScene, type RoomObjectLabel } from '@/features/suggestion/components/RoomScene';
 import { ShelfPanel } from '@/features/suggestion/components/ShelfPanel';
-import type { AgentRoom } from '@/features/suggestion/types/agentRoom';
+import type { AgentMoodCode, AgentRoom } from '@/features/suggestion/types/agentRoom';
 
 /** 초불이가 서 있는 곳 — 방 가운데(1) · 선반 앞(1-1) */
 type RoomSpot = 'center' | 'shelf';
@@ -76,6 +77,10 @@ function AgentRoomContent({ room }: { room: AgentRoom }) {
     const [areaHeight, setAreaHeight] = useState(0);
     const [mainPanelHeight, setMainPanelHeight] = useState(0);
     const isAtShelf = spot === 'shelf';
+    // 개발용: 기분·그림 방식을 바꿔 보기 (null이면 서버 값)
+    const [devMood, setDevMood] = useState<DevMood | null>(null);
+    const mood = devMood && devMood !== 'OFFLINE' ? devMood : room.mood.code;
+    const offline = devMood ? devMood === 'OFFLINE' : !room.aiAvailable;
 
     // 선반 앞에서 Android 뒤로 가기를 누르면 방을 닫지 않고 방 가운데로 돌아온다.
     useEffect(() => {
@@ -154,12 +159,17 @@ function AgentRoomContent({ room }: { room: AgentRoom }) {
                 <RoomScene
                     width={roomWidth}
                     spot={spot}
-                    pose="basic"
+                    mood={mood}
+                    offline={offline}
                     halo="healthy"
                     labels={getObjectLabels(room)}
                     shelfMessage={shelfMessage}
                     onPressObject={handlePressObject}
                 />
+
+                {__DEV__ && !isAtShelf && (
+                    <MoodDevChips mood={offline ? 'OFFLINE' : mood} onChangeMood={setDevMood} />
+                )}
 
                 <View
                     className="absolute bottom-0 left-0 right-0 rounded-t-24 bg-surface-app px-5 pt-5"
@@ -222,4 +232,31 @@ function getObjectLabels(room: AgentRoom): RoomObjectLabel[] {
     }
 
     return labels;
+}
+
+type DevMood = AgentMoodCode | 'OFFLINE';
+const DEV_MOODS: DevMood[] = ['HAPPY', 'PROUD', 'WORRIED', 'SAD', 'ALERT', 'OFFLINE'];
+
+/** 개발 빌드에서만: 초불이 기분 6가지를 눌러 바꿔 본다. */
+function MoodDevChips({
+    mood,
+    onChangeMood,
+}: {
+    mood: DevMood;
+    onChangeMood: (mood: DevMood) => void;
+}) {
+    const chip = (label: string, isActive: boolean, onPress: () => void) => (
+        <Pressable
+            key={label}
+            onPress={onPress}
+            className={`rounded-full px-2 py-1 ${isActive ? 'bg-white' : 'bg-white/20'}`}
+        >
+            <AppText className={`text-12 ${isActive ? 'text-ink' : 'text-white'}`}>{label}</AppText>
+        </Pressable>
+    );
+    return (
+        <View className="absolute left-2 right-2 top-2 flex-row flex-wrap gap-1">
+            {DEV_MOODS.map((item) => chip(item, item === mood, () => onChangeMood(item)))}
+        </View>
+    );
 }
