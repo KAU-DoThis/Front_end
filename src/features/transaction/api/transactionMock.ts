@@ -1,3 +1,4 @@
+import { BLOCK_HOME_MOCK } from '@/features/block/api/blockHomeMock';
 import { ApiError } from '@/shared/types/api';
 
 import type {
@@ -547,5 +548,23 @@ export function createQuickInputMock({
             linkedAccountId: null,
         },
     ];
+    spendFromMockBlock(block.blockId, amount);
     return null;
+}
+
+/**
+ * 빠른 입력한 금액만큼 홈·상세 블록 목업 잔액을 줄인다. (서버는 저장할 때 블록 잔액에서 뺀다)
+ * 물 높이는 잔액이 준 비율만큼 낮춘다.
+ */
+function spendFromMockBlock(blockId: number, amount: number) {
+    const homeBlock = BLOCK_HOME_MOCK.blocks.find((item) => item.blockId === blockId);
+    if (!homeBlock) return;
+    const before = homeBlock.balance;
+    homeBlock.balance = Math.max(0, before - amount);
+    homeBlock.fillRate =
+        before > 0 ? Math.round((homeBlock.fillRate * homeBlock.balance) / before) : 0;
+    const { todayGuide } = BLOCK_HOME_MOCK;
+    if (homeBlock.isDefault && todayGuide) {
+        todayGuide.balance = homeBlock.balance;
+    }
 }
