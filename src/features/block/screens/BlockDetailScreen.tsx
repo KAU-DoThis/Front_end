@@ -1,15 +1,19 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, View } from 'react-native';
+
+import { formatWon } from '@/lib/format';
 
 import { Screen } from '@/shared/components/layout/Screen';
 import { ScreenHeader } from '@/shared/components/layout/ScreenHeader';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Button } from '@/shared/components/ui/Button';
 import { Icon } from '@/shared/components/ui/Icon';
+import { ApiError } from '@/shared/types/api';
 import { colors } from '@/styles/tokens';
 
 import { useBlockDetailQuery } from '@/features/block/api/useBlockDetailQuery';
+import { useDeleteBlockMutation } from '@/features/block/api/useDeleteBlockMutation';
 import { BlockMenuSheet, type BlockMenuItem } from '@/features/block/components/BlockMenuSheet';
 import { EditBlockSheet, type EditBlockPicker } from '@/features/block/components/EditBlockSheet';
 import { FixedDetailContent } from '@/features/block/components/FixedDetailContent';
@@ -39,9 +43,42 @@ export function BlockDetailScreen() {
     };
     const closeSheet = () => setOpenSheet(null);
 
+    const { mutate: removeBlock } = useDeleteBlockMutation();
+    const confirmDelete = () => {
+        if (!detail) return;
+        const { blockId, balance } = detail.block;
+        Alert.alert(
+            '이 블록을 지울까요?',
+            balance > 0 ? `남은 ${formatWon(balance)}은 나눌 돈으로 돌아가요` : undefined,
+            [
+                { text: '취소', style: 'cancel' },
+                {
+                    text: '삭제',
+                    style: 'destructive',
+                    onPress: () =>
+                        removeBlock(blockId, {
+                            onSuccess: () => router.dismissTo('/'),
+                            onError: (error) =>
+                                error instanceof ApiError &&
+                                error.code === 'BLOCK_DEFAULT_UNDELETABLE'
+                                    ? Alert.alert('기본 블록은 지울 수 없어요')
+                                    : Alert.alert(
+                                          '블록을 지우지 못했어요',
+                                          '잠시 후 다시 시도해 주세요.',
+                                      ),
+                        }),
+                },
+            ],
+        );
+    };
+
     const menuItems: BlockMenuItem[] = [
         { label: '이름 바꾸기', onPress: () => openForm('rename') },
         { label: '블록 수정', onPress: () => openForm('edit') },
+        // 기본 블록(기본 생활비)은 서버가 지우지 못하게 막아서 메뉴에서 뺀다.
+        ...(detail && !detail.block.isDefault
+            ? [{ label: '블록 삭제', onPress: confirmDelete, isDanger: true }]
+            : []),
     ];
 
     return (

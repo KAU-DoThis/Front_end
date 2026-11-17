@@ -1,4 +1,5 @@
 import type { FixedBlockDetail } from '@/features/block/types/blockDetail';
+import type { PendingMoney } from '@/features/block/types/blockHome';
 import type { BlockColorCode } from '@/features/block/types/homeResponse';
 import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
 
@@ -41,4 +42,13 @@ export interface BlockUpdateRequest {
     };
     /** 조회한 블록 version. 그사이 바뀌었으면 409 BLOCK_VERSION_CONFLICT. 비우면 검사하지 않는다. */
     version?: number;
+}
+
+/** DELETE /blocks/{blockId} 응답 (Back_end BlockDeleteResponse) */
+export interface BlockDeleteResponse {
+    blockId: number;
+    /** 나눌 돈으로 돌아간 금액 */
+    returnedAmount: number;
+    /** 잔액이 담긴 나눌 돈 (source OTHER). 잔액이 0이었으면 null */
+    waitingFund: PendingMoney | null;
 }

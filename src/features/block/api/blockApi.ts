@@ -12,7 +12,7 @@ import type {
     BlockSetupProposal,
     BlockSetupRequest,
 } from '@/features/block/types/blockSetup';
-import type { BlockPatch } from '@/features/block/types/blockUpdate';
+import type { BlockDeleteResponse, BlockPatch } from '@/features/block/types/blockUpdate';
 import type {
     SimulateRequest,
     SimulateResponse,
@@ -31,7 +31,7 @@ import { toBlockDetail } from './blockDetailMapper';
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
 import { toBlockHome } from './blockHomeMapper';
-import { updateBlockMock } from './blockManageMock';
+import { deleteBlockMock, updateBlockMock } from './blockManageMock';
 import {
     toBlockSetupPreview,
     toBlockSetupProposal,
@@ -121,6 +121,17 @@ export const updateBlock = ({
         url: `/blocks/${blockId}`,
         data: toBlockUpdateRequest(patch, version),
     });
+};
+
+/**
+ * 블록 삭제 (DELETE /blocks/{blockId}). 소프트 삭제라 남은 잔액은 '남은 돈' 나눌 돈으로 돌아간다.
+ * 기본 블록은 400 BLOCK_DEFAULT_UNDELETABLE.
+ */
+export const deleteBlock = (blockId: number): Promise<BlockDeleteResponse> => {
+    if (USE_MOCK) {
+        return mockResponse(() => deleteBlockMock(blockId));
+    }
+    return request<BlockDeleteResponse>({ method: 'DELETE', url: `/blocks/${blockId}` });
 };
 
 /** 블록 간 이동 확정 (03-2 옮기기) */

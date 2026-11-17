@@ -1,4 +1,4 @@
-import type { BlockPatch } from '@/features/block/types/blockUpdate';
+import type { BlockDeleteResponse, BlockPatch } from '@/features/block/types/blockUpdate';
 import { ApiError } from '@/shared/types/api';
 
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
@@ -44,4 +44,29 @@ export function updateBlockMock(blockId: number, patch: BlockPatch) {
         if (patch.payAmount !== undefined) detail.payAmount = patch.payAmount;
         if (patch.alerts) detail.alerts = { ...detail.alerts, ...patch.alerts };
     }
+}
+
+/** 블록 삭제 목업: 기본 블록은 막고, 남은 잔액은 '남은 돈' 나눌 돈으로 돌린다. (서버 BlockService.deleteBlock과 같은 규칙) */
+export function deleteBlockMock(blockId: number): BlockDeleteResponse {
+    const block = findMockBlock(blockId);
+    if (block.isDefault) {
+        throw new ApiError('BLOCK_DEFAULT_UNDELETABLE', '기본 블록은 삭제할 수 없습니다.', 400);
+    }
+    BLOCK_HOME_MOCK.blocks = BLOCK_HOME_MOCK.blocks.filter((item) => item.blockId !== blockId);
+    delete BLOCK_DETAIL_MOCK[blockId];
+    if (block.balance === 0) {
+        return { blockId, returnedAmount: 0, waitingFund: null };
+    }
+    const waitingFund = {
+        waitingFundId:
+            Math.max(0, ...BLOCK_HOME_MOCK.pendingMoney.map((fund) => fund.waitingFundId)) + 1,
+        source: 'OTHER' as const,
+        label: '남은 돈',
+        description: `'${block.name}' 블록에서 돌아온 돈`,
+        amount: block.balance,
+        originalAmount: block.balance,
+        createdAt: new Date().toISOString().slice(0, 19),
+    };
+    BLOCK_HOME_MOCK.pendingMoney.push(waitingFund);
+    return { blockId, returnedAmount: block.balance, waitingFund };
 }
