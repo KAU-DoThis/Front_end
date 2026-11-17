@@ -27,14 +27,19 @@ import {
     type CoachMove,
 } from '@/features/suggestion/stores/coachActivityStore';
 import { withRo } from '@/features/suggestion/utils/coachText';
+import { QuickInputSheet } from '@/features/transaction/components/QuickInputSheet';
 
 /** 01 홈 · 블록 탭 */
 export function BlockHomeScreen() {
     const { data: home, isPending, isError, refetch } = useBlockHomeQuery();
+    const [isQuickInputOpen, setIsQuickInputOpen] = useState(false);
 
     return (
         <Screen edges={['top']}>
-            <HomeHeader hasUnreadNotification={(home?.unreadNotificationCount ?? 0) > 0} />
+            <HomeHeader
+                hasUnreadNotification={(home?.unreadNotificationCount ?? 0) > 0}
+                onPressQuickInput={() => setIsQuickInputOpen(true)}
+            />
             {isPending ? (
                 <View className="flex-1 items-center justify-center">
                     <ActivityIndicator color={colors.primary[700]} />
@@ -55,6 +60,8 @@ export function BlockHomeScreen() {
                     <HomeContent home={home} />
                 </DropletLayerProvider>
             )}
+            {/* 저장하면 시트의 mutation이 blockKeys.all을 갱신해서 홈 잔액도 바로 바뀐다. */}
+            <QuickInputSheet isOpen={isQuickInputOpen} onClose={() => setIsQuickInputOpen(false)} />
         </Screen>
     );
 }

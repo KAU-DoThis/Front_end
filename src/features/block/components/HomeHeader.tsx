@@ -7,10 +7,11 @@ import { Logo } from '@/shared/components/ui/Logo';
 interface HomeHeaderProps {
     /** 읽지 않은 알림이 있으면 종 아이콘에 빨간 점 */
     hasUnreadNotification?: boolean;
+    onPressQuickInput?: () => void;
 }
 
 /** 홈 상단: 워드마크 로고 + 빠른 입력 · 알림 · 마이 */
-export function HomeHeader({ hasUnreadNotification = false }: HomeHeaderProps) {
+export function HomeHeader({ hasUnreadNotification = false, onPressQuickInput }: HomeHeaderProps) {
     return (
         <View className="flex-row items-center px-5 pb-5 pt-3">
             <Pressable
@@ -22,8 +23,8 @@ export function HomeHeader({ hasUnreadNotification = false }: HomeHeaderProps) {
                 <Logo />
             </Pressable>
             <View className="ml-auto flex-row items-center gap-[22px]">
-                {/* 빠른 입력 · 알림 · 마이 화면은 각 작업에서 연결한다. */}
-                <HeaderButton icon="plus" label="빠른 입력" />
+                {/* 알림 · 마이 화면은 각 작업에서 연결한다. */}
+                <HeaderButton icon="plus" label="빠른 입력" onPress={onPressQuickInput} />
                 <View>
                     <HeaderButton icon="bell" label="알림" />
                     {hasUnreadNotification && (
