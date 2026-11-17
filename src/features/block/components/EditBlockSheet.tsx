@@ -187,6 +187,7 @@ function EditBlockForm({ detail, initialPicker, onDone }: EditBlockFormProps) {
             value={values.amount}
             onChangeValue={(amount) => change({ amount })}
             errorMessage={visibleErrors.amount}
+            inSheet
         />
     );
 
@@ -196,6 +197,7 @@ function EditBlockForm({ detail, initialPicker, onDone }: EditBlockFormProps) {
                 value={values.name}
                 errorMessage={visibleErrors.name}
                 onChange={(name) => change({ name })}
+                inSheet
             />
 
             {detail.type === 'SPENDING' && (
@@ -234,6 +236,10 @@ function EditBlockForm({ detail, initialPicker, onDone }: EditBlockFormProps) {
                         onPress={() => setOpenPicker('day')}
                     />
                 </View>
+            )}
+            {/* 서버는 그달에 없는 납부일이면 말일로 본다. */}
+            {detail.type === 'FIXED' && values.day !== null && values.day >= 29 && (
+                <AppText className="-mt-1 text-12 text-ink-sub">없는 달은 말일에 내요</AppText>
             )}
 
             <ColorField value={values.color} onChange={(color) => change({ color })} />

@@ -1,10 +1,12 @@
 import {
+    BottomSheetTextInput,
     BottomSheetBackdrop,
     BottomSheetModal,
     BottomSheetScrollView,
     BottomSheetView,
     type BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
+import { cssInterop } from 'nativewind';
 import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { BackHandler, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +19,10 @@ import { colors, dimOpacity } from '@/styles/tokens';
  * 시트 안에서 입력칸을 쓸 때는 RN TextInput 대신 이것을 써야 키보드에 맞춰 시트가 올라간다.
  * (@gorhom/bottom-sheet 의존을 이 파일에만 두기 위해 다시 내보낸다.)
  */
-export { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+export { BottomSheetTextInput };
+
+// 서드파티 컴포넌트는 cssInterop으로 등록해야 className이 적용된다. (공통 입력칸을 시트 안에서도 같은 모양으로 쓰기 위해)
+cssInterop(BottomSheetTextInput, { className: 'style' });
 
 interface BottomSheetProps {
     isOpen: boolean;

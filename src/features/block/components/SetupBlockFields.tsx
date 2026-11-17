@@ -12,6 +12,7 @@ import { cn } from '@/lib/cn';
 import { formatAmount } from '@/lib/format';
 import { AmountInput } from '@/shared/components/ui/AmountInput';
 import { AppText } from '@/shared/components/ui/AppText';
+import { BottomSheetTextInput } from '@/shared/components/ui/BottomSheet';
 import { Icon } from '@/shared/components/ui/Icon';
 import { Toggle } from '@/shared/components/ui/Toggle';
 import { colors } from '@/styles/tokens';
@@ -115,16 +116,19 @@ interface NameFieldProps {
     value: string;
     errorMessage?: string;
     onChange: (value: string) => void;
+    /** 바텀시트 안에서 쓰면 true. 키보드가 열릴 때 시트가 같이 올라간다. */
+    inSheet?: boolean;
 }
 
 /** 블록 이름 칸 (금액 칸과 같은 상태 규칙). AI가 제안한 블록도 이름을 바꿀 수 있다. */
-export function NameField({ value, errorMessage, onChange }: NameFieldProps) {
+export function NameField({ value, errorMessage, onChange, inSheet = false }: NameFieldProps) {
     const [isFocused, setIsFocused] = useState(false);
+    const Input = inSheet ? BottomSheetTextInput : TextInput;
 
     return (
         <View className="gap-2">
             <FieldLabel>블록 이름</FieldLabel>
-            <TextInput
+            <Input
                 className={cn(
                     'h-11 rounded-12 bg-white px-3 font-regular text-15 text-ink',
                     errorMessage

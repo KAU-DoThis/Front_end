@@ -43,7 +43,7 @@ export function BlockDetailScreen() {
     };
     const closeSheet = () => setOpenSheet(null);
 
-    const { mutate: removeBlock } = useDeleteBlockMutation();
+    const { mutate: removeBlock, isPending: isDeleting } = useDeleteBlockMutation();
     const confirmDelete = () => {
         if (!detail) return;
         const { blockId, balance } = detail.block;
@@ -90,11 +90,17 @@ export function BlockDetailScreen() {
                         accessibilityRole="button"
                         accessibilityLabel="블록 관리"
                         hitSlop={12}
-                        disabled={!detail}
+                        // 지우는 중에는 메뉴를 다시 열지 못하게 막고 로딩을 보여준다.
+                        disabled={!detail || isDeleting}
+                        accessibilityState={{ busy: isDeleting }}
                         onPress={() => setOpenSheet('menu')}
                         className="active:opacity-60"
                     >
-                        <Icon name="more" size={20} />
+                        {isDeleting ? (
+                            <ActivityIndicator size="small" color={colors.primary[700]} />
+                        ) : (
+                            <Icon name="more" size={20} />
+                        )}
                     </Pressable>
                 }
             />
@@ -132,7 +138,12 @@ export function BlockDetailScreen() {
                 initialToBlockId={isValidId ? id : null}
                 lockedSide="to"
             />
-            <BlockMenuSheet isOpen={openSheet === 'menu'} onClose={closeSheet} items={menuItems} />
+            <BlockMenuSheet
+                isOpen={openSheet === 'menu'}
+                onClose={closeSheet}
+                title={detail?.block.name ?? ''}
+                items={menuItems}
+            />
             {detail && (
                 <>
                     <RenameBlockSheet
