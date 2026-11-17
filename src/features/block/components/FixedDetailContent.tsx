@@ -71,7 +71,7 @@ export function FixedDetailContent({
                 </View>
             )}
             <View className="mt-3">
-                <PaymentAlertCard alerts={detail.alerts} />
+                <PaymentAlertCard blockId={block.blockId} alerts={detail.alerts} />
             </View>
             <BlockDetailList
                 title="납부 기록"

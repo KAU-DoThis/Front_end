@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 
 import { cn } from '@/lib/cn';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Card } from '@/shared/components/ui/Card';
 import { Toggle } from '@/shared/components/ui/Toggle';
 
+import { useUpdateBlockMutation } from '@/features/block/api/useUpdateBlockMutation';
 import type { FixedBlockDetail } from '@/features/block/types/blockDetail';
 
 interface RuleRowProps {
@@ -84,16 +85,29 @@ function AlertRow({ title, description, value, onValueChange }: AlertRowProps) {
 }
 
 interface PaymentAlertCardProps {
+    blockId: number;
     alerts: FixedBlockDetail['alerts'];
 }
 
+type AlertKey = keyof FixedBlockDetail['alerts'];
+
 /**
- * 블록 알림 설정 (시안 02-2)
- * 저장 API가 생기기 전이라 화면 안에서만 바뀐다. (⑥ 알림 작업에서 mutation 연결)
+ * 블록 알림 설정 (시안 02-2). 바꾸면 rule.alerts에 바로 저장한다.
+ * 누르면 먼저 화면을 바꾸고(낙관적 업데이트), 저장에 실패하면 되돌린다.
  */
-export function PaymentAlertCard({ alerts }: PaymentAlertCardProps) {
-    const [isShortageOn, setIsShortageOn] = useState(alerts.shortageBeforePay);
-    const [isConfirmedOn, setIsConfirmedOn] = useState(alerts.paymentConfirmed);
+export function PaymentAlertCard({ blockId, alerts }: PaymentAlertCardProps) {
+    const [values, setValues] = useState(alerts);
+    const { mutateAsync: update } = useUpdateBlockMutation();
+
+    const toggle = (key: AlertKey, value: boolean) => {
+        setValues((prev) => ({ ...prev, [key]: value }));
+        // alerts는 서버가 키별로 합치므로 version 없이 보낸다. (다른 수정과 부딪히지 않는다)
+        // mutate 콜백은 마지막 호출만 불려서, 연달아 눌러도 각각 되돌릴 수 있게 promise로 받는다.
+        update({ blockId, patch: { alerts: { [key]: value } } }).catch(() => {
+            setValues((prev) => ({ ...prev, [key]: !value }));
+            Alert.alert('알림 설정을 바꾸지 못했어요', '잠시 후 다시 시도해 주세요.');
+        });
+    };
 
     return (
         <Card className="pb-1">
@@ -101,13 +115,13 @@ export function PaymentAlertCard({ alerts }: PaymentAlertCardProps) {
             <AlertRow
                 title="납부 3일 전까지 모자라면 알려주기"
                 description="다른 블록에서 채울지 같이 물어봐요"
-                value={isShortageOn}
-                onValueChange={setIsShortageOn}
+                value={values.shortageBeforePay}
+                onValueChange={(value) => toggle('shortageBeforePay', value)}
             />
             <AlertRow
                 title="납부 확인되면 알려주기"
-                value={isConfirmedOn}
-                onValueChange={setIsConfirmedOn}
+                value={values.paymentConfirmed}
+                onValueChange={(value) => toggle('paymentConfirmed', value)}
             />
         </Card>
     );
