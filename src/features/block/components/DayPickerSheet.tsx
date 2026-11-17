@@ -10,8 +10,10 @@ interface DayPickerSheetProps {
     isOpen: boolean;
     onClose: () => void;
     title: string;
-    /** 고를 수 있는 마지막 날 (납부일 31 · 기간 시작일 28) */
+    /** 고를 수 있는 마지막 날 (납부일 31 · 기간 시작일 28 · 기한은 그달 일수) */
     maxDay: number;
+    /** 이보다 앞선 날은 흐리게 막는다. (기한: 이번 달이면 오늘부터) */
+    minDay?: number;
     value: number | null;
     onSelect: (day: number) => void;
 }
@@ -22,6 +24,7 @@ export function DayPickerSheet({
     onClose,
     title,
     maxDay,
+    minDay = 1,
     value,
     onSelect,
 }: DayPickerSheetProps) {
@@ -41,12 +44,17 @@ export function DayPickerSheet({
                                 return <View key={`empty-${columnIndex}`} className="flex-1" />;
                             }
                             const isSelected = day === value;
+                            const isDisabled = day < minDay;
                             return (
                                 <Pressable
                                     key={day}
                                     accessibilityRole="button"
                                     accessibilityLabel={`${day}일`}
-                                    accessibilityState={{ selected: isSelected }}
+                                    accessibilityState={{
+                                        selected: isSelected,
+                                        disabled: isDisabled,
+                                    }}
+                                    disabled={isDisabled}
                                     className={cn(
                                         'h-11 flex-1 items-center justify-center rounded-12',
                                         isSelected
@@ -62,6 +70,7 @@ export function DayPickerSheet({
                                         className={cn(
                                             'text-15',
                                             isSelected && 'font-bold text-white',
+                                            isDisabled && 'text-ink-disabled',
                                         )}
                                     >
                                         {day}

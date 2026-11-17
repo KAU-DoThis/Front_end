@@ -14,14 +14,27 @@ import type { BlockPatch } from '@/features/block/types/blockUpdate';
 import { formatSpendingPeriod } from '@/features/block/utils/blockSetupText';
 
 import { DayPickerSheet } from './DayPickerSheet';
-import { MonthPickerSheet, formatYearMonth } from './MonthPickerSheet';
+import { MonthPickerSheet } from './MonthPickerSheet';
 import { ColorField, NameField, SelectField } from './SetupBlockFields';
 
 /** 기간 시작일은 모든 달에 있는 날(28일)까지만 고른다. (04 블록 구성과 같음) */
 const MAX_PERIOD_START_DAY = 28;
 
-/** 열자마자 띄울 고르기 시트 ('목표일 미루기' → 기한) */
-export type EditBlockPicker = 'dueDate' | 'day' | null;
+/** 열자마자 띄울 고르기 시트 ('목표일 미루기' → 기한). dueDay는 기한 달을 고른 뒤 이어서 뜨는 일 고르기 */
+export type EditBlockPicker = 'dueDate' | 'dueDay' | 'day' | null;
+
+/** "2027-03-15" → "2027년 3월 15일" */
+const formatFullDate = (date: string) => {
+    const [year, month, day] = date.slice(0, 10).split('-').map(Number);
+    return `${year}년 ${month}월 ${day}일`;
+};
+
+/** 기한 달에서 고를 수 있는 첫날. 서버는 오늘 전 기한을 거절해서 이번 달이면 오늘부터 고른다. */
+function firstSelectableDay(dueDate: string) {
+    const today = new Date();
+    const [year, month] = dueDate.slice(0, 7).split('-').map(Number);
+    return year === today.getFullYear() && month === today.getMonth() + 1 ? today.getDate() : 1;
+}
 
 interface EditBlockSheetProps {
     isOpen: boolean;
@@ -202,7 +215,7 @@ function EditBlockForm({ detail, initialPicker, onDone }: EditBlockFormProps) {
                     {amountInput('목표 금액')}
                     <SelectField
                         label="기한"
-                        value={values.dueDate ? `${formatYearMonth(values.dueDate)}까지` : null}
+                        value={values.dueDate ? `${formatFullDate(values.dueDate)}까지` : null}
                         placeholder="언제까지 모을지 고르기"
                         onPress={() => setOpenPicker('dueDate')}
                     />
@@ -239,13 +252,37 @@ function EditBlockForm({ detail, initialPicker, onDone }: EditBlockFormProps) {
                 onPress={handleSave}
             />
 
+            {/* 달을 고르면 그달 말일로 두고 일 고르기를 이어서 띄운다. 일을 안 고르고 닫으면 말일로 남는다. */}
             <MonthPickerSheet
                 isOpen={openPicker === 'dueDate'}
-                onClose={() => setOpenPicker(null)}
+                // 고르면 onSelect가 dueDay로 넘긴 뒤 onClose가 불리므로, 그때는 닫지 않는다.
+                onClose={() => setOpenPicker((picker) => (picker === 'dueDate' ? null : picker))}
                 title="언제까지 모을까요?"
                 value={values.dueDate}
-                onSelect={(dueDate) => change({ dueDate })}
+                onSelect={(dueDate) => {
+                    change({ dueDate });
+                    setOpenPicker('dueDay');
+                }}
             />
+            {values.dueDate && (
+                <DayPickerSheet
+                    isOpen={openPicker === 'dueDay'}
+                    onClose={() => setOpenPicker(null)}
+                    title={`${values.dueDate.slice(0, 4)}년 ${Number(values.dueDate.slice(5, 7))}월 며칠까지 모을까요?`}
+                    maxDay={new Date(
+                        Number(values.dueDate.slice(0, 4)),
+                        Number(values.dueDate.slice(5, 7)),
+                        0,
+                    ).getDate()}
+                    minDay={firstSelectableDay(values.dueDate)}
+                    value={Number(values.dueDate.slice(8, 10))}
+                    onSelect={(day) =>
+                        change({
+                            dueDate: `${values.dueDate?.slice(0, 8)}${String(day).padStart(2, '0')}`,
+                        })
+                    }
+                />
+            )}
             <DayPickerSheet
                 isOpen={openPicker === 'day'}
                 onClose={() => setOpenPicker(null)}
