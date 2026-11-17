@@ -8,7 +8,7 @@ import { Button } from '@/shared/components/ui/Button';
 import { ApiError } from '@/shared/types/api';
 import { colors, fontFamily } from '@/styles/tokens';
 
-import { useRenameBlockMutation } from '@/features/block/api/useRenameBlockMutation';
+import { useUpdateBlockMutation } from '@/features/block/api/useUpdateBlockMutation';
 
 /** 04 블록 구성의 이름 칸과 같은 길이 제한 */
 const MAX_NAME_LENGTH = 20;
@@ -51,7 +51,7 @@ interface RenameBlockFormProps {
 function RenameBlockForm({ blockId, currentName, onSaved }: RenameBlockFormProps) {
     const [name, setName] = useState(currentName);
     const [isFocused, setIsFocused] = useState(false);
-    const { mutate: rename, isPending, error } = useRenameBlockMutation();
+    const { mutate: update, isPending, error } = useUpdateBlockMutation();
 
     const trimmed = name.trim();
     const canSave = trimmed !== '' && trimmed !== currentName && !isPending;
@@ -63,7 +63,7 @@ function RenameBlockForm({ blockId, currentName, onSaved }: RenameBlockFormProps
 
     const handleSave = () => {
         if (!canSave) return;
-        rename({ blockId, name: trimmed }, { onSuccess: onSaved });
+        update({ blockId, patch: { name: trimmed } }, { onSuccess: onSaved });
     };
 
     return (

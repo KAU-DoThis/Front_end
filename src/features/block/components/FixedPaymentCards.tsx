@@ -31,7 +31,7 @@ function RuleRow({ label, value, isLast = false }: RuleRowProps) {
 
 interface PaymentRuleCardProps {
     rule: NonNullable<FixedBlockDetail['matchRule']>;
-    /** 고치기 (블록 규칙 수정 화면에서 연결) */
+    /** 고치기 → 블록 수정 시트 (납부 확인 조건은 시안이 없어 납부일·납부액만 고친다) */
     onEdit?: () => void;
 }
 

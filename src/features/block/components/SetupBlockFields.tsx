@@ -73,7 +73,7 @@ interface SelectFieldProps {
 }
 
 /** 눌러서 시트로 고르는 칸 (44 · 12, 오른쪽 아래 화살표) */
-function SelectField({
+export function SelectField({
     label,
     value,
     placeholder,
@@ -118,7 +118,7 @@ interface NameFieldProps {
 }
 
 /** 블록 이름 칸 (금액 칸과 같은 상태 규칙). AI가 제안한 블록도 이름을 바꿀 수 있다. */
-function NameField({ value, errorMessage, onChange }: NameFieldProps) {
+export function NameField({ value, errorMessage, onChange }: NameFieldProps) {
     const [isFocused, setIsFocused] = useState(false);
 
     return (
@@ -175,7 +175,7 @@ interface ColorFieldProps {
     onChange: (value: SetupBlock['color']) => void;
 }
 
-function ColorField({ value, onChange }: ColorFieldProps) {
+export function ColorField({ value, onChange }: ColorFieldProps) {
     return (
         <View className="gap-2">
             <FieldLabel>색상</FieldLabel>

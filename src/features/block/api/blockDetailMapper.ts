@@ -51,6 +51,8 @@ function toSpendingDetail(
     return {
         type: 'SPENDING',
         allocatedAmount: block.capacity ?? block.balance,
+        monthlyAmount: block.rule?.monthlyAmount ?? null,
+        startDay: block.rule?.startDay ?? null,
         periodStartDate: period.from,
         periodEndDate: period.to,
         remainingDays: detail.remainingDays,
@@ -207,6 +209,7 @@ function toBase(response: BlockDetailResponse) {
         explanation: response.statusReason,
         ruleText: response.ruleText,
         actions: response.actions,
+        version: response.block.version,
     };
 }
 

@@ -19,10 +19,16 @@ interface FixedDetailContentProps {
     detail: FixedBlockDetail;
     /** '다른 블록에서 채우기' → 03-2 자금 이동 시트 */
     onFillFromOther: () => void;
+    /** 납부 확인 조건 '고치기' → 블록 수정 시트 */
+    onEditRule: () => void;
 }
 
 /** 02-2 블록 상세 · 고정지출형 (월세) */
-export function FixedDetailContent({ detail, onFillFromOther }: FixedDetailContentProps) {
+export function FixedDetailContent({
+    detail,
+    onFillFromOther,
+    onEditRule,
+}: FixedDetailContentProps) {
     const { block } = detail;
     const payDay = block.rule?.pay_day;
 
@@ -61,7 +67,7 @@ export function FixedDetailContent({ detail, onFillFromOther }: FixedDetailConte
             )}
             {detail.matchRule && (
                 <View className="mt-3">
-                    <PaymentRuleCard rule={detail.matchRule} />
+                    <PaymentRuleCard rule={detail.matchRule} onEdit={onEditRule} />
                 </View>
             )}
             <View className="mt-3">

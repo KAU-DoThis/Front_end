@@ -10,6 +10,8 @@ import { Icon } from '@/shared/components/ui/Icon';
 import { colors } from '@/styles/tokens';
 
 import { useBlockDetailQuery } from '@/features/block/api/useBlockDetailQuery';
+import { BlockMenuSheet, type BlockMenuItem } from '@/features/block/components/BlockMenuSheet';
+import { EditBlockSheet, type EditBlockPicker } from '@/features/block/components/EditBlockSheet';
 import { FixedDetailContent } from '@/features/block/components/FixedDetailContent';
 import { GoalDetailContent } from '@/features/block/components/GoalDetailContent';
 import { RenameBlockSheet } from '@/features/block/components/RenameBlockSheet';
@@ -25,27 +27,34 @@ export function BlockDetailScreen() {
     const isValidId = Number.isInteger(id) && id > 0;
     const { data: detail, isPending, isError, refetch } = useBlockDetailQuery(id);
     const [isTransferOpen, setIsTransferOpen] = useState(false);
-    const [isRenameOpen, setIsRenameOpen] = useState(false);
-    // 이름 바꾸기 시트를 열 때마다 입력칸을 지금 이름으로 새로 시작한다.
-    const [renameFormKey, setRenameFormKey] = useState(0);
+    const [openSheet, setOpenSheet] = useState<'menu' | 'rename' | 'edit' | null>(null);
+    // 이름 바꾸기·수정 시트를 열 때마다 입력칸을 지금 블록 값으로 새로 시작한다.
+    const [formKey, setFormKey] = useState(0);
+    const [editPicker, setEditPicker] = useState<EditBlockPicker>(null);
 
-    const openRename = () => {
-        setRenameFormKey((key) => key + 1);
-        setIsRenameOpen(true);
+    const openForm = (sheet: 'rename' | 'edit', picker: EditBlockPicker = null) => {
+        setFormKey((key) => key + 1);
+        setEditPicker(picker);
+        setOpenSheet(sheet);
     };
+    const closeSheet = () => setOpenSheet(null);
+
+    const menuItems: BlockMenuItem[] = [
+        { label: '이름 바꾸기', onPress: () => openForm('rename') },
+        { label: '블록 수정', onPress: () => openForm('edit') },
+    ];
 
     return (
         <Screen>
             <ScreenHeader
                 title={detail?.block.name ?? ''}
                 right={
-                    // 지금은 이름 바꾸기만 연다. 블록 수정·삭제 메뉴는 블록 관리 작업에서 붙인다.
                     <Pressable
                         accessibilityRole="button"
-                        accessibilityLabel="블록 이름 바꾸기"
+                        accessibilityLabel="블록 관리"
                         hitSlop={12}
                         disabled={!detail}
-                        onPress={openRename}
+                        onPress={() => setOpenSheet('menu')}
                         className="active:opacity-60"
                     >
                         <Icon name="more" size={20} />
@@ -73,6 +82,7 @@ export function BlockDetailScreen() {
                     <DetailContent
                         detail={detail}
                         onFillFromOther={() => setIsTransferOpen(true)}
+                        onEdit={(picker) => openForm('edit', picker)}
                     />
                 </ScrollView>
             ) : (
@@ -85,14 +95,24 @@ export function BlockDetailScreen() {
                 initialToBlockId={isValidId ? id : null}
                 lockedSide="to"
             />
+            <BlockMenuSheet isOpen={openSheet === 'menu'} onClose={closeSheet} items={menuItems} />
             {detail && (
-                <RenameBlockSheet
-                    isOpen={isRenameOpen}
-                    onClose={() => setIsRenameOpen(false)}
-                    blockId={detail.block.blockId}
-                    currentName={detail.block.name}
-                    formKey={renameFormKey}
-                />
+                <>
+                    <RenameBlockSheet
+                        isOpen={openSheet === 'rename'}
+                        onClose={closeSheet}
+                        blockId={detail.block.blockId}
+                        currentName={detail.block.name}
+                        formKey={formKey}
+                    />
+                    <EditBlockSheet
+                        isOpen={openSheet === 'edit'}
+                        onClose={closeSheet}
+                        detail={detail}
+                        formKey={formKey}
+                        initialPicker={editPicker}
+                    />
+                </>
             )}
         </Screen>
     );
@@ -109,15 +129,25 @@ function NotReady() {
 interface DetailContentProps {
     detail: BlockDetail;
     onFillFromOther: () => void;
+    /** 블록 수정 시트 열기 (picker: 바로 띄울 고르기 시트) */
+    onEdit: (picker?: EditBlockPicker) => void;
 }
 
-function DetailContent({ detail, onFillFromOther }: DetailContentProps) {
+function DetailContent({ detail, onFillFromOther, onEdit }: DetailContentProps) {
     switch (detail.type) {
         case 'SPENDING':
             return <SpendingDetailContent detail={detail} onFillFromOther={onFillFromOther} />;
         case 'GOAL':
-            return <GoalDetailContent detail={detail} />;
+            return (
+                <GoalDetailContent detail={detail} onPostponeDueDate={() => onEdit('dueDate')} />
+            );
         case 'FIXED':
-            return <FixedDetailContent detail={detail} onFillFromOther={onFillFromOther} />;
+            return (
+                <FixedDetailContent
+                    detail={detail}
+                    onFillFromOther={onFillFromOther}
+                    onEditRule={() => onEdit()}
+                />
+            );
     }
 }

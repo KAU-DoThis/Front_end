@@ -12,6 +12,7 @@ import type {
     BlockSetupProposal,
     BlockSetupRequest,
 } from '@/features/block/types/blockSetup';
+import type { BlockPatch } from '@/features/block/types/blockUpdate';
 import type {
     SimulateRequest,
     SimulateResponse,
@@ -30,6 +31,7 @@ import { toBlockDetail } from './blockDetailMapper';
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
 import { toBlockHome } from './blockHomeMapper';
+import { updateBlockMock } from './blockManageMock';
 import {
     toBlockSetupPreview,
     toBlockSetupProposal,
@@ -38,6 +40,7 @@ import {
 } from './blockSetupMapper';
 import { BLOCK_SETUP_PROPOSAL_MOCK, mockBlockSetupPreview } from './blockSetupMock';
 import { simulateTransferMock, transferBlockMock } from './blockTransferMock';
+import { toBlockUpdateRequest } from './blockUpdateMapper';
 
 /** 목업 응답 지연 (로딩 상태 확인용) */
 const MOCK_DELAY_MS = 200;
@@ -94,20 +97,30 @@ export const simulateTransfer = (body: SimulateRequest): Promise<SimulateRespons
 };
 
 /**
- * 블록 이름 바꾸기 (PATCH /blocks/{blockId}). 보낸 필드만 바뀐다.
- * 목업 모드에서는 홈·상세 목업의 이름을 바꾼다.
+ * 블록 수정 (PATCH /blocks/{blockId}). 넣은 값만 바뀐다.
+ * version을 넣으면 그사이 바뀐 블록은 409 BLOCK_VERSION_CONFLICT로 막힌다.
+ * 목업 모드에서는 홈·상세 목업 값을 바꾼다.
  */
-export const renameBlock = ({ blockId, name }: { blockId: number; name: string }) => {
+export const updateBlock = ({
+    blockId,
+    patch,
+    version,
+}: {
+    blockId: number;
+    patch: BlockPatch;
+    version?: number;
+}) => {
     if (USE_MOCK) {
         return mockResponse(() => {
-            const homeBlock = BLOCK_HOME_MOCK.blocks.find((block) => block.blockId === blockId);
-            if (homeBlock) homeBlock.name = name;
-            const detail = BLOCK_DETAIL_MOCK[blockId];
-            if (detail) detail.block.name = name;
+            updateBlockMock(blockId, patch);
             return null;
         });
     }
-    return request<unknown>({ method: 'PATCH', url: `/blocks/${blockId}`, data: { name } });
+    return request<unknown>({
+        method: 'PATCH',
+        url: `/blocks/${blockId}`,
+        data: toBlockUpdateRequest(patch, version),
+    });
 };
 
 /** 블록 간 이동 확정 (03-2 옮기기) */
