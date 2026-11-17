@@ -49,7 +49,8 @@ export function MonthPickerSheet({
     const selected = value?.slice(0, 7) ?? null;
 
     return (
-        <BottomSheet isOpen={isOpen} onClose={onClose} title={title}>
+        // 블록 수정 시트 위에서도 열리므로 아래 시트를 닫지 않게 쌓는다.
+        <BottomSheet isOpen={isOpen} onClose={onClose} title={title} isStacked>
             <ScrollView className="max-h-96" contentContainerClassName="gap-4">
                 {years.map((year) => {
                     const yearMonths = months.filter((item) => item.year === year);

@@ -38,6 +38,11 @@ interface BottomSheetProps {
      * (작은 화면 · 큰 글씨 · 키보드가 열렸을 때도 아래 버튼까지 닿게 한다)
      */
     scrollable?: boolean;
+    /**
+     * 다른 시트 위에 띄우는 시트(날짜 고르기 등)면 true. 아래 시트를 그대로 둔 채 위에 쌓는다.
+     * gorhom 기본값(switch)은 아래 시트를 내렸다 올리는데, 5.2에서 그 사이 아래 시트가 닫혀 버린다.
+     */
+    isStacked?: boolean;
     children: ReactNode;
 }
 
@@ -54,6 +59,7 @@ export function BottomSheet({
     hasCloseButton = true,
     onBack,
     scrollable = false,
+    isStacked = false,
     children,
 }: BottomSheetProps) {
     const sheetRef = useRef<BottomSheetModal>(null);
@@ -135,6 +141,7 @@ export function BottomSheet({
             ref={sheetRef}
             onAnimate={handleAnimate}
             onDismiss={handleDismiss}
+            stackBehavior={isStacked ? 'push' : 'switch'}
             backdropComponent={renderBackdrop}
             enablePanDownToClose
             keyboardBehavior="interactive"
