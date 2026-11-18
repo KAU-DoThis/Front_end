@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Alert,
     Image,
@@ -10,8 +10,13 @@ import {
     View,
 } from 'react-native';
 
-import { getSocialLoginAccount } from '@/features/auth/api/authApi';
 import { useLoginMutation } from '@/features/auth/api/useLoginMutation';
+import {
+    createSocialAccount,
+    getSavedSocialAccount,
+    saveSocialAccount,
+} from '@/features/auth/lib/socialAccount';
+import { useSignUpStore } from '@/features/auth/stores/signUpStore';
 import { AUTH_ERROR_CODE } from '@/features/auth/types/auth';
 import { cn } from '@/lib/cn';
 import { Screen } from '@/shared/components/layout/Screen';
@@ -86,7 +91,16 @@ export function LoginScreen() {
 
     const { mutate: login, isPending, error, reset } = useLoginMutation();
     // 소셜 버튼 오류가 비밀번호 칸에 뜨지 않도록 따로 둔다.
-    const { mutate: socialLogin, isPending: isSocialPending } = useLoginMutation();
+    const { mutate: socialLogin, isPending: isSocialLoginPending } = useLoginMutation();
+    // 저장된 기기 계정을 읽는 동안에도 버튼을 막는다.
+    const [isSocialPreparing, setIsSocialPreparing] = useState(false);
+    const isSocialPending = isSocialLoginPending || isSocialPreparing;
+
+    const setSignUpCredentials = useSignUpStore((state) => state.setCredentials);
+    const resetSignUp = useSignUpStore((state) => state.reset);
+
+    // 소셜 버튼으로 약관 화면에 갔다가 로그인하면 이 화면이 사라진다. 가입 입력값(비밀번호 포함)을 지운다.
+    useEffect(() => resetSignUp, [resetSignUp]);
 
     const trimmedEmail = email.trim();
     const isEmailValid = EMAIL_REGEX.test(trimmedEmail);
@@ -117,25 +131,54 @@ export function LoginScreen() {
     };
 
     const handleSignUp = () => {
+        // 소셜 버튼으로 약관 화면에 갔다 돌아왔으면 그때 고른 동의가 남지 않게 비운다.
+        resetSignUp();
         router.push('/sign-up');
     };
 
-    // 실제 OAuth 대신 지정 계정으로 로그인한다. 이동할 화면(온보딩/홈)은 서버 온보딩 상태로 루트 레이아웃이 정한다.
-    // TODO: 카카오/구글 OAuth 연동 (별도 이슈). 신규 사용자는 약관 동의부터 진행
-    const handleSocialLogin = () => {
+    /** 새 기기 계정을 만들어 약관 동의 화면으로 보낸다. 동의하면 가입 후 온보딩으로 간다. */
+    const startSocialSignUp = async () => {
+        const account = createSocialAccount();
+        try {
+            await saveSocialAccount(account);
+        } catch {
+            // 저장하지 못해도 가입은 진행한다. 다음에 누르면 새 계정으로 다시 가입한다.
+        }
+        resetSignUp();
+        setSignUpCredentials(account.email, account.password);
+        router.push('/agreement');
+    };
+
+    // 실제 OAuth 대신 기기 계정으로 로그인한다. (lib/socialAccount 참고)
+    // 처음이면 약관 동의부터, 가입한 기기면 로그인 후 서버 온보딩 상태에 따라 온보딩이나 홈으로 간다.
+    // TODO: 카카오/구글 OAuth 연동 (별도 이슈)
+    const handleSocialLogin = async () => {
         if (isAnyLoginPending) return;
 
-        const account = getSocialLoginAccount();
-        if (!account) {
-            // 계정 환경 변수가 빠진 빌드에서도 버튼이 고장 난 것처럼 보이지 않게 안내한다.
-            Alert.alert('소셜 로그인 준비 중이에요', '지금은 이메일로 로그인해 주세요');
-            return;
+        setIsSocialPreparing(true);
+        try {
+            const savedAccount = await getSavedSocialAccount();
+            if (!savedAccount) {
+                await startSocialSignUp();
+                return;
+            }
+            socialLogin(savedAccount, {
+                onSuccess: () => router.replace('/'),
+                onError: (loginError) => {
+                    // 가입하지 않고 나갔거나 서버에서 계정이 지워졌으면 새로 가입한다.
+                    if (
+                        loginError instanceof ApiError &&
+                        loginError.code === AUTH_ERROR_CODE.INVALID_CREDENTIALS
+                    ) {
+                        void startSocialSignUp();
+                        return;
+                    }
+                    Alert.alert('로그인하지 못했어요', '잠시 후 다시 시도해 주세요');
+                },
+            });
+        } finally {
+            setIsSocialPreparing(false);
         }
-
-        socialLogin(account, {
-            onSuccess: () => router.replace('/'),
-            onError: () => Alert.alert('로그인하지 못했어요', '잠시 후 다시 시도해 주세요'),
-        });
     };
 
     return (

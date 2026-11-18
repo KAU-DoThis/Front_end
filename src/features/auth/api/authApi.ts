@@ -29,21 +29,6 @@ export const DEV_MOCK_ACCOUNT = {
     password: 'test1234',
 } as const;
 
-/**
- * 카카오/구글 버튼을 누르면 이 계정으로 로그인한다. (실제 소셜 OAuth는 연동하지 않음)
- * EXPO_PUBLIC_SOCIAL_LOGIN_EMAIL·PASSWORD로 개발 서버 계정을 넣고,
- * 값이 없으면 목업 모드에서만 목업 계정을 쓴다. 둘 다 아니면 null이고, 버튼은 준비 중 안내를 띄운다.
- * shortcut: 실제 소셜 로그인(POST /auth/kakao)을 붙이면 지운다.
- */
-export function getSocialLoginAccount(): LoginRequest | null {
-    const email = process.env.EXPO_PUBLIC_SOCIAL_LOGIN_EMAIL;
-    const password = process.env.EXPO_PUBLIC_SOCIAL_LOGIN_PASSWORD;
-    if (email && password) {
-        return { email, password };
-    }
-    return USE_MOCK ? { ...DEV_MOCK_ACCOUNT } : null;
-}
-
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 /**
@@ -89,7 +74,7 @@ function mockUserSettings(): UserSettings {
 }
 
 /** 목업으로 로그인할 이메일인지 (목업 계정이거나 목업으로 가입한 계정) */
-const isMockLoginEmail = (email: string) => {
+export const isMockLoginEmail = (email: string) => {
     const normalized = normalizeEmail(email);
     return normalized === DEV_MOCK_ACCOUNT.email || devSignedUpAccounts.has(normalized);
 };
