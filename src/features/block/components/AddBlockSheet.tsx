@@ -61,7 +61,14 @@ interface AddBlockSheetProps {
  */
 export function AddBlockSheet({ isOpen, onClose, formKey }: AddBlockSheetProps) {
     return (
-        <BottomSheet isOpen={isOpen} onClose={onClose} title="블록 추가" scrollable>
+        // 배경 누르기·아래로 끌기·뒤로 가기로 닫으므로 닫기(X)는 두지 않는다.
+        <BottomSheet
+            isOpen={isOpen}
+            onClose={onClose}
+            title="블록 추가"
+            hasCloseButton={false}
+            scrollable
+        >
             <AddBlockForm key={formKey} onDone={onClose} />
         </BottomSheet>
     );
