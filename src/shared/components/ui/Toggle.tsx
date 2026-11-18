@@ -10,7 +10,7 @@ interface ToggleProps {
     disabled?: boolean;
 }
 
-/** 켜기·끄기 스위치 (48×28, 시안 02-2 알림). 켜짐: 청록 면 + 흰 손잡이, 꺼짐: 회색 테두리 + 회색 손잡이 */
+/** 켜기·끄기 스위치 (48×28, 시안 02-2 알림). NativeWind rem이 14px라 크기는 px로 고정한다. 켜짐: 청록 면 + 흰 손잡이, 꺼짐: 회색 테두리 + 회색 손잡이 */
 export function Toggle({ value, onValueChange, accessibilityLabel, disabled }: ToggleProps) {
     return (
         <Pressable
@@ -21,7 +21,7 @@ export function Toggle({ value, onValueChange, accessibilityLabel, disabled }: T
             hitSlop={8}
             onPress={() => onValueChange(!value)}
             className={cn(
-                'h-7 w-12 justify-center rounded-12 px-[1.5px]',
+                'h-[28px] w-[48px] justify-center rounded-full px-[1.5px]',
                 value ? 'bg-primary-700' : 'border-1.5 border-line-control bg-white',
                 disabled && 'opacity-40',
             )}
