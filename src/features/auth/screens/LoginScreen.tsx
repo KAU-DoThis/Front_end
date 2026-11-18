@@ -1,7 +1,16 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import {
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    View,
+} from 'react-native';
 
+import { getSocialLoginAccount } from '@/features/auth/api/authApi';
 import { useLoginMutation } from '@/features/auth/api/useLoginMutation';
 import { AUTH_ERROR_CODE } from '@/features/auth/types/auth';
 import { cn } from '@/lib/cn';
@@ -67,6 +76,8 @@ export function LoginScreen() {
     const [isEmailTouched, setIsEmailTouched] = useState(false);
 
     const { mutate: login, isPending, error, reset } = useLoginMutation();
+    // 소셜 버튼 오류가 비밀번호 칸에 뜨지 않도록 따로 둔다.
+    const { mutate: socialLogin, isPending: isSocialPending } = useLoginMutation();
 
     const trimmedEmail = email.trim();
     const isEmailValid = EMAIL_REGEX.test(trimmedEmail);
@@ -98,8 +109,16 @@ export function LoginScreen() {
         router.push('/sign-up');
     };
 
+    // 실제 OAuth 대신 지정 계정으로 로그인한다. 이동할 화면(온보딩/홈)은 서버 온보딩 상태로 루트 레이아웃이 정한다.
+    // TODO: 카카오/구글 OAuth 연동 (별도 이슈). 신규 사용자는 약관 동의부터 진행
     const handleSocialLogin = () => {
-        // TODO: 카카오/구글 OAuth 연동 (별도 이슈). 신규 사용자는 약관 동의부터 진행
+        const account = getSocialLoginAccount();
+        if (!account || isSocialPending || isPending) return;
+
+        socialLogin(account, {
+            onSuccess: () => router.replace('/'),
+            onError: () => Alert.alert('로그인하지 못했어요', '잠시 후 다시 시도해 주세요'),
+        });
     };
 
     return (
