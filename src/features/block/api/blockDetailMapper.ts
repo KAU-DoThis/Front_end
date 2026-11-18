@@ -1,3 +1,4 @@
+import { formatPayDay } from '@/features/block/utils/blockSetupText';
 import { formatAmount } from '@/lib/format';
 
 import type {
@@ -51,6 +52,8 @@ function toSpendingDetail(
     return {
         type: 'SPENDING',
         allocatedAmount: block.capacity ?? block.balance,
+        monthlyAmount: block.rule?.monthlyAmount ?? null,
+        startDay: block.rule?.startDay ?? null,
         periodStartDate: period.from,
         periodEndDate: period.to,
         remainingDays: detail.remainingDays,
@@ -162,7 +165,9 @@ function toMatchRule(response: BlockDetailResponse, detail: FixedDetailResponse)
               : `${formatAmount(minAmount)} 그대로`;
     const payDay = response.block.rule?.payDay;
     const dateText =
-        payDay === undefined ? null : `매월 ${payDay}일${dayWindow ? ` 앞뒤 ${dayWindow}일` : ''}`;
+        payDay === undefined
+            ? null
+            : `${formatPayDay(payDay)}${dayWindow ? ` 앞뒤 ${dayWindow}일` : ''}`;
     return {
         payee: condition.payee ?? null,
         amountText,
@@ -207,6 +212,7 @@ function toBase(response: BlockDetailResponse) {
         explanation: response.statusReason,
         ruleText: response.ruleText,
         actions: response.actions,
+        version: response.block.version,
     };
 }
 

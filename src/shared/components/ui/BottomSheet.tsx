@@ -1,10 +1,12 @@
 import {
+    BottomSheetTextInput,
     BottomSheetBackdrop,
     BottomSheetModal,
     BottomSheetScrollView,
     BottomSheetView,
     type BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
+import { cssInterop } from 'nativewind';
 import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { BackHandler, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +19,10 @@ import { colors, dimOpacity } from '@/styles/tokens';
  * 시트 안에서 입력칸을 쓸 때는 RN TextInput 대신 이것을 써야 키보드에 맞춰 시트가 올라간다.
  * (@gorhom/bottom-sheet 의존을 이 파일에만 두기 위해 다시 내보낸다.)
  */
-export { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+export { BottomSheetTextInput };
+
+// 서드파티 컴포넌트는 cssInterop으로 등록해야 className이 적용된다. (공통 입력칸을 시트 안에서도 같은 모양으로 쓰기 위해)
+cssInterop(BottomSheetTextInput, { className: 'style' });
 
 interface BottomSheetProps {
     isOpen: boolean;
@@ -25,6 +30,7 @@ interface BottomSheetProps {
     title?: string;
     /** 제목 아래 한 줄 설명 (예: 현금처럼 자동으로 안 잡히는 지출을 적어요) */
     description?: string;
+    /** 오른쪽 위 닫기(X). 기본은 없음 — 배경 누르기·아래로 끌기·뒤로 가기로 닫는다. */
     hasCloseButton?: boolean;
     /** 있으면 제목 왼쪽에 뒤로 가기(<)를 보여준다. 시트 안에서 한 단계 들어간 화면용 (예: 블록 고르기) */
     onBack?: () => void;
@@ -33,6 +39,11 @@ interface BottomSheetProps {
      * (작은 화면 · 큰 글씨 · 키보드가 열렸을 때도 아래 버튼까지 닿게 한다)
      */
     scrollable?: boolean;
+    /**
+     * 다른 시트 위에 띄우는 시트(날짜 고르기 등)면 true. 아래 시트를 그대로 둔 채 위에 쌓는다.
+     * gorhom 기본값(switch)은 아래 시트를 내렸다 올리는데, 5.2에서 그 사이 아래 시트가 닫혀 버린다.
+     */
+    isStacked?: boolean;
     children: ReactNode;
 }
 
@@ -46,9 +57,10 @@ export function BottomSheet({
     onClose,
     title,
     description,
-    hasCloseButton = true,
+    hasCloseButton = false,
     onBack,
     scrollable = false,
+    isStacked = false,
     children,
 }: BottomSheetProps) {
     const sheetRef = useRef<BottomSheetModal>(null);
@@ -89,21 +101,29 @@ export function BottomSheet({
     }, [onClose]);
 
     // 모달 시트는 안드로이드 뒤로 가기를 직접 처리해야 화면 대신 시트가 닫힌다.
+    // 뒤로 가기 리스너는 열릴 때 한 번만 단다. 콜백이 바뀔 때마다 다시 달면 리스너 순서가 바뀌어
+    // 겹친 시트에서 뒤로 가기가 위 시트가 아니라 아래 시트를 닫을 수 있다. (콜백은 ref로 최신 값을 읽는다)
+    const backHandlersRef = useRef({ onBack, onClose });
+    useEffect(() => {
+        backHandlersRef.current = { onBack, onClose };
+    });
+
     useEffect(() => {
         if (!isOpen) {
             return;
         }
         // 시트 안에서 한 단계 들어간 화면(onBack)이면 화면의 < 버튼과 똑같이 이전 화면으로 돌아간다.
         const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (onBack) {
-                onBack();
+            const handlers = backHandlersRef.current;
+            if (handlers.onBack) {
+                handlers.onBack();
             } else {
-                onClose();
+                handlers.onClose();
             }
             return true;
         });
         return () => subscription.remove();
-    }, [isOpen, onBack, onClose]);
+    }, [isOpen]);
 
     const renderBackdrop = useCallback(
         (props: BottomSheetBackdropProps) => (
@@ -130,6 +150,7 @@ export function BottomSheet({
             ref={sheetRef}
             onAnimate={handleAnimate}
             onDismiss={handleDismiss}
+            stackBehavior={isStacked ? 'push' : 'switch'}
             backdropComponent={renderBackdrop}
             enablePanDownToClose
             keyboardBehavior="interactive"
