@@ -21,8 +21,18 @@ import { colors, dimOpacity } from '@/styles/tokens';
  */
 export { BottomSheetTextInput };
 
+/**
+ * 시트 안 일부만 스크롤할 때(달 고르기 목록 등)는 RN ScrollView 대신 이것을 써야 한다.
+ * RN ScrollView는 시트의 끌기 제스처에 터치를 뺏겨 스크롤되지 않는다.
+ */
+export { BottomSheetScrollView };
+
 // 서드파티 컴포넌트는 cssInterop으로 등록해야 className이 적용된다. (공통 입력칸을 시트 안에서도 같은 모양으로 쓰기 위해)
 cssInterop(BottomSheetTextInput, { className: 'style' });
+cssInterop(BottomSheetScrollView, {
+    className: 'style',
+    contentContainerClassName: 'contentContainerStyle',
+});
 
 interface BottomSheetProps {
     isOpen: boolean;
