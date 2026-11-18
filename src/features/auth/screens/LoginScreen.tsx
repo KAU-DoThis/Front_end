@@ -44,6 +44,8 @@ interface SocialButtonProps {
     iconClassName: string;
     className: string;
     textClassName: string;
+    /** 로그인 요청 중에는 눌리지 않고 흐리게 보인다. */
+    disabled?: boolean;
     onPress: () => void;
 }
 
@@ -54,12 +56,19 @@ function SocialButton({
     iconClassName,
     className,
     textClassName,
+    disabled = false,
     onPress,
 }: SocialButtonProps) {
     return (
         <Pressable
             accessibilityRole="button"
-            className={cn('h-14 justify-center rounded-16 px-6 active:opacity-80', className)}
+            accessibilityState={{ disabled }}
+            disabled={disabled}
+            className={cn(
+                'h-14 justify-center rounded-16 px-6 active:opacity-80',
+                disabled && 'opacity-50',
+                className,
+            )}
             onPress={onPress}
         >
             <Image source={icon} className={cn('absolute left-6', iconClassName)} />
@@ -83,6 +92,8 @@ export function LoginScreen() {
     const isEmailValid = EMAIL_REGEX.test(trimmedEmail);
     const showEmailError = isEmailTouched && trimmedEmail.length > 0 && !isEmailValid;
     const canSubmit = isEmailValid && password.length > 0;
+    // 이메일 로그인과 소셜 로그인 요청이 같이 나가지 않도록 하나라도 진행 중이면 둘 다 막는다.
+    const isAnyLoginPending = isPending || isSocialPending;
 
     const handleChangeEmail = (value: string) => {
         setEmail(value);
@@ -95,7 +106,7 @@ export function LoginScreen() {
     };
 
     const handleLogin = () => {
-        if (!canSubmit || isPending) return;
+        if (!canSubmit || isAnyLoginPending) return;
 
         login(
             { email: trimmedEmail, password },
@@ -112,8 +123,14 @@ export function LoginScreen() {
     // 실제 OAuth 대신 지정 계정으로 로그인한다. 이동할 화면(온보딩/홈)은 서버 온보딩 상태로 루트 레이아웃이 정한다.
     // TODO: 카카오/구글 OAuth 연동 (별도 이슈). 신규 사용자는 약관 동의부터 진행
     const handleSocialLogin = () => {
+        if (isAnyLoginPending) return;
+
         const account = getSocialLoginAccount();
-        if (!account || isSocialPending || isPending) return;
+        if (!account) {
+            // 계정 환경 변수가 빠진 빌드에서도 버튼이 고장 난 것처럼 보이지 않게 안내한다.
+            Alert.alert('소셜 로그인 준비 중이에요', '지금은 이메일로 로그인해 주세요');
+            return;
+        }
 
         socialLogin(account, {
             onSuccess: () => router.replace('/'),
@@ -173,7 +190,7 @@ export function LoginScreen() {
                             title="로그인"
                             loadingTitle="로그인 중"
                             isLoading={isPending}
-                            disabled={!canSubmit}
+                            disabled={!canSubmit || isSocialPending}
                             onPress={handleLogin}
                         />
                     </View>
@@ -203,6 +220,7 @@ export function LoginScreen() {
                             iconClassName="h-6 w-6.5"
                             className="bg-kakao"
                             textClassName="text-kakao-label"
+                            disabled={isAnyLoginPending}
                             onPress={handleSocialLogin}
                         />
                         <SocialButton
@@ -211,6 +229,7 @@ export function LoginScreen() {
                             iconClassName="h-6 w-6"
                             className="border border-line-control bg-white"
                             textClassName="text-ink"
+                            disabled={isAnyLoginPending}
                             onPress={handleSocialLogin}
                         />
                     </View>

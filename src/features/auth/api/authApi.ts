@@ -32,7 +32,7 @@ export const DEV_MOCK_ACCOUNT = {
 /**
  * 카카오/구글 버튼을 누르면 이 계정으로 로그인한다. (실제 소셜 OAuth는 연동하지 않음)
  * EXPO_PUBLIC_SOCIAL_LOGIN_EMAIL·PASSWORD로 개발 서버 계정을 넣고,
- * 값이 없으면 목업 모드에서만 목업 계정을 쓴다. 둘 다 아니면 null이라 버튼이 동작하지 않는다.
+ * 값이 없으면 목업 모드에서만 목업 계정을 쓴다. 둘 다 아니면 null이고, 버튼은 준비 중 안내를 띄운다.
  * shortcut: 실제 소셜 로그인(POST /auth/kakao)을 붙이면 지운다.
  */
 export function getSocialLoginAccount(): LoginRequest | null {
