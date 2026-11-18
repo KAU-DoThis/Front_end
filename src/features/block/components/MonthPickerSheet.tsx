@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 
 import { cn } from '@/lib/cn';
 import { AppText } from '@/shared/components/ui/AppText';
-import { BottomSheet, BottomSheetScrollView } from '@/shared/components/ui/BottomSheet';
+import { BottomSheet } from '@/shared/components/ui/BottomSheet';
 
 /** 이번 달부터 고를 수 있는 달 수 (3년) */
 const MONTH_COUNT = 36;
@@ -50,9 +50,9 @@ export function MonthPickerSheet({
 
     return (
         // 블록 수정 시트 위에서도 열리므로 아래 시트를 닫지 않게 쌓는다.
-        <BottomSheet isOpen={isOpen} onClose={onClose} title={title} isStacked>
-            {/* 시트 끌기에 터치를 뺏기지 않도록 시트용 스크롤뷰를 쓴다. */}
-            <BottomSheetScrollView className="max-h-96" contentContainerClassName="gap-4">
+        // 목록 안쪽만 스크롤하면 시트 높이가 목록 전체 길이로 잡혀 아래가 비므로, 시트 자체를 스크롤한다.
+        <BottomSheet isOpen={isOpen} onClose={onClose} title={title} isStacked scrollable>
+            <View className="gap-4">
                 {years.map((year) => {
                     const yearMonths = months.filter((item) => item.year === year);
                     const rows = Array.from(
@@ -110,7 +110,7 @@ export function MonthPickerSheet({
                         </View>
                     );
                 })}
-            </BottomSheetScrollView>
+            </View>
         </BottomSheet>
     );
 }
