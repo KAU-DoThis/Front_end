@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
 
 import { cn } from '@/lib/cn';
@@ -98,15 +98,35 @@ type AlertKey = keyof FixedBlockDetail['alerts'];
 export function PaymentAlertCard({ blockId, alerts }: PaymentAlertCardProps) {
     const [values, setValues] = useState(alerts);
     const { mutateAsync: update } = useUpdateBlockMutation();
+    /** 저장 중인 요청 수. 저장 중엔 다시 불러온 값으로 화면을 덮지 않는다. */
+    const pendingCountRef = useRef(0);
+    /** 키별 마지막 요청 번호. 연달아 누른 뒤 앞 요청이 실패해도 마지막 선택을 되돌리지 않게 한다. */
+    const latestRequestRef = useRef<Record<AlertKey, number>>({
+        shortageBeforePay: 0,
+        paymentConfirmed: 0,
+    });
+
+    // 다시 불러온 서버 값(다른 기기에서 바꾼 경우 등)을 화면에 맞춘다.
+    useEffect(() => {
+        if (pendingCountRef.current === 0) setValues(alerts);
+    }, [alerts]);
 
     const toggle = (key: AlertKey, value: boolean) => {
         setValues((prev) => ({ ...prev, [key]: value }));
+        const requestId = ++latestRequestRef.current[key];
+        pendingCountRef.current += 1;
         // alerts는 서버가 키별로 합치므로 version 없이 보낸다. (다른 수정과 부딪히지 않는다)
-        // mutate 콜백은 마지막 호출만 불려서, 연달아 눌러도 각각 되돌릴 수 있게 promise로 받는다.
-        update({ blockId, patch: { alerts: { [key]: value } } }).catch(() => {
-            setValues((prev) => ({ ...prev, [key]: !value }));
-            Alert.alert('알림 설정을 바꾸지 못했어요', '잠시 후 다시 시도해 주세요.');
-        });
+        // mutate 콜백은 마지막 호출만 불려서, 연달아 눌러도 각각 처리할 수 있게 promise로 받는다.
+        update({ blockId, patch: { alerts: { [key]: value } } })
+            .catch(() => {
+                if (latestRequestRef.current[key] === requestId) {
+                    setValues((prev) => ({ ...prev, [key]: !value }));
+                }
+                Alert.alert('알림 설정을 바꾸지 못했어요', '잠시 후 다시 시도해 주세요.');
+            })
+            .finally(() => {
+                pendingCountRef.current -= 1;
+            });
     };
 
     return (

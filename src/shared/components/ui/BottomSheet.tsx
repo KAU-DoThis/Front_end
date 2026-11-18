@@ -101,21 +101,29 @@ export function BottomSheet({
     }, [onClose]);
 
     // 모달 시트는 안드로이드 뒤로 가기를 직접 처리해야 화면 대신 시트가 닫힌다.
+    // 뒤로 가기 리스너는 열릴 때 한 번만 단다. 콜백이 바뀔 때마다 다시 달면 리스너 순서가 바뀌어
+    // 겹친 시트에서 뒤로 가기가 위 시트가 아니라 아래 시트를 닫을 수 있다. (콜백은 ref로 최신 값을 읽는다)
+    const backHandlersRef = useRef({ onBack, onClose });
+    useEffect(() => {
+        backHandlersRef.current = { onBack, onClose };
+    });
+
     useEffect(() => {
         if (!isOpen) {
             return;
         }
         // 시트 안에서 한 단계 들어간 화면(onBack)이면 화면의 < 버튼과 똑같이 이전 화면으로 돌아간다.
         const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (onBack) {
-                onBack();
+            const handlers = backHandlersRef.current;
+            if (handlers.onBack) {
+                handlers.onBack();
             } else {
-                onClose();
+                handlers.onClose();
             }
             return true;
         });
         return () => subscription.remove();
-    }, [isOpen, onBack, onClose]);
+    }, [isOpen]);
 
     const renderBackdrop = useCallback(
         (props: BottomSheetBackdropProps) => (
