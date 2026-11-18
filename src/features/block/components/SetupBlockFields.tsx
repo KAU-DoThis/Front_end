@@ -6,6 +6,7 @@ import {
     BLOCK_COLOR_BG_CLASS,
     BLOCK_COLOR_LABEL,
     BLOCK_COLORS,
+    formatPayDay,
     formatSpendingPeriod,
 } from '@/features/block/utils/blockSetupText';
 import { cn } from '@/lib/cn';
@@ -22,7 +23,7 @@ import { MonthPickerSheet, formatYearMonth } from './MonthPickerSheet';
 
 /** − / + 한 번에 바뀌는 금액 */
 const AMOUNT_STEP = 10_000;
-/** 기간 시작일은 모든 달에 있는 날(28일)까지만 고른다. */
+/** 기간 시작일·납부일은 모든 달에 있는 날(28일)까지 + 말일 버튼으로 고른다. */
 const MAX_PERIOD_START_DAY = 28;
 
 export interface SetupBlockErrors {
@@ -291,7 +292,7 @@ export function SetupBlockFields({
                         <SelectField
                             className="flex-1"
                             label="납부일"
-                            value={block.payDay === null ? null : `매월 ${block.payDay}일`}
+                            value={block.payDay === null ? null : formatPayDay(block.payDay)}
                             placeholder="날짜 고르기"
                             errorMessage={visibleErrors.payDay}
                             onPress={() => setOpenSheet('payDay')}
@@ -420,7 +421,8 @@ export function SetupBlockFields({
                 isOpen={openSheet === 'payDay'}
                 onClose={() => setOpenSheet(null)}
                 title="납부일"
-                maxDay={31}
+                maxDay={MAX_PERIOD_START_DAY}
+                hasLastDay
                 value={block.payDay}
                 onSelect={(payDay) => onChange({ payDay })}
             />
@@ -429,6 +431,7 @@ export function SetupBlockFields({
                 onClose={() => setOpenSheet(null)}
                 title="매월 며칠부터 쓸까요?"
                 maxDay={MAX_PERIOD_START_DAY}
+                hasLastDay
                 value={block.periodStartDay}
                 onSelect={(periodStartDay) => onChange({ periodStartDay })}
             />

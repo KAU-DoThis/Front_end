@@ -16,14 +16,14 @@ import {
     formatFullDate,
     lastDayOfMonth,
 } from '@/features/block/utils/blockDate';
-import { formatSpendingPeriod } from '@/features/block/utils/blockSetupText';
+import { formatPayDay, formatSpendingPeriod } from '@/features/block/utils/blockSetupText';
 
 import { DayPickerSheet } from './DayPickerSheet';
 import { MonthPickerSheet } from './MonthPickerSheet';
 import { ColorField, NameField, SelectField } from './SetupBlockFields';
 
-/** 기간 시작일은 모든 달에 있는 날(28일)까지만 고른다. (04 블록 구성과 같음) */
-const MAX_PERIOD_START_DAY = 28;
+/** 기간 시작일·납부일은 모든 달에 있는 날(28일)까지 + 말일 버튼으로 고른다. (04 블록 구성과 같음) */
+const MAX_PICKABLE_DAY = 28;
 
 /** 열자마자 띄울 고르기 시트 ('목표일 미루기' → 기한). dueDay는 기한 달을 고른 뒤 이어서 뜨는 일 고르기 */
 export type EditBlockPicker = 'dueDate' | 'dueDay' | 'day' | null;
@@ -223,16 +223,19 @@ function EditBlockForm({ detail, initialPicker, onDone }: EditBlockFormProps) {
                     <SelectField
                         className="flex-1"
                         label="납부일"
-                        value={values.day === null ? null : `매월 ${values.day}일`}
+                        value={values.day === null ? null : formatPayDay(values.day)}
                         placeholder="날짜 고르기"
                         onPress={() => setOpenPicker('day')}
                     />
                 </View>
             )}
-            {/* 서버는 그달에 없는 납부일이면 말일로 본다. */}
-            {detail.type === 'FIXED' && values.day !== null && values.day >= 29 && (
-                <AppText className="-mt-1 text-12 text-ink-sub">없는 달은 말일에 내요</AppText>
-            )}
+            {/* 예전에 29·30일로 정한 블록만 해당. 서버는 그달에 없는 납부일이면 말일로 본다. */}
+            {detail.type === 'FIXED' &&
+                values.day !== null &&
+                values.day >= 29 &&
+                values.day < 31 && (
+                    <AppText className="-mt-1 text-12 text-ink-sub">없는 달은 말일에 내요</AppText>
+                )}
 
             <ColorField value={values.color} onChange={(color) => change({ color })} />
 
@@ -281,7 +284,8 @@ function EditBlockForm({ detail, initialPicker, onDone }: EditBlockFormProps) {
                 isOpen={openPicker === 'day'}
                 onClose={() => setOpenPicker(null)}
                 title={detail.type === 'FIXED' ? '납부일' : '매월 며칠부터 쓸까요?'}
-                maxDay={detail.type === 'FIXED' ? 31 : MAX_PERIOD_START_DAY}
+                maxDay={MAX_PICKABLE_DAY}
+                hasLastDay
                 value={values.day}
                 onSelect={(day) => change({ day })}
             />

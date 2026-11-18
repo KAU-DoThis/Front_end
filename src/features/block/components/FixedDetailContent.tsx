@@ -7,6 +7,7 @@ import { ListRow } from '@/shared/components/ui/ListRow';
 import { colors } from '@/styles/tokens';
 
 import type { FixedBlockDetail } from '@/features/block/types/blockDetail';
+import { formatPayDay } from '@/features/block/utils/blockSetupText';
 
 import { BlockDetailList } from './BlockDetailSection';
 import { BlockHeroCard } from './BlockHeroCard';
@@ -39,7 +40,7 @@ export function FixedDetailContent({
                 statusReason={detail.statusReason}
                 amountLabel="확보한 돈"
                 total={detail.payAmount}
-                footerLeft={[payDay && `매월 ${payDay}일 납부`, `${block.fillRate}% 확보`]
+                footerLeft={[payDay && `${formatPayDay(payDay)} 납부`, `${block.fillRate}% 확보`]
                     .filter(Boolean)
                     .join('  ')}
                 footerRight={block.daysUntilPay === null ? '' : `D-${block.daysUntilPay}`}

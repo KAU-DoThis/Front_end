@@ -6,6 +6,7 @@ import {
     BLOCK_COLOR_BG_CLASS,
     BLOCK_TYPE_LABEL,
     BLOCK_TYPES,
+    formatPayDay,
     formatSpendingPeriod,
 } from '@/features/block/utils/blockSetupText';
 import { cn } from '@/lib/cn';
@@ -73,7 +74,7 @@ function Tag({ label, tone }: { label: string; tone: TagTone }) {
 function getCollapsedCaption(block: SetupBlock) {
     const typeLabel = BLOCK_TYPE_LABEL[block.type];
     if (block.type === 'FIXED' && block.payDay !== null) {
-        return `${typeLabel}  매월 ${block.payDay}일`;
+        return `${typeLabel}  ${formatPayDay(block.payDay)}`;
     }
     if (block.type === 'SPENDING') {
         return `${typeLabel}  ${formatSpendingPeriod(block.periodStartDay ?? 1)}`;

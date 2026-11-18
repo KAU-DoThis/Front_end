@@ -6,16 +6,21 @@ import { BottomSheet } from '@/shared/components/ui/BottomSheet';
 
 const COLUMNS = 7;
 
+/** '말일'을 고르면 넘기는 값. 그달에 31일이 없으면 말일로 본다. (서버 납부일과 같은 규칙) */
+export const LAST_DAY = 31;
+
 interface DayPickerSheetProps {
     isOpen: boolean;
     onClose: () => void;
     title: string;
-    /** 고를 수 있는 마지막 날 (납부일 31 · 기간 시작일 28 · 기한은 그달 일수) */
+    /** 고를 수 있는 마지막 날 (기간 시작일·납부일 28 · 기한은 그달 일수) */
     maxDay: number;
     /** 이보다 앞선 날은 흐리게 막는다. (기한: 이번 달이면 오늘부터) */
     minDay?: number;
     value: number | null;
     onSelect: (day: number) => void;
+    /** true면 날짜 아래에 '말일' 버튼을 둔다. (사용형 기간 시작일·고정지출 납부일: 1~28 + 말일) */
+    hasLastDay?: boolean;
 }
 
 /** 매월 며칠인지 고르는 시트. 고르면 바로 닫힌다. */
@@ -27,6 +32,7 @@ export function DayPickerSheet({
     minDay = 1,
     value,
     onSelect,
+    hasLastDay = false,
 }: DayPickerSheetProps) {
     const days = Array.from({ length: maxDay }, (_, index) => index + 1);
     const rows = Array.from({ length: Math.ceil(maxDay / COLUMNS) }, (_, rowIndex) =>
@@ -81,6 +87,29 @@ export function DayPickerSheet({
                         })}
                     </View>
                 ))}
+                {hasLastDay && (
+                    <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="말일"
+                        accessibilityState={{ selected: value === LAST_DAY }}
+                        className={cn(
+                            'h-11 items-center justify-center rounded-12',
+                            value === LAST_DAY
+                                ? 'bg-primary-700'
+                                : 'bg-surface-app active:bg-surface-chip',
+                        )}
+                        onPress={() => {
+                            onSelect(LAST_DAY);
+                            onClose();
+                        }}
+                    >
+                        <AppText
+                            className={cn('text-15', value === LAST_DAY && 'font-bold text-white')}
+                        >
+                            말일
+                        </AppText>
+                    </Pressable>
+                )}
             </View>
         </BottomSheet>
     );

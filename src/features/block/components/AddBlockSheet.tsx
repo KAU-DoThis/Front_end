@@ -20,6 +20,7 @@ import {
 import {
     BLOCK_TYPE_LABEL,
     BLOCK_TYPES,
+    formatPayDay,
     formatSpendingPeriod,
 } from '@/features/block/utils/blockSetupText';
 
@@ -27,8 +28,8 @@ import { DayPickerSheet } from './DayPickerSheet';
 import { MonthPickerSheet } from './MonthPickerSheet';
 import { ColorField, NameField, SelectField } from './SetupBlockFields';
 
-/** 기간 시작일은 모든 달에 있는 날(28일)까지만 고른다. (04 블록 구성과 같음) */
-const MAX_PERIOD_START_DAY = 28;
+/** 기간 시작일·납부일은 모든 달에 있는 날(28일)까지 + 말일 버튼으로 고른다. (04 블록 구성과 같음) */
+const MAX_PICKABLE_DAY = 28;
 
 /** 색을 안 고르면 유형별 기본색 (서버 BlockColor.defaultFor와 같음) */
 const DEFAULT_COLOR: Record<BlockType, BlockColor> = { SPENDING: 'i', GOAL: 'o', FIXED: 'l' };
@@ -166,12 +167,7 @@ function AddBlockForm({ onDone }: AddBlockFormProps) {
             {values.type === 'FIXED' && (
                 <SelectField
                     label="납부일"
-                    // 서버는 그달에 없는 납부일이면 말일로 본다. 안내를 칸 안에 넣어 높이를 안 바꾼다.
-                    value={
-                        values.day === null
-                            ? null
-                            : `매월 ${values.day}일${values.day >= 29 ? ' (없는 달은 말일)' : ''}`
-                    }
+                    value={values.day === null ? null : formatPayDay(values.day)}
                     placeholder="날짜 고르기"
                     errorMessage={visibleErrors.day}
                     onPress={() => setOpenPicker('day')}
@@ -254,7 +250,8 @@ function AddBlockForm({ onDone }: AddBlockFormProps) {
                 isOpen={openPicker === 'day'}
                 onClose={() => setOpenPicker(null)}
                 title={values.type === 'FIXED' ? '납부일' : '매월 며칠부터 쓸까요?'}
-                maxDay={values.type === 'FIXED' ? 31 : MAX_PERIOD_START_DAY}
+                maxDay={MAX_PICKABLE_DAY}
+                hasLastDay
                 value={values.day}
                 onSelect={(day) => change({ day })}
             />
