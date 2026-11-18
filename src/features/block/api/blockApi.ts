@@ -1,3 +1,5 @@
+import type { Block } from '@/features/block/types/block';
+import type { BlockCreateRequest } from '@/features/block/types/blockCreate';
 import type { BlockDetail } from '@/features/block/types/blockDetail';
 import type { BlockDetailResponse } from '@/features/block/types/blockDetailResponse';
 import type {
@@ -31,7 +33,7 @@ import { toBlockDetail } from './blockDetailMapper';
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
 import { toBlockHome } from './blockHomeMapper';
-import { deleteBlockMock, updateBlockMock } from './blockManageMock';
+import { createBlockMock, deleteBlockMock, updateBlockMock } from './blockManageMock';
 import {
     toBlockSetupPreview,
     toBlockSetupProposal,
@@ -94,6 +96,17 @@ export const simulateTransfer = (body: SimulateRequest): Promise<SimulateRespons
         return mockResponse(() => simulateTransferMock(body));
     }
     return request<SimulateResponse>({ method: 'POST', url: '/blocks/simulate', data: body });
+};
+
+/**
+ * 블록 추가 (POST /blocks). 잔액 0원으로 홈 맨 뒤에 생긴다.
+ * 목업 모드에서는 홈 목업에 블록을 붙인다.
+ */
+export const createBlock = (body: BlockCreateRequest): Promise<Block> => {
+    if (USE_MOCK) {
+        return mockResponse(() => createBlockMock(body));
+    }
+    return request<Block>({ method: 'POST', url: '/blocks', data: body });
 };
 
 /**

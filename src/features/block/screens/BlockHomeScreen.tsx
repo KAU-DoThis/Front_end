@@ -13,6 +13,7 @@ import { Icon } from '@/shared/components/ui/Icon';
 import { colors } from '@/styles/tokens';
 
 import { useBlockHomeQuery } from '@/features/block/api/useBlockHomeQuery';
+import { AddBlockSheet } from '@/features/block/components/AddBlockSheet';
 import { AgentBanner } from '@/features/block/components/AgentBanner';
 import { AssetCardPager } from '@/features/block/components/AssetCardPager';
 import { BlockGrid } from '@/features/block/components/BlockGrid';
@@ -74,6 +75,9 @@ interface TransferTarget {
 function HomeContent({ home }: { home: BlockHome }) {
     const [isDragging, setIsDragging] = useState(false);
     const [transfer, setTransfer] = useState<TransferTarget | null>(null);
+    const [isAddBlockOpen, setIsAddBlockOpen] = useState(false);
+    // 열 때마다 바꿔서 지난번 입력값이 남지 않게 한다.
+    const [addBlockFormKey, setAddBlockFormKey] = useState(0);
     const { sourceId, hoverId } = useDragState();
 
     const sourceBlock = home.blocks.find((block) => block.blockId === sourceId) ?? null;
@@ -118,11 +122,14 @@ function HomeContent({ home }: { home: BlockHome }) {
                         내 블록{' '}
                         <AppText className="text-17 text-ink-sub">{home.blocks.length}</AppText>
                     </AppText>
-                    {/* 블록 추가(04 블록 구성)는 해당 작업에서 연결한다. */}
                     <Pressable
                         accessibilityRole="button"
                         accessibilityLabel="블록 추가"
                         hitSlop={6}
+                        onPress={() => {
+                            setAddBlockFormKey((key) => key + 1);
+                            setIsAddBlockOpen(true);
+                        }}
                         className="ml-3 h-8 flex-row items-center gap-0.5 rounded-16 border border-dashed border-primary-700 px-2.5 active:bg-primary-50"
                     >
                         <Icon
@@ -171,6 +178,11 @@ function HomeContent({ home }: { home: BlockHome }) {
                 onClose={() => setTransfer(null)}
                 initialFromBlockId={transfer?.fromBlockId ?? null}
                 initialToBlockId={transfer?.toBlockId ?? null}
+            />
+            <AddBlockSheet
+                isOpen={isAddBlockOpen}
+                onClose={() => setIsAddBlockOpen(false)}
+                formKey={addBlockFormKey}
             />
         </View>
     );

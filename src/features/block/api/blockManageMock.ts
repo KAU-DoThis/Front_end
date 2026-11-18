@@ -1,4 +1,7 @@
+import type { HomeBlock } from '@/features/block/types/block';
+import type { BlockCreateRequest } from '@/features/block/types/blockCreate';
 import type { BlockDeleteResponse, BlockPatch } from '@/features/block/types/blockUpdate';
+import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
 import { ApiError } from '@/shared/types/api';
 
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
@@ -69,4 +72,55 @@ export function deleteBlockMock(blockId: number): BlockDeleteResponse {
     };
     BLOCK_HOME_MOCK.pendingMoney.push(waitingFund);
     return { blockId, returnedAmount: block.balance, waitingFund };
+}
+
+const toDateString = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+/** 납부일까지 남은 날. 그달에 없는 납부일은 말일로 본다. (서버와 같은 규칙) */
+function daysUntil(payDay: number, today: Date) {
+    const dueIn = (year: number, month: number) =>
+        new Date(year, month, Math.min(payDay, new Date(year, month + 1, 0).getDate()));
+    let due = dueIn(today.getFullYear(), today.getMonth());
+    if (due.getDate() < today.getDate()) due = dueIn(today.getFullYear(), today.getMonth() + 1);
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    return Math.round((due.getTime() - start.getTime()) / 86_400_000);
+}
+
+/**
+ * 블록 추가 목업: 잔액 0원 블록을 홈 목업 맨 뒤에 붙인다. (서버 BlockService.createBlock과 같은 기본값)
+ * 상세 목업은 만들지 않아서 새 블록 상세는 준비 중으로 보인다.
+ */
+export function createBlockMock(body: BlockCreateRequest): HomeBlock {
+    const today = new Date();
+    const blocks = BLOCK_HOME_MOCK.blocks;
+    const payDay = body.rule?.payDay ?? null;
+    const block: HomeBlock = {
+        blockId: Math.max(0, ...blocks.map((item) => item.blockId)) + 1,
+        type: body.type,
+        name: body.name,
+        icon: null,
+        balance: 0,
+        isDefault: false,
+        targetAmount: body.targetAmount ?? null,
+        startDate: toDateString(today),
+        dueDate:
+            body.type === 'SPENDING'
+                ? toDateString(new Date(today.getFullYear(), today.getMonth() + 1, 0))
+                : (body.dueDate ?? null),
+        rule:
+            body.type === 'FIXED'
+                ? { ...EMPTY_RULE, pay_day: payDay, pay_amount: body.rule?.payAmount ?? null }
+                : null,
+        status: 'SAFE',
+        createdBy: 'USER',
+        displayOrder: Math.max(-1, ...blocks.map((item) => item.displayOrder)) + 1,
+        categories: [],
+        color: (body.color?.toLowerCase() ?? 'i') as BlockColor,
+        // 잔액 0원이라 빈 비커
+        fillRate: 0,
+        daysUntilPay: payDay === null ? null : daysUntil(payDay, today),
+    };
+    blocks.push(block);
+    return block;
 }
