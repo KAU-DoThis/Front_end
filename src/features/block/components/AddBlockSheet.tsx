@@ -39,6 +39,12 @@ const AMOUNT_LABEL: Record<BlockType, string> = {
     FIXED: '납부 금액',
 };
 
+const NAME_PLACEHOLDER: Record<BlockType, string> = {
+    SPENDING: '예: 교통비',
+    GOAL: '예: 저축',
+    FIXED: '예: 여행',
+};
+
 type Picker = 'dueDate' | 'dueDay' | 'day' | null;
 
 interface AddBlockSheetProps {
@@ -142,43 +148,34 @@ function AddBlockForm({ onDone }: AddBlockFormProps) {
 
             <NameField
                 value={values.name}
+                placeholder={NAME_PLACEHOLDER[values.type]}
                 errorMessage={visibleErrors.name}
                 onChange={(name) => change({ name })}
                 inSheet
             />
 
-            {values.type === 'FIXED' ? (
-                <View className="flex-row items-start gap-2">
-                    <AmountInput
-                        className="flex-1"
-                        size="sm"
-                        label={AMOUNT_LABEL.FIXED}
-                        value={values.amount}
-                        onChangeValue={(amount) => change({ amount })}
-                        errorMessage={visibleErrors.amount}
-                        inSheet
-                    />
-                    <SelectField
-                        className="flex-1"
-                        label="납부일"
-                        value={values.day === null ? null : `매월 ${values.day}일`}
-                        placeholder="날짜 고르기"
-                        errorMessage={visibleErrors.day}
-                        onPress={() => setOpenPicker('day')}
-                    />
-                </View>
-            ) : (
-                <AmountInput
-                    label={AMOUNT_LABEL[values.type]}
-                    value={values.amount}
-                    onChangeValue={(amount) => change({ amount })}
-                    errorMessage={visibleErrors.amount}
-                    inSheet
+            {/* 유형을 바꿔도 시트 높이가 그대로이도록 모든 유형을 금액 한 줄 + 고르기 한 줄로 둔다. */}
+            <AmountInput
+                label={AMOUNT_LABEL[values.type]}
+                value={values.amount}
+                onChangeValue={(amount) => change({ amount })}
+                errorMessage={visibleErrors.amount}
+                inSheet
+            />
+
+            {values.type === 'FIXED' && (
+                <SelectField
+                    label="납부일"
+                    // 서버는 그달에 없는 납부일이면 말일로 본다. 안내를 칸 안에 넣어 높이를 안 바꾼다.
+                    value={
+                        values.day === null
+                            ? null
+                            : `매월 ${values.day}일${values.day >= 29 ? ' (없는 달은 말일)' : ''}`
+                    }
+                    placeholder="날짜 고르기"
+                    errorMessage={visibleErrors.day}
+                    onPress={() => setOpenPicker('day')}
                 />
-            )}
-            {/* 서버는 그달에 없는 납부일이면 말일로 본다. */}
-            {values.type === 'FIXED' && values.day !== null && values.day >= 29 && (
-                <AppText className="-mt-1 text-12 text-ink-sub">없는 달은 말일에 내요</AppText>
             )}
 
             {values.type === 'SPENDING' && (

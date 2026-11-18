@@ -114,6 +114,8 @@ export function SelectField({
 
 interface NameFieldProps {
     value: string;
+    /** 빈 칸 예시 (기본: 예: 저축) */
+    placeholder?: string;
     errorMessage?: string;
     onChange: (value: string) => void;
     /** 바텀시트 안에서 쓰면 true. 키보드가 열릴 때 시트가 같이 올라간다. */
@@ -121,7 +123,13 @@ interface NameFieldProps {
 }
 
 /** 블록 이름 칸 (금액 칸과 같은 상태 규칙). AI가 제안한 블록도 이름을 바꿀 수 있다. */
-export function NameField({ value, errorMessage, onChange, inSheet = false }: NameFieldProps) {
+export function NameField({
+    value,
+    placeholder = '예: 저축',
+    errorMessage,
+    onChange,
+    inSheet = false,
+}: NameFieldProps) {
     const [isFocused, setIsFocused] = useState(false);
     const Input = inSheet ? BottomSheetTextInput : TextInput;
 
@@ -139,7 +147,7 @@ export function NameField({ value, errorMessage, onChange, inSheet = false }: Na
                 )}
                 value={value}
                 onChangeText={onChange}
-                placeholder="예: 저축"
+                placeholder={placeholder}
                 placeholderTextColor={colors.ink.disabled}
                 maxLength={20}
                 accessibilityLabel="블록 이름"
