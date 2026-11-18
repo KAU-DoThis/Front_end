@@ -11,6 +11,11 @@ import { ApiError } from '@/shared/types/api';
 import { useUpdateBlockMutation } from '@/features/block/api/useUpdateBlockMutation';
 import type { BlockDetail } from '@/features/block/types/blockDetail';
 import type { BlockPatch } from '@/features/block/types/blockUpdate';
+import {
+    firstSelectableDay,
+    formatFullDate,
+    lastDayOfMonth,
+} from '@/features/block/utils/blockDate';
 import { formatSpendingPeriod } from '@/features/block/utils/blockSetupText';
 
 import { DayPickerSheet } from './DayPickerSheet';
@@ -22,19 +27,6 @@ const MAX_PERIOD_START_DAY = 28;
 
 /** 열자마자 띄울 고르기 시트 ('목표일 미루기' → 기한). dueDay는 기한 달을 고른 뒤 이어서 뜨는 일 고르기 */
 export type EditBlockPicker = 'dueDate' | 'dueDay' | 'day' | null;
-
-/** "2027-03-15" → "2027년 3월 15일" */
-const formatFullDate = (date: string) => {
-    const [year, month, day] = date.slice(0, 10).split('-').map(Number);
-    return `${year}년 ${month}월 ${day}일`;
-};
-
-/** 기한 달에서 고를 수 있는 첫날. 서버는 오늘 전 기한을 거절해서 이번 달이면 오늘부터 고른다. */
-function firstSelectableDay(dueDate: string) {
-    const today = new Date();
-    const [year, month] = dueDate.slice(0, 7).split('-').map(Number);
-    return year === today.getFullYear() && month === today.getMonth() + 1 ? today.getDate() : 1;
-}
 
 interface EditBlockSheetProps {
     isOpen: boolean;
@@ -275,11 +267,7 @@ function EditBlockForm({ detail, initialPicker, onDone }: EditBlockFormProps) {
                     isOpen={openPicker === 'dueDay'}
                     onClose={() => setOpenPicker(null)}
                     title={`${values.dueDate.slice(0, 4)}년 ${Number(values.dueDate.slice(5, 7))}월 며칠까지 모을까요?`}
-                    maxDay={new Date(
-                        Number(values.dueDate.slice(0, 4)),
-                        Number(values.dueDate.slice(5, 7)),
-                        0,
-                    ).getDate()}
+                    maxDay={lastDayOfMonth(values.dueDate)}
                     minDay={firstSelectableDay(values.dueDate)}
                     value={Number(values.dueDate.slice(8, 10))}
                     onSelect={(day) =>
