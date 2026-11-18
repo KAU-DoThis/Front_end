@@ -137,14 +137,16 @@ export function NameField({
         <View className="gap-2">
             <FieldLabel>블록 이름</FieldLabel>
             <Input
+                // Android TextInput 기본 위아래 여백 때문에 플레이스홀더가 위로 뜨지 않도록 여백을 없앤다. (AmountInput과 같음)
                 className={cn(
-                    'h-11 rounded-12 bg-white px-3 font-semibold text-15 text-ink',
+                    'h-11 rounded-12 bg-white px-3 py-0 font-semibold text-15 text-ink',
                     errorMessage
                         ? 'border-2 border-danger-text'
                         : isFocused
                           ? 'border-2 border-primary-700'
                           : 'border border-line-control',
                 )}
+                style={{ includeFontPadding: false, textAlignVertical: 'center' }}
                 value={value}
                 onChangeText={onChange}
                 placeholder={placeholder}
