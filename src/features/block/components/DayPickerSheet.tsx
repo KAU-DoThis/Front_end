@@ -40,14 +40,8 @@ export function DayPickerSheet({
     );
 
     return (
-        // 블록 수정 시트 위에서도 열리므로 아래 시트를 닫지 않게 쌓는다. 고르면 바로 닫혀서 닫기(X)는 두지 않는다.
-        <BottomSheet
-            isOpen={isOpen}
-            onClose={onClose}
-            title={title}
-            hasCloseButton={false}
-            isStacked
-        >
+        // 블록 수정 시트 위에서도 열리므로 아래 시트를 닫지 않게 쌓는다.
+        <BottomSheet isOpen={isOpen} onClose={onClose} title={title} isStacked>
             <View className="gap-2">
                 {rows.map((row, rowIndex) => (
                     <View key={rowIndex} className="flex-row gap-2">

@@ -30,6 +30,7 @@ interface BottomSheetProps {
     title?: string;
     /** 제목 아래 한 줄 설명 (예: 현금처럼 자동으로 안 잡히는 지출을 적어요) */
     description?: string;
+    /** 오른쪽 위 닫기(X). 기본은 없음 — 배경 누르기·아래로 끌기·뒤로 가기로 닫는다. */
     hasCloseButton?: boolean;
     /** 있으면 제목 왼쪽에 뒤로 가기(<)를 보여준다. 시트 안에서 한 단계 들어간 화면용 (예: 블록 고르기) */
     onBack?: () => void;
@@ -56,7 +57,7 @@ export function BottomSheet({
     onClose,
     title,
     description,
-    hasCloseButton = true,
+    hasCloseButton = false,
     onBack,
     scrollable = false,
     isStacked = false,
