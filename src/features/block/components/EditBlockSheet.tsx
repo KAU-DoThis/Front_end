@@ -118,12 +118,18 @@ interface EditBlockFormProps {
 
 function EditBlockForm({ detail, initialPicker, onDone }: EditBlockFormProps) {
     const [initial] = useState(() => toFormValues(detail));
+    // 연 시점의 version으로 저장해야, 여는 사이 다른 곳에서 바뀐 경우 409로 막힌다.
+    const [initialVersion] = useState(detail.version);
     const [values, setValues] = useState(initial);
     const [openPicker, setOpenPicker] = useState<EditBlockPicker>(initialPicker);
     const [isErrorVisible, setIsErrorVisible] = useState(false);
-    const { mutate: update, isPending, error } = useUpdateBlockMutation();
+    const { mutate: update, isPending, error, reset } = useUpdateBlockMutation();
 
-    const change = (next: Partial<FormValues>) => setValues((prev) => ({ ...prev, ...next }));
+    const change = (next: Partial<FormValues>) => {
+        // 값을 고치면 지난 저장 오류 문구는 지운다.
+        if (error) reset();
+        setValues((prev) => ({ ...prev, ...next }));
+    };
     const patch = toPatch(detail.type, initial, values);
     const errors = {
         name: values.name.trim() === '' ? '블록 이름을 넣어주세요' : undefined,
@@ -151,7 +157,7 @@ function EditBlockForm({ detail, initialPicker, onDone }: EditBlockFormProps) {
             return;
         }
         update(
-            { blockId: detail.block.blockId, patch, version: detail.version },
+            { blockId: detail.block.blockId, patch, version: initialVersion },
             {
                 onSuccess: onDone,
                 onError: (saveError) => {

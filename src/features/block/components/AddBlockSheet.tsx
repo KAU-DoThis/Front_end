@@ -106,9 +106,13 @@ function AddBlockForm({ onDone }: AddBlockFormProps) {
     const [isColorPicked, setIsColorPicked] = useState(false);
     const [openPicker, setOpenPicker] = useState<Picker>(null);
     const [isErrorVisible, setIsErrorVisible] = useState(false);
-    const { mutate: create, isPending, error } = useCreateBlockMutation();
+    const { mutate: create, isPending, error, reset } = useCreateBlockMutation();
 
-    const change = (next: Partial<FormValues>) => setValues((prev) => ({ ...prev, ...next }));
+    const change = (next: Partial<FormValues>) => {
+        // 값을 고치면 지난 저장 오류 문구는 지운다.
+        if (error) reset();
+        setValues((prev) => ({ ...prev, ...next }));
+    };
     const errors = getErrors(values);
     const visibleErrors: Partial<typeof errors> = isErrorVisible ? errors : {};
     const hasError = Object.values(errors).some(Boolean);

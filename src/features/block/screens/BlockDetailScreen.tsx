@@ -151,6 +151,7 @@ export function BlockDetailScreen() {
                         onClose={closeSheet}
                         blockId={detail.block.blockId}
                         currentName={detail.block.name}
+                        version={detail.version}
                         formKey={formKey}
                     />
                     <EditBlockSheet
