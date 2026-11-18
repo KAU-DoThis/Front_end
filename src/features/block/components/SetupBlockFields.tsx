@@ -130,7 +130,7 @@ export function NameField({ value, errorMessage, onChange, inSheet = false }: Na
             <FieldLabel>블록 이름</FieldLabel>
             <Input
                 className={cn(
-                    'h-11 rounded-12 bg-white px-3 font-regular text-15 text-ink',
+                    'h-11 rounded-12 bg-white px-3 font-semibold text-15 text-ink',
                     errorMessage
                         ? 'border-2 border-danger-text'
                         : isFocused
