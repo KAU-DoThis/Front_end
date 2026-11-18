@@ -2,12 +2,52 @@ import type { HomeBlock } from '@/features/block/types/block';
 import type { BlockCreateRequest } from '@/features/block/types/blockCreate';
 import type { BlockDeleteResponse, BlockPatch } from '@/features/block/types/blockUpdate';
 import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
+import { formatPayDay } from '@/features/block/utils/blockSetupText';
+import { formatAmount } from '@/lib/format';
 import { ApiError } from '@/shared/types/api';
 
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
 
 const EMPTY_RULE = { pay_day: null, pay_amount: null, monthly_target: null, match_condition: null };
+
+const DAY_MS = 86_400_000;
+
+const toDateString = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+/** 다음 납부일. 그달에 없는 납부일은 말일로 본다. (서버와 같은 규칙) */
+function nextPayDate(payDay: number, today: Date) {
+    const dueIn = (year: number, month: number) =>
+        new Date(year, month, Math.min(payDay, new Date(year, month + 1, 0).getDate()));
+    const due = dueIn(today.getFullYear(), today.getMonth());
+    return due.getDate() < today.getDate() ? dueIn(today.getFullYear(), today.getMonth() + 1) : due;
+}
+
+/** 납부일까지 남은 날 */
+function daysUntil(payDay: number, today: Date) {
+    return Math.round(
+        (nextPayDate(payDay, today).getTime() - startOfDay(today).getTime()) / DAY_MS,
+    );
+}
+
+/** 오늘부터 기한(yyyy-MM-dd)까지 남은 날 */
+function daysBetween(today: Date, dueDate: string) {
+    const [year, month, day] = dueDate.slice(0, 10).split('-').map(Number);
+    return Math.round(
+        (new Date(year, month - 1, day).getTime() - startOfDay(today).getTime()) / DAY_MS,
+    );
+}
+
+/** 물 높이(%) = 잔액 ÷ 기준 금액, 0~100으로 자르고 내림 (서버 BlockCalculator.fillRate와 같음) */
+const toFillRate = (balance: number, capacity: number) =>
+    capacity > 0 ? Math.max(0, Math.min(100, Math.floor((balance * 100) / capacity))) : 0;
+
+/** 규칙 문구의 기간 시작일 ("매월 1일" · "매월 말일") */
+const formatStartDay = (startDay: number | null) =>
+    startDay === null ? '매월 1일' : startDay >= 31 ? '매월 말일' : `매월 ${startDay}일`;
 
 function findMockBlock(blockId: number) {
     const block = BLOCK_HOME_MOCK.blocks.find((item) => item.blockId === blockId);
@@ -17,9 +57,21 @@ function findMockBlock(blockId: number) {
     return block;
 }
 
-/** 블록 수정 목업: 홈·상세 목업 값을 바꾼다. (상세 block은 홈 목업과 같은 객체) */
-export function updateBlockMock(blockId: number, patch: BlockPatch) {
+/**
+ * 블록 수정 목업: 홈·상세 목업 값을 바꾼다. (상세 block은 홈 목업과 같은 객체)
+ * version이 다르면 서버처럼 409로 막고, 바뀐 값에 따라 물 높이·남은 날·규칙 문구도 다시 계산한다.
+ */
+export function updateBlockMock(blockId: number, patch: BlockPatch, version?: number) {
     const block = findMockBlock(blockId);
+    const detail = BLOCK_DETAIL_MOCK[blockId];
+    if (version !== undefined && detail && detail.version !== version) {
+        throw new ApiError(
+            'BLOCK_VERSION_CONFLICT',
+            '다른 곳에서 블록이 수정되었습니다. 새로 불러와 다시 시도해 주세요.',
+            409,
+        );
+    }
+    const today = new Date();
     if (patch.name !== undefined) block.name = patch.name;
     if (patch.color !== undefined) block.color = patch.color;
     if (patch.targetAmount !== undefined) block.targetAmount = patch.targetAmount;
@@ -29,8 +81,18 @@ export function updateBlockMock(blockId: number, patch: BlockPatch) {
     if (patch.payAmount !== undefined) {
         block.rule = { ...(block.rule ?? EMPTY_RULE), pay_amount: patch.payAmount };
     }
+    // 물 높이 기준 금액(사용형 한 달 금액 · 목표형 목표 금액 · 고정지출형 납부액)이 바뀌면 다시 계산한다.
+    const capacity =
+        block.type === 'SPENDING'
+            ? patch.monthlyAmount
+            : block.type === 'GOAL'
+              ? patch.targetAmount
+              : patch.payAmount;
+    if (capacity !== undefined) block.fillRate = toFillRate(block.balance, capacity);
+    if (block.type === 'FIXED' && patch.payDay !== undefined) {
+        block.daysUntilPay = daysUntil(patch.payDay, today);
+    }
 
-    const detail = BLOCK_DETAIL_MOCK[blockId];
     if (!detail) return;
     detail.version += 1;
     if (detail.type === 'SPENDING') {
@@ -39,13 +101,24 @@ export function updateBlockMock(blockId: number, patch: BlockPatch) {
             detail.allocatedAmount = patch.monthlyAmount;
         }
         if (patch.startDay !== undefined) detail.startDay = patch.startDay;
+        if (patch.monthlyAmount !== undefined || patch.startDay !== undefined) {
+            detail.ruleText = `월 ${formatAmount(detail.monthlyAmount ?? 0)}원 · ${formatStartDay(detail.startDay)} 시작`;
+        }
     }
-    if (detail.type === 'GOAL' && patch.targetAmount !== undefined) {
-        detail.targetAmount = patch.targetAmount;
+    if (detail.type === 'GOAL') {
+        if (patch.targetAmount !== undefined) detail.targetAmount = patch.targetAmount;
+        if (patch.dueDate !== undefined) detail.daysLeft = daysBetween(today, patch.dueDate);
     }
     if (detail.type === 'FIXED') {
         if (patch.payAmount !== undefined) detail.payAmount = patch.payAmount;
+        if (patch.payDay !== undefined) {
+            detail.nextPayDate = toDateString(nextPayDate(patch.payDay, today));
+        }
         if (patch.alerts) detail.alerts = { ...detail.alerts, ...patch.alerts };
+        if (patch.payDay !== undefined || patch.payAmount !== undefined) {
+            const payDay = block.rule?.pay_day ?? null;
+            detail.ruleText = `${payDay === null ? '' : `${formatPayDay(payDay)} · `}${formatAmount(detail.payAmount)}원`;
+        }
     }
 }
 
@@ -72,19 +145,6 @@ export function deleteBlockMock(blockId: number): BlockDeleteResponse {
     };
     BLOCK_HOME_MOCK.pendingMoney.push(waitingFund);
     return { blockId, returnedAmount: block.balance, waitingFund };
-}
-
-const toDateString = (date: Date) =>
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-/** 납부일까지 남은 날. 그달에 없는 납부일은 말일로 본다. (서버와 같은 규칙) */
-function daysUntil(payDay: number, today: Date) {
-    const dueIn = (year: number, month: number) =>
-        new Date(year, month, Math.min(payDay, new Date(year, month + 1, 0).getDate()));
-    let due = dueIn(today.getFullYear(), today.getMonth());
-    if (due.getDate() < today.getDate()) due = dueIn(today.getFullYear(), today.getMonth() + 1);
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    return Math.round((due.getTime() - start.getTime()) / 86_400_000);
 }
 
 /**

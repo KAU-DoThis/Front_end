@@ -552,6 +552,9 @@ export function createQuickInputMock({
     return null;
 }
 
+/** 블록별 반올림 전 물 높이 (빠른 입력을 여러 번 해도 오차가 쌓이지 않게) */
+const exactFillRate = new Map<number, number>();
+
 /**
  * 빠른 입력한 금액만큼 홈·상세 블록 목업 잔액을 줄인다. (서버는 저장할 때 블록 잔액에서 뺀다)
  * 물 높이는 잔액이 준 비율만큼 낮춘다.
@@ -561,8 +564,11 @@ function spendFromMockBlock(blockId: number, amount: number) {
     if (!homeBlock) return;
     const before = homeBlock.balance;
     homeBlock.balance = Math.max(0, before - amount);
-    homeBlock.fillRate =
-        before > 0 ? Math.round((homeBlock.fillRate * homeBlock.balance) / before) : 0;
+    // 반올림한 값으로 계속 곱하면 오차가 쌓여서, 반올림 전 물 높이를 따로 들고 계산한다.
+    const exact = exactFillRate.get(blockId) ?? homeBlock.fillRate;
+    const next = before > 0 ? (exact * homeBlock.balance) / before : 0;
+    exactFillRate.set(blockId, next);
+    homeBlock.fillRate = Math.round(next);
     const { todayGuide } = BLOCK_HOME_MOCK;
     if (homeBlock.isDefault && todayGuide) {
         todayGuide.balance = homeBlock.balance;

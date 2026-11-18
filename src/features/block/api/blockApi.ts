@@ -125,7 +125,7 @@ export const updateBlock = ({
 }) => {
     if (USE_MOCK) {
         return mockResponse(() => {
-            updateBlockMock(blockId, patch);
+            updateBlockMock(blockId, patch, version);
             return null;
         });
     }
