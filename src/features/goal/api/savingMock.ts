@@ -97,6 +97,9 @@ const INITIAL_EXCLUDED: ExcludedSpending[] = [
     },
 ];
 
+/** true로 바꾸면 진행 중인 목표가 없는 빈 상태를 확인할 수 있다. */
+const MOCK_NO_ACTIVE_GOALS = false;
+
 let suggestions = INITIAL_SUGGESTIONS;
 let excluded = INITIAL_EXCLUDED;
 
@@ -107,6 +110,7 @@ export function getSavingOverviewMock(): SavingOverview {
     const pending = pendingSuggestions();
     return {
         ...OVERVIEW_BASE,
+        ...(MOCK_NO_ACTIVE_GOALS ? { activeGoals: null } : {}),
         suggestionCount: pending.length,
         suggestionTotal: pending.reduce((sum, { expectedSaving }) => sum + expectedSaving, 0),
     };

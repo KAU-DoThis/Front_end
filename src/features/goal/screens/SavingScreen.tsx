@@ -113,11 +113,20 @@ function SavingContent({ overview, suggestionList }: SavingContentProps) {
             {/* TODO: 배분하기(06 절약분) 화면이 생기면 onSplit으로 연결한다. (waitingFundId로 연다) */}
             {overview.confirmed && <ConfirmedSavingBanner confirmed={overview.confirmed} />}
 
-            {overview.activeGoals && overview.activeGoals.goals.length > 0 && (
-                <View className={overview.confirmed ? 'mt-3' : undefined}>
+            <View className={overview.confirmed ? 'mt-3' : undefined}>
+                {overview.activeGoals && overview.activeGoals.goals.length > 0 ? (
                     <ActiveSavingGoalsCard activeGoals={overview.activeGoals} />
-                </View>
-            )}
+                ) : (
+                    <View className="rounded-16 bg-surface-neutral px-4 py-5">
+                        <AppText className="font-semibold text-15">
+                            진행 중인 절약 목표가 없어요
+                        </AppText>
+                        <AppText className="mt-1 text-13 text-ink-sub">
+                            아래 줄일 수 있는 지출에서 목표를 세워 보세요
+                        </AppText>
+                    </View>
+                )}
+            </View>
 
             <View className="mt-6 flex-row items-center justify-between">
                 <AppText className="font-bold text-17">
