@@ -55,9 +55,18 @@ function TransactionsHeader({ onPressQuickInput }: TransactionsHeaderProps) {
 /**
  * 09 내역 · 11 소비 분석 (하단 탭 '내역')
  * 주소 값으로 필터를 받는다. 홈 계좌 카드 → accountId(09-2), 블록 상세 → blockId
+ * 절약 탭 '소비 분석' → tab=ANALYSIS
  */
 export function TransactionsScreen() {
-    const { accountId, blockId } = useLocalSearchParams<{ accountId?: string; blockId?: string }>();
+    const {
+        accountId,
+        blockId,
+        tab: tabParam,
+    } = useLocalSearchParams<{
+        accountId?: string;
+        blockId?: string;
+        tab?: string;
+    }>();
     const [isQuickInputOpen, setIsQuickInputOpen] = useState(false);
     const tab = useTransactionFilterStore((state) => state.tab);
     const params = useTransactionFilterStore((state) => state.params);
@@ -81,6 +90,13 @@ export function TransactionsScreen() {
         if (route.accountId === current.accountId && route.blockId === current.blockId) return;
         applyRouteFilter(route);
     }, [accountId, blockId, applyRouteFilter]);
+
+    // 다른 화면에서 소비 분석으로 바로 열 때. 한 번 반영하면 비워서, 다음에 같은 값으로 와도 다시 열린다.
+    useEffect(() => {
+        if (tabParam !== 'ANALYSIS') return;
+        setTab('ANALYSIS');
+        router.setParams({ tab: '' });
+    }, [tabParam, setTab]);
 
     const handleChangeBlock = (id: number | null) => {
         setBlockId(id);
