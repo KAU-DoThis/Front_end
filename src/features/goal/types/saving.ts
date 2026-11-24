@@ -97,3 +97,51 @@ export interface SavingSuggestionList {
     suggestions: SavingSuggestion[];
     excluded: ExcludedSpending[];
 }
+
+/** 절약 목표 설정 시트에서 고를 수 있는 목표 블록 (확정되면 절약분을 넣을 곳) */
+export interface SavingGoalTargetBlock {
+    blockId: number;
+    name: string;
+    /** 블록 색 (I · O · T · S · Z · J · L) */
+    color: string;
+    status: 'SAFE' | 'CAUTION' | 'DANGER';
+    /** 물 높이 0~100 */
+    fillRate: number;
+    /** 이름 아래 상태 문구 (예: 2주 늦어지는 중). 없으면 null */
+    statusLabel: string | null;
+}
+
+/** GET /saving-goals/draft?suggestionId= — 절약 목표 설정 시트(12) 초기값 */
+export interface SavingGoalDraft {
+    suggestionId: number;
+    /** 카테고리 이름 (예: 택시) */
+    category: string;
+    /** 예: 월 6회 → 월 3회로 줄이기 */
+    action: string;
+    /** 기준 지출액 (최근 3달 평균) */
+    baseAmount: number;
+    /** 제안하는 한 달 목표 지출액 */
+    recommendedLimit: number;
+    /** 제안 버튼 문구 (예: 월 3회). 없으면 null */
+    recommendedLabel: string | null;
+    /** yyyy-MM-dd */
+    startDate: string;
+    /** yyyy-MM-dd */
+    endDate: string;
+    /** 기간 개월 수 */
+    periodMonths: number;
+    /** 처음에 골라 둘 블록. 없으면 null ('나중에') */
+    recommendedBlockId: number | null;
+    targetBlocks: SavingGoalTargetBlock[];
+}
+
+/** POST /saving-goals */
+export interface SavingGoalCreateRequest {
+    suggestionId: number;
+    /** 한 달 목표 지출액 */
+    limit: number;
+    startDate: string;
+    endDate: string;
+    /** 확정되면 절약분을 넣을 블록. 나중에 고르면 null */
+    targetBlockId: number | null;
+}

@@ -1,9 +1,16 @@
 import { request } from '@/lib/apiClient';
 
-import type { SavingOverview, SavingSuggestionList } from '@/features/goal/types/saving';
+import type {
+    SavingGoalCreateRequest,
+    SavingGoalDraft,
+    SavingOverview,
+    SavingSuggestionList,
+} from '@/features/goal/types/saving';
 
 import {
+    createSavingGoalMock,
     dismissSuggestionMock,
+    getSavingGoalDraftMock,
     getSavingOverviewMock,
     getSavingSuggestionsMock,
     includeExcludedSpendingMock,
@@ -85,4 +92,33 @@ export const includeExcludedSpending = async (transactionIds: number[]): Promise
         ),
     );
     return null;
+};
+
+/**
+ * 절약 목표 설정 시트(12) 초기값 — 기준 지출액, 제안 목표, 기간, 고를 수 있는 목표 블록
+ * TODO: 명세에 응답 모양이 없어 가정값이다. 서버 API가 나오면 맞춘다.
+ */
+export const getSavingGoalDraft = (suggestionId: number): Promise<SavingGoalDraft> => {
+    if (USE_SAVING_MOCK) {
+        return mockResponse(() => getSavingGoalDraftMock(suggestionId));
+    }
+    return request<SavingGoalDraft>({
+        method: 'GET',
+        url: '/saving-goals/draft',
+        params: { suggestionId },
+    });
+};
+
+/**
+ * 절약 목표 시작하기
+ * TODO: 명세에 body가 없어 가정값이다. 서버 API가 나오면 맞춘다.
+ */
+export const createSavingGoal = (body: SavingGoalCreateRequest): Promise<null> => {
+    if (USE_SAVING_MOCK) {
+        return mockResponse(() => {
+            createSavingGoalMock(body);
+            return null;
+        });
+    }
+    return request<null>({ method: 'POST', url: '/saving-goals', data: body });
 };

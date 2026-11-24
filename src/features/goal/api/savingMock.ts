@@ -1,5 +1,12 @@
+import { formatAmount } from '@/lib/format';
+import { ApiError } from '@/shared/types/api';
+
 import type {
     ExcludedSpending,
+    SavingGoalCreateRequest,
+    SavingGoalDraft,
+    SavingGoalProgress,
+    SavingGoalTargetBlock,
     SavingOverview,
     SavingSuggestion,
     SavingSuggestionList,
@@ -97,20 +104,76 @@ const INITIAL_EXCLUDED: ExcludedSpending[] = [
     },
 ];
 
+/** 후보마다 제안하는 목표 지출액과 버튼 문구 (시안 12 택시 값) */
+const RECOMMENDATIONS: Record<number, { limit: number; label: string | null }> = {
+    21: { limit: 42_000, label: '월 3회' },
+    22: { limit: 37_000, label: '주 3회' },
+    23: { limit: 13_500, label: '1개만' },
+};
+
+/** 홈 목업의 목표 블록(저축 2 · 여행 3)과 같은 값 */
+const TARGET_BLOCKS: SavingGoalTargetBlock[] = [
+    {
+        blockId: 3,
+        name: '여행',
+        color: 'O',
+        status: 'CAUTION',
+        fillRate: 40,
+        statusLabel: '2주 늦어지는 중',
+    },
+    { blockId: 2, name: '저축', color: 'J', status: 'SAFE', fillRate: 67, statusLabel: null },
+];
+
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+const toDateString = (date: Date) => date.toISOString().slice(0, 10);
+
+/** 오늘(한국 시간)부터 한 달. 10월 15일 → 11월 14일 */
+function oneMonthFromToday() {
+    const today = new Date(Date.now() + KST_OFFSET_MS);
+    const start = new Date(
+        Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+    );
+    const end = new Date(
+        Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, start.getUTCDate() - 1),
+    );
+    return { startDate: toDateString(start), endDate: toDateString(end) };
+}
+
+/** 진행 중인 목표가 확정되는 날 = 끝난 다음 날 */
+function nextDay(date: string) {
+    const [year, month, day] = date.split('-').map(Number);
+    return toDateString(new Date(Date.UTC(year, month - 1, day + 1)));
+}
+
 /** true로 바꾸면 진행 중인 목표가 없는 빈 상태를 확인할 수 있다. */
 const MOCK_NO_ACTIVE_GOALS = false;
 
 let suggestions = INITIAL_SUGGESTIONS;
 let excluded = INITIAL_EXCLUDED;
+/** 목표 시작하기로 새로 세운 목표 */
+let addedGoals: SavingGoalProgress[] = [];
+let nextSavingGoalId = 100;
 
 const pendingSuggestions = () => suggestions.filter(({ status }) => status === 'PENDING');
 
 /** 서버처럼 후보 개수·합계는 남은 후보로 다시 센다. */
 export function getSavingOverviewMock(): SavingOverview {
     const pending = pendingSuggestions();
+    const baseGoals = MOCK_NO_ACTIVE_GOALS ? null : OVERVIEW_BASE.activeGoals;
+    const goals = [...(baseGoals?.goals ?? []), ...addedGoals];
+    const activeGoals =
+        goals.length === 0
+            ? null
+            : {
+                  confirmDate: baseGoals?.confirmDate ?? nextDay(goals[0].endDate),
+                  expectedSaving: goals.reduce((sum, goal) => sum + goal.paceSaving, 0),
+                  limitSaving: goals.reduce((sum, goal) => sum + goal.baseAmount - goal.limit, 0),
+                  goals,
+              };
     return {
         ...OVERVIEW_BASE,
-        ...(MOCK_NO_ACTIVE_GOALS ? { activeGoals: null } : {}),
+        activeGoals,
         suggestionCount: pending.length,
         suggestionTotal: pending.reduce((sum, { expectedSaving }) => sum + expectedSaving, 0),
     };
@@ -119,6 +182,72 @@ export function getSavingOverviewMock(): SavingOverview {
 /** 서버는 관심 없음으로 넘긴 후보를 목록에서 뺀다. */
 export function getSavingSuggestionsMock(): SavingSuggestionList {
     return { suggestions: pendingSuggestions(), excluded };
+}
+
+/**
+ * 서버처럼 아직 남은(PENDING) 후보만 목표로 세울 수 있다.
+ * TODO: 에러 코드는 명세에 없어 가정값이다. 서버 API가 나오면 맞춘다.
+ */
+function findPendingSuggestion(suggestionId: number) {
+    const suggestion = suggestions.find((item) => item.suggestionId === suggestionId);
+    if (!suggestion) {
+        throw new ApiError('SAVING_SUGGESTION_NOT_FOUND', '절약 후보를 찾지 못했어요', 404);
+    }
+    if (suggestion.status !== 'PENDING') {
+        throw new ApiError(
+            'SAVING_SUGGESTION_NOT_PENDING',
+            '이미 목표로 정했거나 뺀 후보예요',
+            409,
+        );
+    }
+    return suggestion;
+}
+
+export function getSavingGoalDraftMock(suggestionId: number): SavingGoalDraft {
+    const suggestion = findPendingSuggestion(suggestionId);
+    const recommendation = RECOMMENDATIONS[suggestionId] ?? {
+        limit: suggestion.baseAmount - suggestion.expectedSaving,
+        label: null,
+    };
+    return {
+        suggestionId,
+        category: suggestion.category.name,
+        action: suggestion.action,
+        baseAmount: suggestion.baseAmount,
+        recommendedLimit: recommendation.limit,
+        recommendedLabel: recommendation.label,
+        ...oneMonthFromToday(),
+        periodMonths: 1,
+        recommendedBlockId: TARGET_BLOCKS[0].blockId,
+        targetBlocks: TARGET_BLOCKS,
+    };
+}
+
+/** 후보를 목표로 바꾸고, 진행 중인 목표에 붙인다. */
+export function createSavingGoalMock({ suggestionId, limit, endDate }: SavingGoalCreateRequest) {
+    const suggestion = findPendingSuggestion(suggestionId);
+    if (limit < 0 || limit >= suggestion.baseAmount) {
+        throw new ApiError('SAVING_LIMIT_INVALID', '기준 지출액보다 적게 정해 주세요', 400);
+    }
+    const saving = suggestion.baseAmount - limit;
+    suggestions = suggestions.map((item) =>
+        item.suggestionId === suggestionId ? { ...item, status: 'GOAL_SET' as const } : item,
+    );
+    addedGoals = [
+        ...addedGoals,
+        {
+            savingGoalId: nextSavingGoalId++,
+            category: suggestion.category.name,
+            paceLabel: `지금 속도면 +${formatAmount(saving, { showUnit: false })}`,
+            paceSaving: saving,
+            spent: 0,
+            limit,
+            spentUntilTodayPlan: 0,
+            baseAmount: suggestion.baseAmount,
+            endDate,
+            onPlan: true,
+        },
+    ];
 }
 
 export function dismissSuggestionMock(suggestionId: number) {

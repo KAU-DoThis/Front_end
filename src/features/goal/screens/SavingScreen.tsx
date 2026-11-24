@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Alert, Pressable, ScrollView, View } from 'react-native';
 
 import { formatWon } from '@/lib/format';
@@ -20,6 +21,7 @@ import { ActiveSavingGoalsCard } from '@/features/goal/components/ActiveSavingGo
 import { ConfirmedSavingBanner } from '@/features/goal/components/ConfirmedSavingBanner';
 import { ExcludedSpendingRow } from '@/features/goal/components/ExcludedSpendingRow';
 import { SavingSuggestionCard } from '@/features/goal/components/SavingSuggestionCard';
+import { SetSavingGoalSheet } from '@/features/goal/components/SetSavingGoalSheet';
 import type {
     ExcludedSpending,
     SavingOverview,
@@ -83,6 +85,16 @@ function SavingContent({ overview, suggestionList }: SavingContentProps) {
     const include = useIncludeExcludedSpendingMutation();
     const includingIds = useIncludingTransactionIds();
     const { suggestions, excluded } = suggestionList;
+    // 닫히는 동안에도 내용이 남아 있도록 고른 후보는 열림 상태와 따로 둔다.
+    const [goalSuggestionId, setGoalSuggestionId] = useState<number | null>(null);
+    const [isGoalSheetOpen, setIsGoalSheetOpen] = useState(false);
+    const [goalFormKey, setGoalFormKey] = useState(0);
+
+    const handleSetGoal = (suggestionId: number) => {
+        setGoalSuggestionId(suggestionId);
+        setGoalFormKey((key) => key + 1);
+        setIsGoalSheetOpen(true);
+    };
 
     const handleDismiss = (suggestionId: number) => {
         // 같은 후보를 보내는 중이면 다시 보내지 않는다.
@@ -148,7 +160,7 @@ function SavingContent({ overview, suggestionList }: SavingContentProps) {
                                 suggestion={suggestion}
                                 isDismissing={dismissingIds.includes(suggestion.suggestionId)}
                                 onDismiss={handleDismiss}
-                                // TODO: 절약 목표 설정 시트(12)가 생기면 onSetGoal로 연결한다.
+                                onSetGoal={handleSetGoal}
                             />
                         ))}
                     </View>
@@ -174,6 +186,13 @@ function SavingContent({ overview, suggestionList }: SavingContentProps) {
                     </View>
                 </View>
             )}
+
+            <SetSavingGoalSheet
+                isOpen={isGoalSheetOpen}
+                onClose={() => setIsGoalSheetOpen(false)}
+                suggestionId={goalSuggestionId}
+                formKey={goalFormKey}
+            />
         </ScrollView>
     );
 }
