@@ -11,16 +11,37 @@ import type {
  * TODO: 절약 API가 서버에 생기면 지운다.
  */
 
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+const toDateString = (date: Date) => date.toISOString().slice(0, 10);
+
+/**
+ * 목업 날짜를 오늘(한국 시간)에 맞춘다. 헤더의 이번 달과 어긋나지 않게 하려고.
+ * 진행 중인 목표는 이번 달 말일까지, 확정은 다음 달 1일, 확정된 절약분은 지난달 것.
+ */
+function mockDates() {
+    const today = new Date(Date.now() + KST_OFFSET_MS);
+    const year = today.getUTCFullYear();
+    const month = today.getUTCMonth();
+    return {
+        lastMonth: toDateString(new Date(Date.UTC(year, month - 1, 1))).slice(0, 7),
+        endOfMonth: toDateString(new Date(Date.UTC(year, month + 1, 0))),
+        firstOfNextMonth: toDateString(new Date(Date.UTC(year, month + 1, 1))),
+    };
+}
+
+const { lastMonth, endOfMonth, firstOfNextMonth } = mockDates();
+
 const OVERVIEW_BASE: Omit<SavingOverview, 'suggestionCount' | 'suggestionTotal'> = {
     // 홈 목업의 절약분 대기 자금(waitingFundId 12)과 같은 값
     confirmed: {
         waitingFundId: 12,
-        month: '2026-09',
+        month: lastMonth,
         amount: 87_000,
         text: '생활비에서 꺼내 홈의 절약분 블록에 모아뒀어요',
     },
     activeGoals: {
-        confirmDate: '2026-11-01',
+        confirmDate: firstOfNextMonth,
         expectedSaving: 86_000,
         limitSaving: 98_000,
         goals: [
@@ -33,7 +54,7 @@ const OVERVIEW_BASE: Omit<SavingOverview, 'suggestionCount' | 'suggestionTotal'>
                 limit: 72_000,
                 spentUntilTodayPlan: 32_400,
                 baseAmount: 132_000,
-                endDate: '2026-10-31',
+                endDate: endOfMonth,
                 onPlan: false,
             },
             {
@@ -45,7 +66,7 @@ const OVERVIEW_BASE: Omit<SavingOverview, 'suggestionCount' | 'suggestionTotal'>
                 limit: 34_000,
                 spentUntilTodayPlan: 15_300,
                 baseAmount: 72_000,
-                endDate: '2026-10-31',
+                endDate: endOfMonth,
                 onPlan: true,
             },
         ],
