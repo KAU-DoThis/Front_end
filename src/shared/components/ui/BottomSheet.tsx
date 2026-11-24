@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { BackHandler, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { cn } from '@/lib/cn';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Icon } from '@/shared/components/ui/Icon';
 import { colors, dimOpacity } from '@/styles/tokens';
@@ -44,13 +45,18 @@ interface BottomSheetProps {
      * gorhom 기본값(switch)은 아래 시트를 내렸다 올리는데, 5.2에서 그 사이 아래 시트가 닫혀 버린다.
      */
     isStacked?: boolean;
+    /**
+     * false면 배경 누르기·아래로 끌기·뒤로 가기·닫기(X)로 닫히지 않는다.
+     * 저장 요청이 진행 중일 때처럼, 결과가 오기 전에 시트가 닫히면 안 될 때 쓴다. (예: 12 절약 목표 설정)
+     */
+    isDismissible?: boolean;
     children: ReactNode;
 }
 
 /**
  * 공통 바텀시트 (@gorhom/bottom-sheet 모달 래퍼)
  * - 높이는 내용에 맞춰 정해지고, 상태 표시줄 아래까지만 올라온다. 넘치는 내용은 scrollable로 스크롤한다.
- * - 배경 누르기, 아래로 끌기, 안드로이드 뒤로 가기로 닫힌다.
+ * - 배경 누르기, 아래로 끌기, 안드로이드 뒤로 가기로 닫힌다. (isDismissible이 false면 막는다)
  */
 export function BottomSheet({
     isOpen,
@@ -61,6 +67,7 @@ export function BottomSheet({
     onBack,
     scrollable = false,
     isStacked = false,
+    isDismissible = true,
     children,
 }: BottomSheetProps) {
     const sheetRef = useRef<BottomSheetModal>(null);
@@ -103,9 +110,9 @@ export function BottomSheet({
     // 모달 시트는 안드로이드 뒤로 가기를 직접 처리해야 화면 대신 시트가 닫힌다.
     // 뒤로 가기 리스너는 열릴 때 한 번만 단다. 콜백이 바뀔 때마다 다시 달면 리스너 순서가 바뀌어
     // 겹친 시트에서 뒤로 가기가 위 시트가 아니라 아래 시트를 닫을 수 있다. (콜백은 ref로 최신 값을 읽는다)
-    const backHandlersRef = useRef({ onBack, onClose });
+    const backHandlersRef = useRef({ onBack, onClose, isDismissible });
     useEffect(() => {
-        backHandlersRef.current = { onBack, onClose };
+        backHandlersRef.current = { onBack, onClose, isDismissible };
     });
 
     useEffect(() => {
@@ -115,6 +122,10 @@ export function BottomSheet({
         // 시트 안에서 한 단계 들어간 화면(onBack)이면 화면의 < 버튼과 똑같이 이전 화면으로 돌아간다.
         const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
             const handlers = backHandlersRef.current;
+            // 닫을 수 없는 동안에도 true를 돌려줘서 뒤로 가기가 아래 화면으로 넘어가지 않게 한다.
+            if (!handlers.isDismissible) {
+                return true;
+            }
             if (handlers.onBack) {
                 handlers.onBack();
             } else {
@@ -132,11 +143,11 @@ export function BottomSheet({
                 appearsOnIndex={0}
                 disappearsOnIndex={-1}
                 opacity={dimOpacity}
-                pressBehavior="close"
+                pressBehavior={isDismissible ? 'close' : 'none'}
                 style={[props.style, styles.backdrop]}
             />
         ),
-        [],
+        [isDismissible],
     );
 
     const hasHeader = !!title || hasCloseButton;
@@ -152,7 +163,7 @@ export function BottomSheet({
             onDismiss={handleDismiss}
             stackBehavior={isStacked ? 'push' : 'switch'}
             backdropComponent={renderBackdrop}
-            enablePanDownToClose
+            enablePanDownToClose={isDismissible}
             keyboardBehavior="interactive"
             keyboardBlurBehavior="restore"
             android_keyboardInputMode="adjustResize"
@@ -190,7 +201,12 @@ export function BottomSheet({
                                 <Pressable
                                     accessibilityRole="button"
                                     accessibilityLabel="닫기"
-                                    className="h-5 w-5 items-center justify-center active:opacity-60"
+                                    accessibilityState={{ disabled: !isDismissible }}
+                                    disabled={!isDismissible}
+                                    className={cn(
+                                        'h-5 w-5 items-center justify-center active:opacity-60',
+                                        !isDismissible && 'opacity-30',
+                                    )}
                                     hitSlop={12}
                                     onPress={onClose}
                                 >
