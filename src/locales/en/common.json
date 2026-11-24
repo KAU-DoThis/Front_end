@@ -1,0 +1,12 @@
+{
+    "action": {
+        "retry": "Try again",
+        "close": "Close",
+        "cancel": "Cancel",
+        "confirm": "OK",
+        "save": "Save"
+    },
+    "error": {
+        "tryAgainLater": "Please try again in a moment"
+    }
+}
