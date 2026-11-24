@@ -8,8 +8,7 @@ import { request } from '@/lib/apiClient';
 import { USE_MOCK } from '@/lib/mock';
 
 /**
- * 연동 API가 아직 없어서 목업 모드(USE_MOCK)에서는 목업으로 처리한다.
- * TODO: 연동 API가 붙으면 목업과 함께 제거한다.
+ * 서버 모드는 연동 API(/linked-accounts)를 쓰고, 목업 모드(USE_MOCK)에서는 목업으로 처리한다.
  */
 const USE_CONNECTION_MOCK = USE_MOCK;
 

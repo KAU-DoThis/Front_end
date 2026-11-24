@@ -2,7 +2,7 @@ import type { SpendingAnalysis } from '@/features/transaction/types/spendingAnal
 
 /**
  * 소비 분석 목업 (시안 11 숫자 그대로)
- * TODO: 소비 분석 API가 붙으면 이 파일을 지운다.
+ * 서버 모드는 소비 분석 API(/analysis/spending)를 쓰고, 이 파일은 목업 모드(USE_MOCK)에서만 쓴다.
  */
 const OCTOBER_ANALYSIS: SpendingAnalysis = {
     month: '2026-10',

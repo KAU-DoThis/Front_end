@@ -19,7 +19,7 @@ import { BLOCK_HOME_MOCK } from './blockHomeMock';
  * 블록 간 이동 목업 (API 명세 v4 6장 응답 모양)
  * 실제로는 서버가 계산한다. 목업은 시안 03-2 문구가 나오도록 단순한 규칙으로 흉내만 낸다.
  * 확정하면 홈·상세 목업 값을 바꿔서, 옮긴 결과가 화면에 바로 보이게 한다.
- * TODO: 백엔드 /blocks/simulate · /blocks/transfers가 나오면 blockApi.ts에서 request로 바꾸고 이 파일을 지운다.
+ * 서버 모드는 /blocks/simulate · /blocks/transfers를 쓰고, 이 파일은 목업 모드(USE_MOCK)에서만 쓴다.
  */
 
 const STATUS_LABEL: Record<Status, string> = { SAFE: '안전', CAUTION: '주의', DANGER: '위험' };
