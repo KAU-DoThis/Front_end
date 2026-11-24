@@ -38,8 +38,17 @@ export const BLOCK_COLOR_LABEL: Record<BlockColor, string> = {
     l: '주황',
 };
 
-/** 사용형 기간: 1일 시작이면 "매월 1일부터 말일까지", 그 외 "매월 10일부터 다음 달 9일까지" */
+/** 고정지출형 납부일: 31(말일)이면 "매월 말일", 그 외 "매월 15일". 그달에 없는 날은 서버가 말일로 본다. */
+export function formatPayDay(payDay: number) {
+    return payDay >= 31 ? '매월 말일' : `매월 ${payDay}일`;
+}
+
+/**
+ * 사용형 기간: 1일 시작이면 "매월 1일부터 말일까지", 말일(31) 시작이면 "매월 말일부터 다음 달 말일 전날까지",
+ * 그 외 "매월 10일부터 다음 달 9일까지"
+ */
 export function formatSpendingPeriod(startDay: number) {
+    if (startDay >= 31) return '매월 말일부터 다음 달 말일 전날까지';
     return startDay === 1
         ? '매월 1일부터 말일까지'
         : `매월 ${startDay}일부터 다음 달 ${startDay - 1}일까지`;

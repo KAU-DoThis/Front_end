@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { renameBlock } from './blockApi';
+import { createBlock } from './blockApi';
 import { blockKeys } from './blockKeys';
 
-/** 블록 이름 바꾸기 — 성공하면 홈·상세를 다시 받는다. */
-export function useRenameBlockMutation() {
+/** 블록 추가 — 홈·블록 목록을 다시 받아 새 블록이 바로 보이게 한다. */
+export function useCreateBlockMutation() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: renameBlock,
+        mutationFn: createBlock,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: blockKeys.all }),
     });
 }

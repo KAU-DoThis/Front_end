@@ -4,6 +4,7 @@ import { TextInput, View } from 'react-native';
 import { cn } from '@/lib/cn';
 import { formatWon } from '@/lib/format';
 import { AppText } from '@/shared/components/ui/AppText';
+import { BottomSheetTextInput } from '@/shared/components/ui/BottomSheet';
 import { colors } from '@/styles/tokens';
 
 /** 1조 원 아래까지만 받는다. (숫자 13자리) */
@@ -26,6 +27,8 @@ interface AmountInputProps {
     /** md: 한 줄을 다 쓰는 칸 (17 Bold) / sm: 반 폭 칸 (15 SemiBold, 시안 04 납부 금액) */
     size?: 'md' | 'sm';
     className?: string;
+    /** 바텀시트 안에서 쓰면 true. 키보드가 열릴 때 시트가 같이 올라간다. */
+    inSheet?: boolean;
 }
 
 const SIZE_CLASS = {
@@ -57,8 +60,10 @@ export function AmountInput({
     trailing,
     size = 'md',
     className,
+    inSheet = false,
 }: AmountInputProps) {
     const [isFocused, setIsFocused] = useState(false);
+    const Input = inSheet ? BottomSheetTextInput : TextInput;
 
     const fieldState = disabled
         ? 'disabled'
@@ -86,7 +91,7 @@ export function AmountInput({
                         FIELD_STATE_CLASS[fieldState],
                     )}
                 >
-                    <TextInput
+                    <Input
                         // Android TextInput 기본 위아래 여백 때문에 44px 칸에서 숫자가 잘리지 않도록 여백을 없앤다.
                         className={cn(
                             'h-full min-w-0 flex-1 py-0 text-right',

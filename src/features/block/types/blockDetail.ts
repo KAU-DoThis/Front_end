@@ -22,6 +22,8 @@ interface BlockDetailBase {
     ruleText: string | null;
     /** 보여줄 버튼. 서버가 상태에 따라 정한다. (예: 고정지출이 모자라면 FILL_FROM_OTHER) */
     actions: BlockDetailAction[];
+    /** 낙관적 잠금 버전. 블록 수정 요청에 그대로 보낸다. */
+    version: number;
 }
 
 /** 블록에 걸린 거래 (transactions 테이블 기준) */
@@ -43,6 +45,10 @@ export interface SpendingBlockDetail extends BlockDetailBase {
     type: 'SPENDING';
     /** 이번 기간 배분 금액 */
     allocatedAmount: number;
+    /** 월 배분액 (rule.monthlyAmount, 블록 수정 시트 초기값). 정하지 않았으면 null */
+    monthlyAmount: number | null;
+    /** 기간 시작일 매월 n일 (rule.startDay). 정하지 않았으면 null */
+    startDay: number | null;
     /** 이번 기간 (yyyy-MM-dd) */
     periodStartDate: string;
     periodEndDate: string;

@@ -74,7 +74,7 @@ function mockUserSettings(): UserSettings {
 }
 
 /** 목업으로 로그인할 이메일인지 (목업 계정이거나 목업으로 가입한 계정) */
-const isMockLoginEmail = (email: string) => {
+export const isMockLoginEmail = (email: string) => {
     const normalized = normalizeEmail(email);
     return normalized === DEV_MOCK_ACCOUNT.email || devSignedUpAccounts.has(normalized);
 };

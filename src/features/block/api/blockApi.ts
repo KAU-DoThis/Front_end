@@ -1,3 +1,5 @@
+import type { Block } from '@/features/block/types/block';
+import type { BlockCreateRequest } from '@/features/block/types/blockCreate';
 import type { BlockDetail } from '@/features/block/types/blockDetail';
 import type { BlockDetailResponse } from '@/features/block/types/blockDetailResponse';
 import type {
@@ -12,6 +14,7 @@ import type {
     BlockSetupProposal,
     BlockSetupRequest,
 } from '@/features/block/types/blockSetup';
+import type { BlockDeleteResponse, BlockPatch } from '@/features/block/types/blockUpdate';
 import type {
     SimulateRequest,
     SimulateResponse,
@@ -30,6 +33,7 @@ import { toBlockDetail } from './blockDetailMapper';
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
 import { toBlockHome } from './blockHomeMapper';
+import { createBlockMock, deleteBlockMock, updateBlockMock } from './blockManageMock';
 import {
     toBlockSetupPreview,
     toBlockSetupProposal,
@@ -38,6 +42,7 @@ import {
 } from './blockSetupMapper';
 import { BLOCK_SETUP_PROPOSAL_MOCK, mockBlockSetupPreview } from './blockSetupMock';
 import { simulateTransferMock, transferBlockMock } from './blockTransferMock';
+import { toBlockUpdateRequest } from './blockUpdateMapper';
 
 /** 목업 응답 지연 (로딩 상태 확인용) */
 const MOCK_DELAY_MS = 200;
@@ -94,20 +99,52 @@ export const simulateTransfer = (body: SimulateRequest): Promise<SimulateRespons
 };
 
 /**
- * 블록 이름 바꾸기 (PATCH /blocks/{blockId}). 보낸 필드만 바뀐다.
- * 목업 모드에서는 홈·상세 목업의 이름을 바꾼다.
+ * 블록 추가 (POST /blocks). 잔액 0원으로 홈 맨 뒤에 생긴다.
+ * 목업 모드에서는 홈 목업에 블록을 붙인다.
  */
-export const renameBlock = ({ blockId, name }: { blockId: number; name: string }) => {
+export const createBlock = (body: BlockCreateRequest): Promise<Block> => {
+    if (USE_MOCK) {
+        return mockResponse(() => createBlockMock(body));
+    }
+    return request<Block>({ method: 'POST', url: '/blocks', data: body });
+};
+
+/**
+ * 블록 수정 (PATCH /blocks/{blockId}). 넣은 값만 바뀐다.
+ * version을 넣으면 그사이 바뀐 블록은 409 BLOCK_VERSION_CONFLICT로 막힌다.
+ * 목업 모드에서는 홈·상세 목업 값을 바꾼다.
+ */
+export const updateBlock = ({
+    blockId,
+    patch,
+    version,
+}: {
+    blockId: number;
+    patch: BlockPatch;
+    version?: number;
+}) => {
     if (USE_MOCK) {
         return mockResponse(() => {
-            const homeBlock = BLOCK_HOME_MOCK.blocks.find((block) => block.blockId === blockId);
-            if (homeBlock) homeBlock.name = name;
-            const detail = BLOCK_DETAIL_MOCK[blockId];
-            if (detail) detail.block.name = name;
+            updateBlockMock(blockId, patch, version);
             return null;
         });
     }
-    return request<unknown>({ method: 'PATCH', url: `/blocks/${blockId}`, data: { name } });
+    return request<unknown>({
+        method: 'PATCH',
+        url: `/blocks/${blockId}`,
+        data: toBlockUpdateRequest(patch, version),
+    });
+};
+
+/**
+ * 블록 삭제 (DELETE /blocks/{blockId}). 소프트 삭제라 남은 잔액은 '남은 돈' 나눌 돈으로 돌아간다.
+ * 기본 블록은 400 BLOCK_DEFAULT_UNDELETABLE.
+ */
+export const deleteBlock = (blockId: number): Promise<BlockDeleteResponse> => {
+    if (USE_MOCK) {
+        return mockResponse(() => deleteBlockMock(blockId));
+    }
+    return request<BlockDeleteResponse>({ method: 'DELETE', url: `/blocks/${blockId}` });
 };
 
 /** 블록 간 이동 확정 (03-2 옮기기) */

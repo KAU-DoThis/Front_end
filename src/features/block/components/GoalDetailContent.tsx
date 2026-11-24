@@ -13,8 +13,14 @@ import { GoalProjectionCard } from './GoalProjectionCard';
 
 const won = (amount: number) => formatAmount(amount, { showUnit: false });
 
+interface GoalDetailContentProps {
+    detail: GoalBlockDetail;
+    /** '목표일 미루기' → 블록 수정 시트 (기한 고르기) */
+    onPostponeDueDate: () => void;
+}
+
 /** 02-1 블록 상세 · 목표형 (여행) */
-export function GoalDetailContent({ detail }: { detail: GoalBlockDetail }) {
+export function GoalDetailContent({ detail, onPostponeDueDate }: GoalDetailContentProps) {
     const { block, monthly } = detail;
     const dueDate = block.dueDate;
 
@@ -54,13 +60,17 @@ export function GoalDetailContent({ detail }: { detail: GoalBlockDetail }) {
                 </View>
             )}
             {detail.explanation && (
-                // 목표일 미루기(블록 수정)·절약분 넣기(⑤ 배분)는 해당 작업에서 연결한다.
+                // 절약분 넣기(⑤ 배분)는 해당 작업에서 연결한다.
                 <SuggestionCard
                     className="mt-3"
                     title="왜 주의인가요?"
                     message={detail.explanation}
                     actions={[
-                        { title: '목표일 미루기', variant: 'secondary' },
+                        {
+                            title: '목표일 미루기',
+                            variant: 'secondary',
+                            onPress: onPostponeDueDate,
+                        },
                         { title: '절약분 넣기', variant: 'primary' },
                     ]}
                 />

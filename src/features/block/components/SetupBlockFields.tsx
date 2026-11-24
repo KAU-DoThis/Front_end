@@ -6,12 +6,14 @@ import {
     BLOCK_COLOR_BG_CLASS,
     BLOCK_COLOR_LABEL,
     BLOCK_COLORS,
+    formatPayDay,
     formatSpendingPeriod,
 } from '@/features/block/utils/blockSetupText';
 import { cn } from '@/lib/cn';
 import { formatAmount } from '@/lib/format';
 import { AmountInput } from '@/shared/components/ui/AmountInput';
 import { AppText } from '@/shared/components/ui/AppText';
+import { BottomSheetTextInput } from '@/shared/components/ui/BottomSheet';
 import { Icon } from '@/shared/components/ui/Icon';
 import { Toggle } from '@/shared/components/ui/Toggle';
 import { colors } from '@/styles/tokens';
@@ -21,7 +23,7 @@ import { MonthPickerSheet, formatYearMonth } from './MonthPickerSheet';
 
 /** − / + 한 번에 바뀌는 금액 */
 const AMOUNT_STEP = 10_000;
-/** 기간 시작일은 모든 달에 있는 날(28일)까지만 고른다. */
+/** 기간 시작일·납부일은 모든 달에 있는 날(28일)까지 + 말일 버튼으로 고른다. */
 const MAX_PERIOD_START_DAY = 28;
 
 export interface SetupBlockErrors {
@@ -73,7 +75,7 @@ interface SelectFieldProps {
 }
 
 /** 눌러서 시트로 고르는 칸 (44 · 12, 오른쪽 아래 화살표) */
-function SelectField({
+export function SelectField({
     label,
     value,
     placeholder,
@@ -113,29 +115,42 @@ function SelectField({
 
 interface NameFieldProps {
     value: string;
+    /** 빈 칸 예시 (기본: 예: 저축) */
+    placeholder?: string;
     errorMessage?: string;
     onChange: (value: string) => void;
+    /** 바텀시트 안에서 쓰면 true. 키보드가 열릴 때 시트가 같이 올라간다. */
+    inSheet?: boolean;
 }
 
 /** 블록 이름 칸 (금액 칸과 같은 상태 규칙). AI가 제안한 블록도 이름을 바꿀 수 있다. */
-function NameField({ value, errorMessage, onChange }: NameFieldProps) {
+export function NameField({
+    value,
+    placeholder = '예: 저축',
+    errorMessage,
+    onChange,
+    inSheet = false,
+}: NameFieldProps) {
     const [isFocused, setIsFocused] = useState(false);
+    const Input = inSheet ? BottomSheetTextInput : TextInput;
 
     return (
         <View className="gap-2">
             <FieldLabel>블록 이름</FieldLabel>
-            <TextInput
+            <Input
+                // Android TextInput 기본 위아래 여백 때문에 플레이스홀더가 위로 뜨지 않도록 여백을 없앤다. (AmountInput과 같음)
                 className={cn(
-                    'h-11 rounded-12 bg-white px-3 font-regular text-15 text-ink',
+                    'h-11 rounded-12 bg-white px-3 py-0 font-semibold text-15 text-ink',
                     errorMessage
                         ? 'border-2 border-danger-text'
                         : isFocused
                           ? 'border-2 border-primary-700'
                           : 'border border-line-control',
                 )}
+                style={{ includeFontPadding: false, textAlignVertical: 'center' }}
                 value={value}
                 onChangeText={onChange}
-                placeholder="예: 저축"
+                placeholder={placeholder}
                 placeholderTextColor={colors.ink.disabled}
                 maxLength={20}
                 accessibilityLabel="블록 이름"
@@ -175,7 +190,7 @@ interface ColorFieldProps {
     onChange: (value: SetupBlock['color']) => void;
 }
 
-function ColorField({ value, onChange }: ColorFieldProps) {
+export function ColorField({ value, onChange }: ColorFieldProps) {
     return (
         <View className="gap-2">
             <FieldLabel>색상</FieldLabel>
@@ -277,7 +292,7 @@ export function SetupBlockFields({
                         <SelectField
                             className="flex-1"
                             label="납부일"
-                            value={block.payDay === null ? null : `매월 ${block.payDay}일`}
+                            value={block.payDay === null ? null : formatPayDay(block.payDay)}
                             placeholder="날짜 고르기"
                             errorMessage={visibleErrors.payDay}
                             onPress={() => setOpenSheet('payDay')}
@@ -406,7 +421,8 @@ export function SetupBlockFields({
                 isOpen={openSheet === 'payDay'}
                 onClose={() => setOpenSheet(null)}
                 title="납부일"
-                maxDay={31}
+                maxDay={MAX_PERIOD_START_DAY}
+                hasLastDay
                 value={block.payDay}
                 onSelect={(payDay) => onChange({ payDay })}
             />
@@ -415,6 +431,7 @@ export function SetupBlockFields({
                 onClose={() => setOpenSheet(null)}
                 title="매월 며칠부터 쓸까요?"
                 maxDay={MAX_PERIOD_START_DAY}
+                hasLastDay
                 value={block.periodStartDay}
                 onSelect={(periodStartDay) => onChange({ periodStartDay })}
             />
