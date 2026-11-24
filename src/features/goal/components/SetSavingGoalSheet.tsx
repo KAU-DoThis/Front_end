@@ -3,7 +3,6 @@ import { Alert, Pressable, View } from 'react-native';
 
 import { cn } from '@/lib/cn';
 import { formatAmount, formatMonthDay, formatWon } from '@/lib/format';
-import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
 import { AppText } from '@/shared/components/ui/AppText';
 import { BottomSheet, BottomSheetTextInput } from '@/shared/components/ui/BottomSheet';
 import { Button } from '@/shared/components/ui/Button';
@@ -90,6 +89,7 @@ function SavingGoalForm({ draft, onDone }: SavingGoalFormProps) {
     const { baseAmount } = draft;
     // 기준 지출액만큼 쓰면 아끼는 게 없으므로 기준보다 적어야 한다.
     const isOverBase = limit !== null && limit >= baseAmount;
+    // 입력하는 동안 바로 바뀌는 미리보기라 화면에서 뺀다. 실제 절약액은 기간이 끝나고 서버가 확정한다.
     const expectedSaving = limit !== null && !isOverBase ? baseAmount - limit : 0;
     const canSubmit = limit !== null && !isOverBase && !isPending;
 
@@ -328,7 +328,7 @@ function TargetBlockChip({ block, isSelected, disabled, onPress }: TargetBlockCh
         >
             <MiniBeaker
                 size="sm"
-                color={block.color.toLowerCase() as BlockColor}
+                color={block.color}
                 status={block.status}
                 fillRate={block.fillRate}
             />

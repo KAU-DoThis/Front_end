@@ -1,3 +1,5 @@
+import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
+
 /**
  * 절약 탭 (API 명세 v4 8장 · 시안 05 절약)
  * 서버 응답 그대로의 모양이다. 서버 API가 생기면 이 타입에 맞춰 붙인다.
@@ -98,12 +100,12 @@ export interface SavingSuggestionList {
     excluded: ExcludedSpending[];
 }
 
-/** 절약 목표 설정 시트에서 고를 수 있는 목표 블록 (확정되면 절약분을 넣을 곳) */
-export interface SavingGoalTargetBlock {
+/** 절약 목표 설정 시트에서 고를 수 있는 목표 블록 (확정되면 절약분을 넣을 곳). 서버 응답 모양 */
+export interface SavingGoalTargetBlockResponse {
     blockId: number;
     name: string;
-    /** 블록 색 (I · O · T · S · Z · J · L) */
-    color: string;
+    /** 블록 색 (서버는 대문자 I · O · T · S · Z · J · L) */
+    color: Uppercase<BlockColor>;
     status: 'SAFE' | 'CAUTION' | 'DANGER';
     /** 물 높이 0~100 */
     fillRate: number;
@@ -134,6 +136,16 @@ export interface SavingGoalDraft {
     recommendedBlockId: number | null;
     targetBlocks: SavingGoalTargetBlock[];
 }
+
+/** 화면에서 쓰는 목표 블록. 색은 비커 색(소문자)으로 바꿔 둔다. */
+export type SavingGoalTargetBlock = Omit<SavingGoalTargetBlockResponse, 'color'> & {
+    color: BlockColor;
+};
+
+/** GET /saving-goals/draft 서버 응답 모양. 목표 블록 색만 화면 모양과 다르다. */
+export type SavingGoalDraftResponse = Omit<SavingGoalDraft, 'targetBlocks'> & {
+    targetBlocks: SavingGoalTargetBlockResponse[];
+};
 
 /** POST /saving-goals */
 export interface SavingGoalCreateRequest {

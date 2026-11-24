@@ -4,9 +4,9 @@ import { ApiError } from '@/shared/types/api';
 import type {
     ExcludedSpending,
     SavingGoalCreateRequest,
-    SavingGoalDraft,
+    SavingGoalDraftResponse,
     SavingGoalProgress,
-    SavingGoalTargetBlock,
+    SavingGoalTargetBlockResponse,
     SavingOverview,
     SavingSuggestion,
     SavingSuggestionList,
@@ -133,7 +133,7 @@ const RECOMMENDATIONS: Record<number, { limit: number; label: string | null }> =
 };
 
 /** 홈 목업의 목표 블록(저축 2 · 여행 3)과 같은 값 */
-const TARGET_BLOCKS: SavingGoalTargetBlock[] = [
+const TARGET_BLOCKS: SavingGoalTargetBlockResponse[] = [
     {
         blockId: 3,
         name: '여행',
@@ -220,7 +220,7 @@ function findPendingSuggestion(suggestionId: number) {
     return suggestion;
 }
 
-export function getSavingGoalDraftMock(suggestionId: number): SavingGoalDraft {
+export function getSavingGoalDraftMock(suggestionId: number): SavingGoalDraftResponse {
     const suggestion = findPendingSuggestion(suggestionId);
     const recommendation = RECOMMENDATIONS[suggestionId] ?? {
         limit: suggestion.baseAmount - suggestion.expectedSaving,
