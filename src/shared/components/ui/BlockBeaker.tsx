@@ -10,12 +10,12 @@ import Animated, {
     Easing,
     cancelAnimation,
     useAnimatedStyle,
-    useReducedMotion,
     useSharedValue,
     withRepeat,
     withTiming,
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { cn } from '@/lib/cn';
 import { shade, tint, withAlpha } from '@/lib/color';
@@ -23,6 +23,7 @@ import { formatWon } from '@/lib/format';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
 import { StatusTag, type Status } from '@/shared/components/ui/StatusTag';
+import { useReduceMotion } from '@/shared/hooks/useReduceMotion';
 import { colors } from '@/styles/tokens';
 
 /** 블록 고정 색 (tokens.js block.{i~l}) */
@@ -231,19 +232,31 @@ interface WaterProps {
 }
 
 function Water({ color, rate, wave }: WaterProps) {
-    const isReducedMotion = useReducedMotion();
+    const isReducedMotion = useReduceMotion();
     const [width, setWidth] = useState(0);
     const level = useSharedValue(rate);
-    const isFull = rate >= 100;
-    // 물이 없으면 물결도 그리지 않는다. (높이 0인 물 위로 물결만 솟아 보임)
-    const hasWave = !isFull && rate > 0 && width > 0;
+    const isMidLevel = rate > 0 && rate < 100;
+    // 수위가 다 오르내린 값. 0%·100%로 가는 중에는 물결을 남겨 두고, 도착하면 숨긴다.
+    const [settledRate, setSettledRate] = useState(rate);
+    const isMoving = !isReducedMotion && settledRate !== rate;
+    // 물이 없거나 가득 차면 물결을 그리지 않는다. (높이 0인 물 위로 물결만 솟아 보임)
+    const hasWave = width > 0 && (isMidLevel || isMoving);
     const lineColor = withAlpha(colors.white, 0.8);
 
     // 물 높이가 바뀌면(이동·입금 후 다시 불러올 때) 수위가 부드럽게 오르내린다.
     useEffect(() => {
-        level.value = isReducedMotion
-            ? rate
-            : withTiming(rate, { duration: 600, easing: Easing.out(Easing.cubic) });
+        if (isReducedMotion) {
+            cancelAnimation(level);
+            level.value = rate;
+            return;
+        }
+        level.value = withTiming(
+            rate,
+            { duration: 600, easing: Easing.out(Easing.cubic) },
+            (finished) => {
+                if (finished) scheduleOnRN(setSettledRate, rate);
+            },
+        );
     }, [isReducedMotion, level, rate]);
 
     const levelStyle = useAnimatedStyle(() => ({ height: `${level.value}%` }));
