@@ -1,13 +1,22 @@
 import { request } from '@/lib/apiClient';
 
-import type { SavingOverview, SavingSuggestionList } from '@/features/goal/types/saving';
+import type {
+    SavingGoalCreateRequest,
+    SavingGoalDraft,
+    SavingGoalDraftResponse,
+    SavingOverview,
+    SavingSuggestionList,
+} from '@/features/goal/types/saving';
 
 import {
+    createSavingGoalMock,
     dismissSuggestionMock,
+    getSavingGoalDraftMock,
     getSavingOverviewMock,
     getSavingSuggestionsMock,
     includeExcludedSpendingMock,
 } from './savingMock';
+import { toSavingGoalDraft } from './savingMapper';
 
 /**
  * 절약 API가 아직 서버에 없어서, 목업 모드가 아니어도 항상 목업으로 처리한다.
@@ -85,4 +94,33 @@ export const includeExcludedSpending = async (transactionIds: number[]): Promise
         ),
     );
     return null;
+};
+
+/**
+ * 절약 목표 설정 시트(12) 초기값 — 기준 지출액, 제안 목표, 기간, 고를 수 있는 목표 블록
+ * TODO: 명세에 응답 모양이 없어 가정값이다. 서버 API가 나오면 맞춘다.
+ */
+export const getSavingGoalDraft = async (suggestionId: number): Promise<SavingGoalDraft> => {
+    const response = USE_SAVING_MOCK
+        ? await mockResponse(() => getSavingGoalDraftMock(suggestionId))
+        : await request<SavingGoalDraftResponse>({
+              method: 'GET',
+              url: '/saving-goals/draft',
+              params: { suggestionId },
+          });
+    return toSavingGoalDraft(response);
+};
+
+/**
+ * 절약 목표 시작하기
+ * TODO: 명세에 body가 없어 가정값이다. 서버 API가 나오면 맞춘다.
+ */
+export const createSavingGoal = (body: SavingGoalCreateRequest): Promise<null> => {
+    if (USE_SAVING_MOCK) {
+        return mockResponse(() => {
+            createSavingGoalMock(body);
+            return null;
+        });
+    }
+    return request<null>({ method: 'POST', url: '/saving-goals', data: body });
 };
