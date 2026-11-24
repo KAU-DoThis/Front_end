@@ -1,5 +1,6 @@
 import { useMutation, useMutationState, useQueryClient } from '@tanstack/react-query';
 
+import { invalidateSavingData } from './invalidateSavingData';
 import { includeExcludedSpending } from './savingApi';
 import { savingKeys } from './savingKeys';
 
@@ -13,7 +14,7 @@ export function useIncludeExcludedSpendingMutation() {
         mutationKey: includeMutationKey,
         mutationFn: includeExcludedSpending,
         // 다시 받기가 끝날 때까지 기다려서, 줄이 사라지기 전에 버튼이 다시 눌리지 않게 한다.
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: savingKeys.all }),
+        onSuccess: () => invalidateSavingData(queryClient),
     });
 }
 
