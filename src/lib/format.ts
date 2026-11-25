@@ -26,6 +26,14 @@ export function formatWon(amount: number, options?: FormatAmountOptions) {
     return formatAmount(amount, options);
 }
 
+/** 차트 눈금용 짧은 금액. 1,000,000 → "100만", 15,000,000 → "1,500만", 9,000 → "9,000" */
+export function formatCompactWon(amount: number) {
+    if (Math.abs(amount) < 10_000) {
+        return formatAmount(amount, { showUnit: false });
+    }
+    return `${Math.round(amount / 10_000).toLocaleString('ko-KR')}만`;
+}
+
 /**
  * 서버 날짜(yyyy-MM-dd 또는 ISO 8601 일시)를 "10월 14일"로 바꾼다.
  * 시간대 영향을 받지 않도록 앞 10글자(날짜)만 잘라 쓴다.

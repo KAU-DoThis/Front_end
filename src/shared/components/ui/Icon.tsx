@@ -124,6 +124,12 @@ const ICONS = {
         strokeWidth: 2,
         paths: ['M12 19V5M6 11L12 5L18 11'],
     },
+    // 시안 08 PDF 버튼 모양을 따라 그린 경로 (Figma 원본 경로가 아님)
+    download: {
+        viewBox: 16,
+        strokeWidth: 1.5,
+        paths: ['M8 2.5V10M4.75 6.75L8 10L11.25 6.75', 'M3 13H13'],
+    },
 } as const;
 
 type IconDefinition = {

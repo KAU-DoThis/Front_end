@@ -39,6 +39,8 @@ interface LineChartProps {
     xLabels?: { x: number; label: string }[];
     /** 기준선 위 글자 (예: 목표 800,000) */
     yLabels?: { y: number; label: string }[];
+    /** 기준선 글자 위치 — left: 선 아래 왼쪽(기본) · right: 오른쪽 여백에 선과 같은 높이 (월간 리포트) */
+    yLabelAlign?: 'left' | 'right';
 }
 
 const DEFAULT_PADDING = { top: 8, bottom: 8, left: 0, right: 0 };
@@ -57,6 +59,7 @@ export function LineChart({
     gridLines = [],
     xLabels = [],
     yLabels = [],
+    yLabelAlign = 'left',
 }: LineChartProps) {
     const [width, setWidth] = useState(0);
 
@@ -70,6 +73,8 @@ export function LineChart({
         padding.left + ((x - xDomain[0]) / (xDomain[1] - xDomain[0] || 1)) * plotWidth;
     const toY = (y: number) => padding.top + (1 - y / (yMax || 1)) * plotHeight;
     const baseline = toY(0);
+    // 기준선 글자를 오른쪽에 두면 가로선은 글자 자리 앞에서 끝낸다.
+    const lineEnd = yLabelAlign === 'right' ? width - padding.right : width;
 
     return (
         <View style={{ height }} onLayout={handleLayout}>
@@ -77,7 +82,7 @@ export function LineChart({
                 <Svg width={width} height={height}>
                     <Line
                         x1={0}
-                        x2={width}
+                        x2={lineEnd}
                         y1={baseline}
                         y2={baseline}
                         stroke={colors.line.DEFAULT}
@@ -87,7 +92,7 @@ export function LineChart({
                         <Line
                             key={grid.y}
                             x1={0}
-                            x2={width}
+                            x2={lineEnd}
                             y1={toY(grid.y)}
                             y2={toY(grid.y)}
                             stroke={grid.color}
@@ -115,7 +120,11 @@ export function LineChart({
                     <AppText
                         key={label.y}
                         className="absolute text-10 text-ink-sub"
-                        style={{ left: padding.left + 2, top: toY(label.y) + 2 }}
+                        style={
+                            yLabelAlign === 'right'
+                                ? { right: 0, top: toY(label.y) - 6 }
+                                : { left: padding.left + 2, top: toY(label.y) + 2 }
+                        }
                     >
                         {label.label}
                     </AppText>
