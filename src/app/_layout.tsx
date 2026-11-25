@@ -66,6 +66,7 @@ export default function RootLayout() {
                                     }}
                                 />
                                 <Stack.Screen name="block/[blockId]" />
+                                <Stack.Screen name="allocation/[waitingFundId]" />
                             </Stack.Protected>
                             {/* 가입 직후: 온보딩을 마치기 전까지는 홈 대신 온보딩만 연다. */}
                             <Stack.Protected guard={isLoggedIn && needsOnboarding}>
