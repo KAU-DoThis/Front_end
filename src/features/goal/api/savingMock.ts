@@ -1,3 +1,4 @@
+import { BLOCK_HOME_MOCK } from '@/features/block/api/blockHomeMock';
 import { formatAmount } from '@/lib/format';
 import { ApiError } from '@/shared/types/api';
 
@@ -40,9 +41,9 @@ function mockDates() {
 const { lastMonth, endOfMonth, firstOfNextMonth } = mockDates();
 
 const OVERVIEW_BASE: Omit<SavingOverview, 'suggestionCount' | 'suggestionTotal'> = {
-    // 홈 목업의 절약분 대기 자금(waitingFundId 12)과 같은 값
+    // 홈 목업의 절약분 대기 자금(waitingFundId 1)과 같은 값
     confirmed: {
-        waitingFundId: 12,
+        waitingFundId: 1,
         month: lastMonth,
         amount: 87_000,
         text: '생활비에서 꺼내 홈의 절약분 블록에 모아뒀어요',
@@ -175,6 +176,19 @@ let nextSavingGoalId = 100;
 const pendingSuggestions = () => suggestions.filter(({ status }) => status === 'PENDING');
 
 /** 서버처럼 후보 개수·합계는 남은 후보로 다시 센다. */
+/**
+ * 확정 절약분은 홈 목업의 절약분 나눌 돈을 따라간다.
+ * 배분하기(06)에서 나누면 남은 금액이 줄고, 다 나누면 배너가 사라진다.
+ */
+function confirmedSaving(): SavingOverview['confirmed'] {
+    const base = OVERVIEW_BASE.confirmed;
+    if (!base) return null;
+    const fund = BLOCK_HOME_MOCK.pendingMoney.find(
+        (item) => item.waitingFundId === base.waitingFundId,
+    );
+    return fund ? { ...base, amount: fund.amount } : null;
+}
+
 export function getSavingOverviewMock(): SavingOverview {
     const pending = pendingSuggestions();
     const baseGoals = MOCK_NO_ACTIVE_GOALS ? null : OVERVIEW_BASE.activeGoals;
@@ -190,6 +204,7 @@ export function getSavingOverviewMock(): SavingOverview {
               };
     return {
         ...OVERVIEW_BASE,
+        confirmed: confirmedSaving(),
         activeGoals,
         suggestionCount: pending.length,
         suggestionTotal: pending.reduce((sum, { expectedSaving }) => sum + expectedSaving, 0),
