@@ -61,6 +61,7 @@ const base = {
     // 계좌 이름은 목록을 보낼 때 linkedAccountId로 채운다.
     accountName: null,
     dutchPayId: null,
+    dutchPayMyShare: null,
 } as const;
 
 const createTransactions = (): MockTransaction[] => [
@@ -378,19 +379,21 @@ const myShareOf = (dutchPay: MockDutchPay) =>
     dutchPay.editedMyShare ??
     Math.max(0, amountOf(dutchPay.paymentIds) - amountOf(dutchPay.receivedIds));
 
-/**
- * 쓴 돈: 더치페이 결제는 내 몫만 센다. (내 몫 합을 결제 금액 비율로 나눈다)
- * 들어온 돈: 더치페이로 받은 돈은 뺀다.
- * TODO: 서버 거래 목록 합계(feat/더치페이 f129f9c)는 지금 더치페이를 반영하지 않는다. 백엔드에 반영 요청함.
- */
-const spentOf = (item: MockTransaction) => {
+/** 더치페이 결제의 내 몫 (내 몫 합을 결제 금액 비율로 나눈다). 더치페이 결제가 아니면 null */
+const myShareOfPayment = (item: MockTransaction) => {
     const dutchPay = dutchPays.find(({ paymentIds }) => paymentIds.includes(item.transactionId));
     if (!dutchPay) {
-        return item.amount;
+        return null;
     }
     const paidTotal = amountOf(dutchPay.paymentIds);
     return paidTotal > 0 ? Math.round((item.amount * myShareOf(dutchPay)) / paidTotal) : 0;
 };
+
+/**
+ * 쓴 돈(상단·날짜별): 더치페이 결제는 내 몫만 센다. 들어온 돈: 더치페이로 받은 돈은 뺀다. (서버와 같다)
+ * 거래 하나하나의 금액은 그대로 둔다.
+ */
+const spentOf = (item: MockTransaction) => myShareOfPayment(item) ?? item.amount;
 
 const sumSpent = (items: MockTransaction[]) =>
     items
@@ -407,10 +410,14 @@ const accountNameOf = (linkedAccountId: number | null) =>
         ?.institutionName ?? null;
 
 /** 목업 안에서만 쓰는 값(linkedAccountId)을 빼고 계좌 이름을 채워 보낸다. */
-const toItem = ({ linkedAccountId, ...item }: MockTransaction): TransactionItem => ({
-    ...item,
-    accountName: accountNameOf(linkedAccountId),
-});
+const toItem = (mock: MockTransaction): TransactionItem => {
+    const { linkedAccountId, ...item } = mock;
+    return {
+        ...item,
+        accountName: accountNameOf(linkedAccountId),
+        dutchPayMyShare: myShareOfPayment(mock),
+    };
+};
 let pendingQuestion: ContextQuestion | null = QUESTION;
 
 const findTransaction = (transactionId: number) => {
@@ -469,9 +476,7 @@ export function getTransactionListMock(
         .sort(([a], [b]) => b.localeCompare(a))
         .map(([date, items]) => ({
             date,
-            dayTotal: items
-                .filter((item) => item.direction === 'OUT')
-                .reduce((sum, item) => sum + item.amount, 0),
+            dayTotal: sumSpent(items),
             transactions: items.map(toItem),
             allocation: showAllocation ? (ALLOCATIONS[date] ?? null) : null,
         }));

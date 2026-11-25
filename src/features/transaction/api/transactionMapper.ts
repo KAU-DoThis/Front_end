@@ -116,6 +116,7 @@ function toTransactionItem(
         isExcluded: transaction.excluded || transaction.isCanceled,
         accountName: transaction.linkedAccount?.institutionName ?? null,
         dutchPayId: transaction.dutchPay?.dutchPayId ?? null,
+        dutchPayMyShare: transaction.dutchPay?.myShare ?? null,
     };
 }
 
