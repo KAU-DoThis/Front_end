@@ -4,7 +4,7 @@ import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeabl
 import { useTranslation } from 'react-i18next';
 
 import { cn } from '@/lib/cn';
-import { formatAmount, formatTime } from '@/lib/format';
+import { formatTime, formatWon } from '@/lib/format';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
 import { getWaterColor } from '@/shared/components/ui/BlockBeaker';
@@ -143,7 +143,7 @@ export function TransactionRow({
                     <AppText numberOfLines={1} className="flex-1 text-12 text-ink-sub">
                         {getSubtitle(transaction)}
                         {transaction.dutchPayMyShare !== null &&
-                            `  ${t('dutchPay.rowMyShare', { amount: formatAmount(transaction.dutchPayMyShare, { showUnit: false }) })}`}
+                            `  ${t('dutchPay.rowMyShare', { amount: formatWon(transaction.dutchPayMyShare, { showUnit: false }) })}`}
                         {transaction.contextTag && (
                             <AppText className="text-12 text-primary-700">{`  ${transaction.contextTag}`}</AppText>
                         )}
