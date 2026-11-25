@@ -1,11 +1,12 @@
 import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
 import type { Status } from '@/shared/components/ui/StatusTag';
+import type { RichText } from '@/shared/types/richText';
 
 // 화면에서 쓰는 거래 모양. 서버 응답(transactionResponse.ts)은 transactionMapper에서 이 모양으로 바꾼다.
 // TODO: 맥락 질문은 API가 나오면 맞춘다. (지금은 시안 09-1 기준 가정값)
 
-/** 일부를 굵게 보여주는 서버 문장 (예: [네이버페이 38,000원](굵게) + , 무엇을 샀는지 알려줄래요?) */
-export type RichText = { text: string; isBold: boolean }[];
+/** 소비 분석(shared)과 같이 쓰는 타입이라 shared에 두고 여기서 다시 내보낸다. */
+export type { RichText };
 
 /**
  * 거래 상태

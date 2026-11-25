@@ -3,10 +3,10 @@ import { View } from 'react-native';
 import { AppText } from '@/shared/components/ui/AppText';
 import { BarChart } from '@/shared/components/ui/BarChart';
 import { Card } from '@/shared/components/ui/Card';
+import type { SpendingAnalysis } from '@/shared/types/spendingAnalysis';
 import { colors } from '@/styles/tokens';
 
 import { RichTextView } from '@/features/transaction/components/RichTextView';
-import type { SpendingAnalysis } from '@/features/transaction/types/spendingAnalysis';
 
 /** 가장 높은 막대 높이 · 0번일 때 바닥 막대 높이 (시안 11) */
 const MAX_BAR_HEIGHT = 92;

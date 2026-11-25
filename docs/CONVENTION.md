@@ -20,6 +20,7 @@ src/
 │       ├── stores/       클라이언트 상태 (Zustand)
 │       └── types/        도메인 타입
 ├── shared/         두 기능 이상에서 쓰는 공통 코드
+│   ├── api/          두 기능 이상에서 쓰는 조회 (예: spendingAnalysis — 내역 소비 분석 · 월간 리포트)
 │   ├── components/
 │   │   ├── layout/       Screen, Header 등 레이아웃
 │   │   └── ui/           Button, Input 등 순수 UI
@@ -122,6 +123,7 @@ export default BlockHomeScreen;
 - 서버 데이터는 **TanStack Query**, 클라이언트 상태(UI 상태, 입력 중인 값 등)는 **Zustand**로 관리한다.
 - 서버에서 받은 데이터를 Zustand store에 복사해 두지 않는다.
 - 컴포넌트에서 `apiClient`를 직접 호출하지 않는다. `features/{domain}/api/`의 함수와 훅을 쓴다.
+- 두 기능 이상에서 같은 조회를 쓰면 `shared/api/{대상}/`에 요청 함수·key·훅을 같은 구성으로 둔다.
 
 ### api 폴더 구성
 

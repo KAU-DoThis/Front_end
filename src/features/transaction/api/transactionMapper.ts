@@ -1,3 +1,4 @@
+import { todayInKorea } from '@/lib/date';
 import type { BlockColor } from '@/shared/components/ui/BlockBeaker';
 import type { Status } from '@/shared/components/ui/StatusTag';
 
@@ -26,11 +27,6 @@ import type {
 
 /** 한 번에 받는 거래 수 (서버 최대 100) */
 export const TRANSACTION_PAGE_SIZE = 30;
-
-const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
-
-/** 한국 날짜 기준 오늘 (yyyy-MM-dd) */
-export const todayInKorea = () => new Date(Date.now() + KST_OFFSET_MS).toISOString().slice(0, 10);
 
 const FILTER_PARAM: Record<TransactionStatusFilter, TransactionFilterParam> = {
     ALL: 'ALL',
