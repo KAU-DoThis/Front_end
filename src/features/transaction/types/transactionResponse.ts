@@ -78,6 +78,12 @@ export interface TransactionResponse {
     isCanceled: boolean;
     /** 빠른 입력이면 "빠른 입력" */
     inputMethod: string | null;
+    /** 더치페이에 묶인 거래면 있다. 이미 묶인 거래는 다른 더치페이에 고를 수 없다. (더치페이 API 전 서버는 보내지 않는다) */
+    dutchPay?: {
+        dutchPayId: number;
+        /** 결제 건의 내 몫 (쓴 돈 합계에 잡히는 금액). 받은 돈 건은 null */
+        myShare: number | null;
+    } | null;
 }
 
 /** 날짜 묶음 안의 한 줄. 거래이거나 블록 배분 기록이다. */

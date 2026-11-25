@@ -1,0 +1,70 @@
+{
+    "dutchPay": {
+        "title": "Rechnung teilen",
+        "titleEdit": "Geteilte Rechnung bearbeiten",
+        "amount": "{{amount}} ₩",
+        "unit": "₩",
+        "rowMyShare": "Mein Anteil {{amount}}",
+        "payments": {
+            "label": "Was ich bezahlt habe",
+            "add": "+ Weitere Zahlungen"
+        },
+        "received": {
+            "label": "Was ich zurückbekommen habe",
+            "add": "+ Erhaltenes Geld wählen",
+            "empty": "Noch keine Eingänge gewählt"
+        },
+        "overNotice": "Du hast mehr zurückbekommen als bezahlt, daher ist dein Anteil 0 ₩. Ändere ihn, falls du einen Anteil hattest.",
+        "myShare": {
+            "label": "Mein Anteil",
+            "caption": "· was ich wirklich ausgegeben habe",
+            "edited": "Geändert",
+            "edit": "Meinen Anteil ändern",
+            "hint": "Ändere ihn, wenn dein echter Anteil anders ist.",
+            "hintEdited": "Der berechnete Wert ist {{amount}}. Du kannst ihn jederzeit ändern.",
+            "hintEmpty": "Wird berechnet, sobald du das erhaltene Geld wählst.",
+            "reset": "Automatisch",
+            "over": "Dein Anteil darf nicht höher sein als deine Zahlung ({{amount}})"
+        },
+        "check": {
+            "title": "Vor dem Bestätigen",
+            "summary": "Von {{paid}} bezahlt ist dein Anteil {{share}}, also gehen {{returned}} zurück in den Block {{block}}.",
+            "summaryBuffer": "Die zusätzlichen {{buffer}} kommen zum Geld zum Verteilen.",
+            "returned": "{{amount}} zurück an {{block}}",
+            "returnedDetail": "Bezahlt {{paid}} − mein Anteil {{share}}",
+            "buffer": "{{amount}} zum Geld zum Verteilen",
+            "bufferDetail": "{{received}} erhalten minus {{returned}} verrechnet · zusätzlicher Eingang",
+            "outstanding": "Noch {{amount}} offen",
+            "outstandingDetail": "Füge den Eingang hinzu, wenn er da ist",
+            "defaultBlock": "Lebenshaltung"
+        },
+        "confirm": "Teilen bestätigen",
+        "save": "Änderungen speichern",
+        "saving": "Wird gespeichert",
+        "needPayment": "Wähle eine Zahlung",
+        "needReceived": "Wähle das erhaltene Geld zum Bestätigen",
+        "release": "Teilen aufheben",
+        "releaseTitle": "Geteilte Rechnung aufheben?",
+        "releaseMessage": "Das an Blöcke zurückgegebene und zum Verteilen hinzugefügte Geld wird wieder abgezogen, und die ganze Zahlung zählt wieder als Ausgabe.",
+        "picker": {
+            "paymentsTitle": "Zahlungen wählen",
+            "receivedTitle": "Erhaltenes Geld wählen",
+            "paymentsDescription": "Wähle alle Zahlungen, die zusammen abgerechnet werden.\nWenn du in mehreren Runden bezahlt hast, wähle alle.",
+            "receivedDescription": "Wähle alle Eingänge aus dem Teilen.",
+            "paymentsHidden": "Zahlungen in einer anderen geteilten Rechnung werden ausgeblendet.",
+            "receivedHidden": "Eingänge in einer anderen geteilten Rechnung werden ausgeblendet.",
+            "empty": "Diesen Monat gibt es nichts zu wählen",
+            "more": "Frühere Umsätze anzeigen",
+            "count": "{{count}} gewählt",
+            "pick": "Wählen",
+            "loadError": "Umsätze konnten nicht geladen werden"
+        },
+        "error": {
+            "load": "Geteilte Rechnung konnte nicht geladen werden",
+            "save": "Speichern fehlgeschlagen. Bitte gleich noch einmal versuchen",
+            "release": "Aufheben fehlgeschlagen. Bitte gleich noch einmal versuchen",
+            "invalidMyShare": "Dein Anteil ist höher als deine Zahlung und wurde nicht gespeichert",
+            "alreadyLinked": "Einige Umsätze sind bereits in einer anderen Aufteilung"
+        }
+    }
+}

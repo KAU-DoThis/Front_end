@@ -1,0 +1,70 @@
+{
+    "dutchPay": {
+        "title": "AA 制",
+        "titleEdit": "编辑 AA 制",
+        "amount": "{{amount}}韩元",
+        "unit": "韩元",
+        "rowMyShare": "我的份额 {{amount}}",
+        "payments": {
+            "label": "我付的钱",
+            "add": "+ 再选付款"
+        },
+        "received": {
+            "label": "结算收到的钱",
+            "add": "+ 选择收到的钱",
+            "empty": "还没有选择入账"
+        },
+        "overNotice": "收到的钱比付的多，所以我的份额记为 0 韩元。如果你有份额，请修改。",
+        "myShare": {
+            "label": "我的份额",
+            "caption": "· 我实际花的钱",
+            "edited": "已手动修改",
+            "edit": "修改我的份额",
+            "hint": "如果和实际份额不同，请修改。",
+            "hintEdited": "自动计算值为 {{amount}}。随时可以再修改。",
+            "hintEmpty": "选择收到的钱后会自动计算。",
+            "reset": "恢复自动",
+            "over": "我的份额不能超过已付金额（{{amount}}）"
+        },
+        "check": {
+            "title": "确认前检查",
+            "summary": "付款 {{paid}} 中扣除我的份额 {{share}}，{{returned}} 退回{{block}}区块。",
+            "summaryBuffer": "多收到的 {{buffer}} 放入待分配的钱。",
+            "returned": "{{amount}} 退回{{block}}区块",
+            "returnedDetail": "付款 {{paid}} − 我的份额 {{share}}",
+            "buffer": "{{amount}} 放入待分配的钱",
+            "bufferDetail": "收到的 {{received}} 减去结算部分 {{returned}} · 额外入账",
+            "outstanding": "还要收的钱 {{amount}}",
+            "outstandingDetail": "收到后请再选择那笔入账",
+            "defaultBlock": "生活费"
+        },
+        "confirm": "确认 AA 制",
+        "save": "保存修改",
+        "saving": "保存中",
+        "needPayment": "请选择付款",
+        "needReceived": "选择收到的钱后才能确认",
+        "release": "取消 AA 制",
+        "releaseTitle": "要取消 AA 制吗？",
+        "releaseMessage": "退回区块的钱和放入待分配的钱会被扣回，整笔付款重新算作支出。",
+        "picker": {
+            "paymentsTitle": "选择付款",
+            "receivedTitle": "选择收到的钱",
+            "paymentsDescription": "请选择所有要一起结算的付款。\n如果分几次付款，请一起选择。",
+            "receivedDescription": "请选择所有结算收到的入账。",
+            "paymentsHidden": "已在其他 AA 制中的付款不会显示。",
+            "receivedHidden": "已在其他 AA 制中的入账不会显示。",
+            "empty": "这个月没有可选的交易",
+            "more": "查看更早的交易",
+            "count": "已选 {{count}} 笔",
+            "pick": "选择",
+            "loadError": "无法加载交易"
+        },
+        "error": {
+            "load": "无法加载 AA 制",
+            "save": "保存失败，请稍后再试",
+            "release": "取消失败，请稍后再试",
+            "invalidMyShare": "我的份额超过已付金额，未能保存",
+            "alreadyLinked": "有交易已在其他AA中"
+        }
+    }
+}

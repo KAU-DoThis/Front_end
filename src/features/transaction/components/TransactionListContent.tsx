@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, View } from 'react-native';
 
 import { AppText } from '@/shared/components/ui/AppText';
@@ -11,10 +11,15 @@ import { useReviewTransactionMutation } from '@/features/transaction/api/useRevi
 import { useTransactionListQuery } from '@/features/transaction/api/useTransactionListQuery';
 import { AgentQuestionBanner } from '@/features/transaction/components/AgentQuestionBanner';
 import { ContextQuestionSheet } from '@/features/transaction/components/ContextQuestionSheet';
+import {
+    DutchPaySheet,
+    type DutchPayTarget,
+} from '@/features/transaction/components/DutchPaySheet';
 import { FilterPickerSheet } from '@/features/transaction/components/FilterPickerSheet';
 import { MonthNavigator } from '@/features/transaction/components/MonthNavigator';
 import { TransactionDaySection } from '@/features/transaction/components/TransactionDaySection';
 import { TransactionFilterBar } from '@/features/transaction/components/TransactionFilterBar';
+import type { SwipeControl } from '@/features/transaction/components/TransactionRow';
 import { TransactionSummaryCard } from '@/features/transaction/components/TransactionSummaryCard';
 import type {
     TransactionItem,
@@ -22,7 +27,7 @@ import type {
     TransactionStatusFilter,
 } from '@/features/transaction/types/transaction';
 
-type OpenSheet = 'QUESTION' | 'BLOCK' | 'ACCOUNT' | null;
+type OpenSheet = 'QUESTION' | 'BLOCK' | 'ACCOUNT' | 'DUTCH_PAY' | null;
 
 interface TransactionListContentProps {
     params: TransactionListParams;
@@ -43,6 +48,39 @@ export function TransactionListContent({
     const query = useTransactionListQuery(params);
     const review = useReviewTransactionMutation();
     const [openSheet, setOpenSheet] = useState<OpenSheet>(null);
+    // 시트가 내려가는 동안에도 내용을 그리도록 닫아도 비우지 않는다.
+    const [dutchPayTarget, setDutchPayTarget] = useState<DutchPayTarget | null>(null);
+
+    // 더치페이 버튼을 밀어 연 행은 하나만 둔다. 다른 행을 만지거나 밀거나 목록을 스크롤하면 닫는다.
+    const openSwipeRef = useRef<{ transactionId: number; close: () => void } | null>(null);
+    const swipeControl = useMemo<SwipeControl & { closeAll: () => void }>(
+        () => ({
+            willOpen: (transactionId, close) => {
+                const opened = openSwipeRef.current;
+                if (opened && opened.transactionId !== transactionId) {
+                    opened.close();
+                }
+                openSwipeRef.current = { transactionId, close };
+            },
+            didClose: (transactionId) => {
+                if (openSwipeRef.current?.transactionId === transactionId) {
+                    openSwipeRef.current = null;
+                }
+            },
+            closeOthers: (transactionId) => {
+                const opened = openSwipeRef.current;
+                if (opened && opened.transactionId !== transactionId) {
+                    opened.close();
+                    openSwipeRef.current = null;
+                }
+            },
+            closeAll: () => {
+                openSwipeRef.current?.close();
+                openSwipeRef.current = null;
+            },
+        }),
+        [],
+    );
 
     if (query.isPending) {
         return (
@@ -94,6 +132,27 @@ export function TransactionListContent({
         ) {
             setOpenSheet('QUESTION');
         }
+    };
+
+    const openDutchPay = (target: DutchPayTarget) => {
+        setDutchPayTarget(target);
+        setOpenSheet('DUTCH_PAY');
+    };
+
+    // 09-1 '나눠서 냄': 질문의 결제를 목록에서 찾아 더치페이 시트를 연다.
+    const handleSplitFromQuestion = (transactionId: number) => {
+        const payment = days
+            .flatMap((day) => day.transactions)
+            .find((item) => item.transactionId === transactionId);
+        if (payment) {
+            openDutchPay({ mode: 'CREATE', payment });
+            return;
+        }
+        // 필터나 첫 쪽 밖이라 목록에 없으면 아무 일 없이 닫히지 않게 알려준다.
+        Alert.alert(
+            '거래를 찾지 못했어요',
+            '필터를 풀거나 목록을 더 불러온 뒤 다시 시도해 주세요.',
+        );
     };
 
     const handleReview = (transactionId: number, action: 'KEEP' | 'DELETE') => {
@@ -173,9 +232,13 @@ export function TransactionListContent({
                         reviewingId={
                             review.isPending ? (review.variables?.transactionId ?? null) : null
                         }
+                        onSplit={(payment) => openDutchPay({ mode: 'CREATE', payment })}
+                        onPressDutchPay={(dutchPayId) => openDutchPay({ mode: 'EDIT', dutchPayId })}
+                        swipeControl={swipeControl}
                     />
                 )}
                 ItemSeparatorComponent={() => <View className="h-4" />}
+                onScrollBeginDrag={swipeControl.closeAll}
                 ListHeaderComponent={header}
                 ListEmptyComponent={
                     <AppText className="py-16 text-center text-13 text-ink-sub">
@@ -210,6 +273,12 @@ export function TransactionListContent({
             <ContextQuestionSheet
                 question={agentQuestion}
                 isOpen={openSheet === 'QUESTION'}
+                onClose={() => setOpenSheet(null)}
+                onSplit={handleSplitFromQuestion}
+            />
+            <DutchPaySheet
+                target={dutchPayTarget}
+                isOpen={openSheet === 'DUTCH_PAY'}
                 onClose={() => setOpenSheet(null)}
             />
             <FilterPickerSheet

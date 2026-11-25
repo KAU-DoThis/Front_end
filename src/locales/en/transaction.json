@@ -1,0 +1,70 @@
+{
+    "dutchPay": {
+        "title": "Split bill",
+        "titleEdit": "Edit split bill",
+        "amount": "₩{{amount}}",
+        "unit": "₩",
+        "rowMyShare": "My share {{amount}}",
+        "payments": {
+            "label": "What I paid",
+            "add": "+ Add more payments"
+        },
+        "received": {
+            "label": "What I got back",
+            "add": "+ Add money received",
+            "empty": "No deposits selected yet"
+        },
+        "overNotice": "You got back more than you paid, so your share is set to ₩0. Edit it if you had a share.",
+        "myShare": {
+            "label": "My share",
+            "caption": "· what I actually spent",
+            "edited": "Edited",
+            "edit": "Edit my share",
+            "hint": "Edit it if your real share is different.",
+            "hintEdited": "The calculated amount is {{amount}}. You can change it anytime.",
+            "hintEmpty": "It is calculated once you pick the money you got back.",
+            "reset": "Use auto",
+            "over": "Your share can't be more than what you paid ({{amount}})"
+        },
+        "check": {
+            "title": "Before you confirm",
+            "summary": "Out of {{paid}} paid, your share is {{share}}, so {{returned}} goes back to the {{block}} block.",
+            "summaryBuffer": "The extra {{buffer}} goes to money to split.",
+            "returned": "{{amount}} back to {{block}}",
+            "returnedDetail": "Paid {{paid}} − my share {{share}}",
+            "buffer": "{{amount}} to money to split",
+            "bufferDetail": "{{received}} received minus {{returned}} settled · extra deposit",
+            "outstanding": "{{amount}} still to receive",
+            "outstandingDetail": "Add the deposit when you get it",
+            "defaultBlock": "Living expenses"
+        },
+        "confirm": "Confirm split bill",
+        "save": "Save changes",
+        "saving": "Saving",
+        "needPayment": "Pick a payment",
+        "needReceived": "Pick the money you got back to confirm",
+        "release": "Undo split bill",
+        "releaseTitle": "Undo this split bill?",
+        "releaseMessage": "Money returned to blocks and added to money to split is taken back, and the full payment counts as spent again.",
+        "picker": {
+            "paymentsTitle": "Pick payments",
+            "receivedTitle": "Pick money received",
+            "paymentsDescription": "Pick every payment to settle together.\nIf you paid in several rounds, pick them all.",
+            "receivedDescription": "Pick every deposit you got back from the split.",
+            "paymentsHidden": "Payments already in another split bill are hidden.",
+            "receivedHidden": "Deposits already in another split bill are hidden.",
+            "empty": "Nothing to pick this month",
+            "more": "Show earlier transactions",
+            "count": "{{count}} selected",
+            "pick": "Select",
+            "loadError": "Couldn't load transactions"
+        },
+        "error": {
+            "load": "Couldn't load the split bill",
+            "save": "Couldn't save. Please try again shortly",
+            "release": "Couldn't undo. Please try again shortly",
+            "invalidMyShare": "Your share is more than what you paid, so it wasn't saved",
+            "alreadyLinked": "Some transactions are already in another split"
+        }
+    }
+}

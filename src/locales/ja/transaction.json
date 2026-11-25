@@ -1,0 +1,70 @@
+{
+    "dutchPay": {
+        "title": "割り勘",
+        "titleEdit": "割り勘を編集",
+        "amount": "{{amount}}ウォン",
+        "unit": "ウォン",
+        "rowMyShare": "自分の分 {{amount}}",
+        "payments": {
+            "label": "自分が支払ったお金",
+            "add": "+ 支払いを追加"
+        },
+        "received": {
+            "label": "精算で受け取ったお金",
+            "add": "+ 受け取ったお金を選ぶ",
+            "empty": "まだ入金を選んでいません"
+        },
+        "overNotice": "受け取ったお金が支払いより多いため、自分の分を0ウォンにしました。自分の分があれば修正してください。",
+        "myShare": {
+            "label": "自分の分",
+            "caption": "· 実際に使ったお金",
+            "edited": "手動で修正",
+            "edit": "自分の分を修正",
+            "hint": "実際の自分の分と違えば修正してください。",
+            "hintEdited": "自動計算の値は{{amount}}です。いつでも修正できます。",
+            "hintEmpty": "受け取ったお金を選ぶと自動で計算します。",
+            "reset": "自動に戻す",
+            "over": "自分の分は支払った金額（{{amount}}）を超えられません"
+        },
+        "check": {
+            "title": "確定前の確認",
+            "summary": "支払った{{paid}}のうち自分の分{{share}}を除いた{{returned}}は{{block}}ブロックに戻ります。",
+            "summaryBuffer": "多く入った{{buffer}}は分けるお金に入れておきます。",
+            "returned": "{{block}}ブロックに{{amount}}戻ります",
+            "returnedDetail": "支払い {{paid}} − 自分の分 {{share}}",
+            "buffer": "分けるお金に{{amount}}入ります",
+            "bufferDetail": "受け取った{{received}}から精算分{{returned}}を引いた額 · 追加入金",
+            "outstanding": "まだ受け取るお金 {{amount}}",
+            "outstandingDetail": "受け取ったらその入金を追加してください",
+            "defaultBlock": "生活費"
+        },
+        "confirm": "割り勘を確定",
+        "save": "変更を保存",
+        "saving": "保存中",
+        "needPayment": "支払いを選んでください",
+        "needReceived": "受け取ったお金を選ぶと確定できます",
+        "release": "割り勘を解除",
+        "releaseTitle": "割り勘を解除しますか？",
+        "releaseMessage": "ブロックに戻したお金と分けるお金に入れたお金が戻され、支払い全額が使ったお金になります。",
+        "picker": {
+            "paymentsTitle": "支払いを選ぶ",
+            "receivedTitle": "受け取ったお金を選ぶ",
+            "paymentsDescription": "一緒に精算する支払いをすべて選んでください。\n1次会・2次会のように分けて払った場合はまとめて選びます。",
+            "receivedDescription": "精算で受け取った入金をすべて選んでください。",
+            "paymentsHidden": "ほかの割り勘に含まれている支払いは表示されません。",
+            "receivedHidden": "ほかの割り勘に含まれている入金は表示されません。",
+            "empty": "この月は選べる取引がありません",
+            "more": "以前の取引をもっと見る",
+            "count": "{{count}}件選択",
+            "pick": "選ぶ",
+            "loadError": "取引を読み込めませんでした"
+        },
+        "error": {
+            "load": "割り勘を読み込めませんでした",
+            "save": "保存できませんでした。しばらくしてからもう一度お試しください",
+            "release": "解除できませんでした。しばらくしてからもう一度お試しください",
+            "invalidMyShare": "自分の分が支払額を超えているため保存できませんでした",
+            "alreadyLinked": "すでに別の割り勘に含まれている取引があります"
+        }
+    }
+}

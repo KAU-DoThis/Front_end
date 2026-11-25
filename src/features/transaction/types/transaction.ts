@@ -62,6 +62,12 @@ export interface TransactionItem {
     block: TransactionBlock | null;
     /** 쓴 돈에서 뺀 거래 (체크카드 결제의 은행 쪽 등). 목록에는 흐리게 보여준다. */
     isExcluded: boolean;
+    /** 나간·들어온 계좌·카드 이름 (예: 신한카드). 현금 빠른 입력은 null */
+    accountName: string | null;
+    /** 더치페이에 묶인 거래면 그 더치페이 ID. 금액은 통장에 찍힌 그대로다. */
+    dutchPayId: number | null;
+    /** 더치페이에 묶인 결제의 내 몫 (상단·날짜별 쓴 돈에는 이 금액만 잡힌다). 그 밖에는 null */
+    dutchPayMyShare: number | null;
 }
 
 /** 블록 배분 기록 (앱 안에서만 나눈 돈이라 쓴 돈에 안 잡힌다) */
