@@ -1,0 +1,12 @@
+{
+    "action": {
+        "retry": "다시 시도",
+        "close": "닫기",
+        "cancel": "취소",
+        "confirm": "확인",
+        "save": "저장"
+    },
+    "error": {
+        "tryAgainLater": "잠시 후 다시 시도해 주세요"
+    }
+}

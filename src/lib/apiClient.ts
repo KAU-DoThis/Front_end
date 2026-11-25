@@ -7,6 +7,7 @@ import {
     type ApiResponse,
 } from '@/shared/types/api';
 
+import { getLanguage } from './i18n';
 import { tokenStorage } from './tokenStorage';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -27,6 +28,8 @@ export const apiClient = create({
 });
 
 apiClient.interceptors.request.use(async (config) => {
+    // 서버가 만드는 문구(오류 메시지, ruleText, 초불이 대화 등)를 앱 언어로 받기 위해 모든 요청에 붙인다.
+    config.headers['Accept-Language'] = getLanguage();
     // 요청에서 직접 토큰을 넣은 경우(가입 직후 동의 저장 등)는 그대로 둔다.
     if (config.headers.Authorization) {
         return config;

@@ -12,6 +12,7 @@ import { OnboardingCheckErrorScreen } from '@/features/auth/screens/OnboardingCh
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { queryClient } from '@/lib/queryClient';
 import { useAppFonts } from '@/shared/hooks/useAppFonts';
+import { useRestoreLanguage } from '@/shared/hooks/useRestoreLanguage';
 
 // 폰트를 불러오기 전까지 스플래시를 유지한다.
 SplashScreen.preventAutoHideAsync();
@@ -23,8 +24,10 @@ export default function RootLayout() {
     const onboardingCheckFailed = useAuthStore((state) => state.onboardingCheckFailed);
     const isRestored = useAuthStore((state) => state.isRestored);
     const [isFontLoaded, fontError] = useAppFonts();
+    const isLanguageRestored = useRestoreLanguage();
     // 로그인 상태를 복원하기 전에 화면을 띄우면 홈이 잠깐 보였다가 로그인으로 튈 수 있다.
-    const isReady = (isFontLoaded || fontError !== null) && isRestored;
+    // 저장한 언어도 되살린 뒤에 띄워야 첫 화면이 기본 언어로 잠깐 보이지 않는다.
+    const isReady = (isFontLoaded || fontError !== null) && isRestored && isLanguageRestored;
 
     useEffect(() => {
         restore();

@@ -26,7 +26,8 @@ src/
 │   ├── constants/
 │   ├── hooks/
 │   └── types/
-├── lib/            API 클라이언트, QueryClient, 토큰 저장소, 유틸
+├── lib/            API 클라이언트, QueryClient, 토큰 저장소, i18n, 유틸
+├── locales/        언어별 문구 (ko · en · ja · zh · es · fr · de · vi)
 └── styles/         NativeWind 전역 CSS
 ```
 
@@ -211,7 +212,21 @@ export function BlockCard({ name, amount, onPress }: BlockCardProps) {
 
 <br>
 
-## 8. 패키지와 환경
+## 8. 다국어 (i18n)
+
+- `i18next` + `react-i18next`를 쓴다. 설정은 `lib/i18n.ts`, 문구는 `locales/{언어}/{네임스페이스}.json`에 둔다.
+- 네임스페이스는 `common`(여러 화면에서 쓰는 버튼·오류 문구)과 도메인 이름(`block`, `transaction` 등 `features` 폴더 이름)으로 나눈다. 새 파일을 만들면 `locales/index.ts`에 모든 언어를 등록한다.
+- 키는 camelCase를 점으로 잇고, 화면·컴포넌트 → 위치 → 역할 순으로 짓는다. 문장을 키로 쓰지 않는다. (예: `home.assetCard.title`, `action.retry`)
+- 지원 언어는 ko·en·ja·zh·es·fr·de·vi 8개다. 새 문구는 ko에 먼저 쓰고, 나머지 언어는 ko를 번역해 같은 키로 채운다. (빠진 키는 ko 문구로 보인다)
+- 키는 ko 파일 기준으로 타입 검사되므로, 없는 키를 쓰면 `pnpm typecheck`에서 걸린다.
+- 값이 들어가는 문구는 `{{name}}` 보간을 쓴다. 금액·날짜는 `lib/format`으로 만든 문자열을 넘기고, 문구 안에서 이어 붙이지 않는다.
+- 컴포넌트에서는 `useTranslation('네임스페이스')`의 `t`를, 컴포넌트 밖(api·store)에서는 `lib/i18n`의 `i18n.t`를 쓴다.
+- 서버가 만들어 보내는 문구(예: `ruleText`, 초불이 대화)와 목업 데이터는 앱에서 번역하지 않는다. 대신 `apiClient`가 모든 요청에 `Accept-Language: {지금 언어}`를 붙이고, 서버·AI가 그 언어로 문구를 만든다.
+- 언어는 `changeLanguage`로 바꾸고 `expo-secure-store`에 저장한다. 앱을 켜면 `restoreLanguage`로 되살린다. (기본 한국어)
+
+<br>
+
+## 9. 패키지와 환경
 
 - Expo, React Native 관련 패키지는 `pnpm expo install {패키지}`로 설치한다. (SDK에 맞는 버전이 설치된다.)
 - 네이티브 코드가 있는 패키지를 추가하면 개발 빌드를 다시 만들어야 하므로 PR에 명시하고 팀에 공유한다.
@@ -219,7 +234,7 @@ export function BlockCard({ name, amount, onPress }: BlockCardProps) {
 
 <br>
 
-## 9. PR 올리기 전
+## 10. PR 올리기 전
 
 - [ ] `pnpm typecheck`, `pnpm lint` 통과
 - [ ] 사용하지 않는 코드, import, `console.log` 제거

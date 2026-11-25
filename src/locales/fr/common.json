@@ -1,0 +1,12 @@
+{
+    "action": {
+        "retry": "Réessayer",
+        "close": "Fermer",
+        "cancel": "Annuler",
+        "confirm": "OK",
+        "save": "Enregistrer"
+    },
+    "error": {
+        "tryAgainLater": "Veuillez réessayer dans un instant"
+    }
+}

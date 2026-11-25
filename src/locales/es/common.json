@@ -1,0 +1,12 @@
+{
+    "action": {
+        "retry": "Reintentar",
+        "close": "Cerrar",
+        "cancel": "Cancelar",
+        "confirm": "Aceptar",
+        "save": "Guardar"
+    },
+    "error": {
+        "tryAgainLater": "Inténtalo de nuevo en un momento"
+    }
+}

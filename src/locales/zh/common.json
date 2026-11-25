@@ -1,0 +1,12 @@
+{
+    "action": {
+        "retry": "重试",
+        "close": "关闭",
+        "cancel": "取消",
+        "confirm": "确定",
+        "save": "保存"
+    },
+    "error": {
+        "tryAgainLater": "请稍后再试"
+    }
+}
