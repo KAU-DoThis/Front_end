@@ -22,7 +22,9 @@
             "edit": "修改我的份额",
             "hint": "如果和实际份额不同，请修改。",
             "hintEdited": "自动计算值为 {{amount}}。随时可以再修改。",
-            "hintEmpty": "选择收到的钱后会自动计算。"
+            "hintEmpty": "选择收到的钱后会自动计算。",
+            "reset": "恢复自动",
+            "over": "我的份额不能超过已付金额（{{amount}}）"
         },
         "check": {
             "title": "确认前检查",
@@ -60,7 +62,9 @@
         "error": {
             "load": "无法加载 AA 制",
             "save": "保存失败，请稍后再试",
-            "release": "取消失败，请稍后再试"
+            "release": "取消失败，请稍后再试",
+            "invalidMyShare": "我的份额超过已付金额，未能保存",
+            "alreadyLinked": "有交易已在其他AA中"
         }
     }
 }

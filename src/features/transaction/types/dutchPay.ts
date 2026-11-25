@@ -37,6 +37,12 @@ export interface SaveDutchPayRequest {
     dutchPayId: number | null;
     paymentTransactionIds: number[];
     receivedTransactionIds: number[];
-    /** 사용자가 고친 내 몫. 고치지 않았으면 null (서버가 결제 합 - 받은 돈으로 정한다) */
+    /**
+     * 사용자가 고친 내 몫. 고치지 않았으면 null
+     * - 만들 때 null이면 서버가 결제 합 - 받은 돈으로 정한다.
+     * - 수정할 때 null이면 자동 계산 상태는 그대로 자동(바뀐 거래로 다시 계산), 직접 고친 상태는 고친 값을 그대로 둔다.
+     */
     editedMyShare: number | null;
+    /** 직접 고쳤던 내 몫을 자동 계산값으로 되돌린다. (수정 후 PATCH /dutch-pays/{id}/my-share에 null을 보낸다) */
+    resetMyShare: boolean;
 }

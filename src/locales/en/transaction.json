@@ -22,7 +22,9 @@
             "edit": "Edit my share",
             "hint": "Edit it if your real share is different.",
             "hintEdited": "The calculated amount is {{amount}}. You can change it anytime.",
-            "hintEmpty": "It is calculated once you pick the money you got back."
+            "hintEmpty": "It is calculated once you pick the money you got back.",
+            "reset": "Use auto",
+            "over": "Your share can't be more than what you paid ({{amount}})"
         },
         "check": {
             "title": "Before you confirm",
@@ -60,7 +62,9 @@
         "error": {
             "load": "Couldn't load the split bill",
             "save": "Couldn't save. Please try again shortly",
-            "release": "Couldn't undo. Please try again shortly"
+            "release": "Couldn't undo. Please try again shortly",
+            "invalidMyShare": "Your share is more than what you paid, so it wasn't saved",
+            "alreadyLinked": "Some transactions are already in another split"
         }
     }
 }

@@ -22,7 +22,9 @@
             "edit": "Sửa phần của tôi",
             "hint": "Hãy sửa nếu phần thực tế của bạn khác.",
             "hintEdited": "Giá trị tự tính là {{amount}}. Bạn có thể sửa bất cứ lúc nào.",
-            "hintEmpty": "Sẽ tự tính khi bạn chọn tiền nhận được."
+            "hintEmpty": "Sẽ tự tính khi bạn chọn tiền nhận được.",
+            "reset": "Về tự động",
+            "over": "Phần của bạn không thể lớn hơn số đã trả ({{amount}})"
         },
         "check": {
             "title": "Kiểm tra trước khi xác nhận",
@@ -60,7 +62,9 @@
         "error": {
             "load": "Không tải được chia hóa đơn",
             "save": "Không lưu được. Vui lòng thử lại sau",
-            "release": "Không hủy được. Vui lòng thử lại sau"
+            "release": "Không hủy được. Vui lòng thử lại sau",
+            "invalidMyShare": "Phần của bạn lớn hơn số đã trả nên chưa lưu được",
+            "alreadyLinked": "Có giao dịch đã nằm trong lần chia tiền khác"
         }
     }
 }

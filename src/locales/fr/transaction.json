@@ -22,7 +22,9 @@
             "edit": "Modifier ma part",
             "hint": "Modifiez-la si votre vraie part est différente.",
             "hintEdited": "Le montant calculé est {{amount}}. Vous pouvez le changer à tout moment.",
-            "hintEmpty": "Elle est calculée une fois l'argent reçu choisi."
+            "hintEmpty": "Elle est calculée une fois l'argent reçu choisi.",
+            "reset": "Revenir à l'auto",
+            "over": "Ta part ne peut pas dépasser ce que tu as payé ({{amount}})"
         },
         "check": {
             "title": "Avant de confirmer",
@@ -60,7 +62,9 @@
         "error": {
             "load": "Impossible de charger le partage",
             "save": "Impossible d'enregistrer. Réessayez dans un instant",
-            "release": "Impossible d'annuler. Réessayez dans un instant"
+            "release": "Impossible d'annuler. Réessayez dans un instant",
+            "invalidMyShare": "Ta part dépasse ce que tu as payé, rien n'a été enregistré",
+            "alreadyLinked": "Certaines transactions sont déjà dans un autre partage"
         }
     }
 }

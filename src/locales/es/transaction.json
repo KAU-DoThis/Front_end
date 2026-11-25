@@ -22,7 +22,9 @@
             "edit": "Editar mi parte",
             "hint": "Cámbiala si tu parte real es distinta.",
             "hintEdited": "El valor calculado es {{amount}}. Puedes cambiarlo cuando quieras.",
-            "hintEmpty": "Se calcula al elegir el dinero recibido."
+            "hintEmpty": "Se calcula al elegir el dinero recibido.",
+            "reset": "Volver a automático",
+            "over": "Tu parte no puede superar lo que pagaste ({{amount}})"
         },
         "check": {
             "title": "Antes de confirmar",
@@ -60,7 +62,9 @@
         "error": {
             "load": "No se pudo cargar la división",
             "save": "No se pudo guardar. Inténtalo de nuevo en un momento",
-            "release": "No se pudo deshacer. Inténtalo de nuevo en un momento"
+            "release": "No se pudo deshacer. Inténtalo de nuevo en un momento",
+            "invalidMyShare": "Tu parte supera lo que pagaste, no se guardó",
+            "alreadyLinked": "Algunas transacciones ya están en otra división"
         }
     }
 }

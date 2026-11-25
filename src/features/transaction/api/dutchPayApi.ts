@@ -3,6 +3,7 @@ import { USE_MOCK } from '@/lib/mock';
 
 import type { DutchPay, SaveDutchPayRequest } from '@/features/transaction/types/dutchPay';
 import type {
+    DutchPayMyShareRequestBody,
     DutchPayRequestBody,
     DutchPayResponse,
 } from '@/features/transaction/types/dutchPayResponse';
@@ -66,6 +67,7 @@ export const getDutchPay = async (dutchPayId: number): Promise<DutchPay> => {
 
 /**
  * 더치페이 만들기(POST /dutch-pays)·수정(PATCH /dutch-pays/{id}).
+ * 직접 고친 내 몫을 자동값으로 되돌리면 수정 뒤 PATCH /dutch-pays/{id}/my-share에 null을 보낸다.
  * 내 몫이 결제 합보다 크면 DUTCH_PAY_INVALID_MY_SHARE(400), 이미 다른 더치페이에 들어간 거래가 있으면 DUTCH_PAY_ALREADY_LINKED(409)
  */
 export const saveDutchPay = async ({
@@ -73,6 +75,7 @@ export const saveDutchPay = async ({
     paymentTransactionIds,
     receivedTransactionIds,
     editedMyShare,
+    resetMyShare,
 }: SaveDutchPayRequest): Promise<null> => {
     if (USE_MOCK) {
         return mockResponse(() => {
@@ -81,6 +84,7 @@ export const saveDutchPay = async ({
                 paymentTransactionIds,
                 receivedTransactionIds,
                 editedMyShare,
+                resetMyShare,
             );
             return null;
         });
@@ -95,6 +99,14 @@ export const saveDutchPay = async ({
             ? { method: 'POST', url: '/dutch-pays', data: body }
             : { method: 'PATCH', url: `/dutch-pays/${dutchPayId}`, data: body },
     );
+    if (dutchPayId !== null && resetMyShare) {
+        const resetBody: DutchPayMyShareRequestBody = { myShare: null };
+        await request<DutchPayResponse>({
+            method: 'PATCH',
+            url: `/dutch-pays/${dutchPayId}/my-share`,
+            data: resetBody,
+        });
+    }
     return null;
 };
 

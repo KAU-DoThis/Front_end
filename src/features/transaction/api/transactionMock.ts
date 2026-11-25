@@ -687,6 +687,7 @@ export function saveMockDutchPay(
     paymentIds: number[],
     receivedIds: number[],
     editedMyShare: number | null,
+    resetMyShare = false,
 ) {
     const ids = [...paymentIds, ...receivedIds];
     if (
@@ -714,12 +715,12 @@ export function saveMockDutchPay(
     if (previous) {
         unlinkMockDutchPay(id);
     }
-    // 수정할 때 내 몫을 안 보내면 고쳐 둔 값을 그대로 둔다. (서버와 같다)
+    // 수정할 때 내 몫을 안 보내면 고쳐 둔 값을 그대로 둔다. 되돌리기면 자동 계산으로 돌아간다. (서버와 같다)
     const saved: MockDutchPay = {
         dutchPayId: id,
         paymentIds,
         receivedIds,
-        editedMyShare: editedMyShare ?? previous?.editedMyShare ?? null,
+        editedMyShare: resetMyShare ? null : (editedMyShare ?? previous?.editedMyShare ?? null),
     };
     dutchPays = [...dutchPays, saved];
     ids.forEach((transactionId) => {

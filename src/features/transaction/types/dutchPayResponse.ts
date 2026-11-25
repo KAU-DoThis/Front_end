@@ -11,8 +11,15 @@ export interface DutchPayRequestBody {
     receivedTransactionIds: number[];
     /**
      * 내 몫 합 (쓴 돈으로 잡을 금액). 결제 합보다 클 수 없다.
-     * 만들 때 비우면 서버가 정한다(결제 합 - 받은 돈). 수정할 때 비우면 지금 값을 그대로 둔다.
+     * 만들 때 비우면 서버가 정한다(결제 합 - 받은 돈).
+     * 수정할 때 비우면 지금 상태를 그대로 둔다: 자동 계산이면 바뀐 거래로 다시 계산하고, 직접 고친 값이면 그 값을 둔다.
+     * 고친 값을 자동으로 되돌리려면 PATCH /dutch-pays/{id}/my-share에 null을 보낸다.
      */
+    myShare: number | null;
+}
+
+/** PATCH /dutch-pays/{dutchPayId}/my-share 요청. null이면 자동 계산값(결제 합 - 받은 돈)으로 되돌린다. */
+export interface DutchPayMyShareRequestBody {
     myShare: number | null;
 }
 

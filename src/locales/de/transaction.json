@@ -22,7 +22,9 @@
             "edit": "Meinen Anteil ändern",
             "hint": "Ändere ihn, wenn dein echter Anteil anders ist.",
             "hintEdited": "Der berechnete Wert ist {{amount}}. Du kannst ihn jederzeit ändern.",
-            "hintEmpty": "Wird berechnet, sobald du das erhaltene Geld wählst."
+            "hintEmpty": "Wird berechnet, sobald du das erhaltene Geld wählst.",
+            "reset": "Automatisch",
+            "over": "Dein Anteil darf nicht höher sein als deine Zahlung ({{amount}})"
         },
         "check": {
             "title": "Vor dem Bestätigen",
@@ -60,7 +62,9 @@
         "error": {
             "load": "Geteilte Rechnung konnte nicht geladen werden",
             "save": "Speichern fehlgeschlagen. Bitte gleich noch einmal versuchen",
-            "release": "Aufheben fehlgeschlagen. Bitte gleich noch einmal versuchen"
+            "release": "Aufheben fehlgeschlagen. Bitte gleich noch einmal versuchen",
+            "invalidMyShare": "Dein Anteil ist höher als deine Zahlung und wurde nicht gespeichert",
+            "alreadyLinked": "Einige Umsätze sind bereits in einer anderen Aufteilung"
         }
     }
 }

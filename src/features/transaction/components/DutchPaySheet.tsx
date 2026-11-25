@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { cn } from '@/lib/cn';
-import { formatAmount } from '@/lib/format';
+import { formatWon } from '@/lib/format';
 import { AppText } from '@/shared/components/ui/AppText';
 import { BottomSheet, BottomSheetTextInput } from '@/shared/components/ui/BottomSheet';
 import { Button } from '@/shared/components/ui/Button';
@@ -21,6 +21,7 @@ import {
 import { DutchPayPicker } from '@/features/transaction/components/DutchPayPicker';
 import { DutchPayTransactionRow } from '@/features/transaction/components/DutchPayTransactionRow';
 import type { TransactionItem } from '@/features/transaction/types/transaction';
+import { DUTCH_PAY_ERROR_CODE } from '@/features/transaction/types/dutchPayResponse';
 
 /** 금액 입력 최대 자릿수 (999억 원) */
 const MAX_AMOUNT_DIGITS = 11;
@@ -62,6 +63,10 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
     const [received, setReceived] = useState<TransactionItem[]>([]);
     /** 사용자가 고친 내 몫. 고치지 않았으면 null (결제 합 - 받은 돈) */
     const [editedShare, setEditedShare] = useState<number | null>(null);
+    /** 내 몫 입력칸을 비워 둔 동안 true. 비우면 자동 계산값으로 돌아가고, 입력을 끝내면 그 값을 보여준다. */
+    const [isShareEmpty, setIsShareEmpty] = useState(false);
+    /** 불러온 더치페이가 내 몫을 직접 고친 상태였는지 (자동값으로 되돌리면 서버에도 알려야 한다) */
+    const [wasShareEdited, setWasShareEdited] = useState(false);
     const [picking, setPicking] = useState<Picking>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -74,6 +79,8 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
         setPayments(target?.mode === 'CREATE' ? [target.payment] : []);
         setReceived([]);
         setEditedShare(null);
+        setIsShareEmpty(false);
+        setWasShareEdited(false);
         setPicking(null);
         setErrorMessage(null);
     }
@@ -85,13 +92,14 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
         setPayments(sortByLatest(query.data.payments));
         setReceived(sortByLatest(query.data.received));
         setEditedShare(query.data.isMyShareEdited ? query.data.myShare : null);
+        setWasShareEdited(query.data.isMyShareEdited);
     }
 
     const isEdit = editId !== null;
     const isLoading = isEdit && loadedId !== editId;
     const preview = toDutchPayPreview(payments, received, editedShare);
     const won = (amount: number) =>
-        t('dutchPay.amount', { amount: formatAmount(amount, { showUnit: false }) });
+        t('dutchPay.amount', { amount: formatWon(amount, { showUnit: false }) });
     // 돌려놓는 블록 이름 (결제마다 다르면 첫 결제의 블록)
     const blockName =
         payments.find((item) => item.block)?.block?.name ?? t('dutchPay.check.defaultBlock');
@@ -99,7 +107,8 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
     const handleChangeShare = (text: string) => {
         const digits = text.replace(/\D/g, '').slice(0, MAX_AMOUNT_DIGITS);
         setErrorMessage(null);
-        setEditedShare(digits ? Number(digits) : 0);
+        setIsShareEmpty(!digits);
+        setEditedShare(digits ? Number(digits) : null);
     };
 
     const handlePicked = (items: TransactionItem[]) => {
@@ -112,7 +121,8 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
         setErrorMessage(null);
     };
 
-    const canSubmit = !isLoading && payments.length > 0 && received.length > 0;
+    const isShareOver = editedShare !== null && editedShare > preview.paidTotal;
+    const canSubmit = !isLoading && payments.length > 0 && received.length > 0 && !isShareOver;
     const submitTitle =
         payments.length === 0
             ? t('dutchPay.needPayment')
@@ -131,16 +141,20 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
                 paymentTransactionIds: payments.map(({ transactionId }) => transactionId),
                 receivedTransactionIds: received.map(({ transactionId }) => transactionId),
                 editedMyShare: editedShare,
+                resetMyShare: isEdit && wasShareEdited && editedShare === null,
             },
             {
                 onSuccess: onClose,
-                // 내 몫이 결제 합보다 크거나 다른 더치페이에 묶인 거래면 서버 문구를 그대로 보여준다.
-                onError: (error) =>
+                onError: (error) => {
+                    const code = error instanceof ApiError ? error.code : null;
                     setErrorMessage(
-                        error instanceof ApiError && error.status && error.status < 500
-                            ? error.message
-                            : t('dutchPay.error.save'),
-                    ),
+                        code === DUTCH_PAY_ERROR_CODE.INVALID_MY_SHARE
+                            ? t('dutchPay.error.invalidMyShare')
+                            : code === DUTCH_PAY_ERROR_CODE.ALREADY_LINKED
+                              ? t('dutchPay.error.alreadyLinked')
+                              : t('dutchPay.error.save'),
+                    );
+                },
             },
         );
     };
@@ -206,8 +220,8 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
                           amount: won(preview.returned),
                       }),
                       detail: t('dutchPay.check.returnedDetail', {
-                          paid: formatAmount(preview.paidTotal, { showUnit: false }),
-                          share: formatAmount(preview.myShare, { showUnit: false }),
+                          paid: formatWon(preview.paidTotal, { showUnit: false }),
+                          share: formatWon(preview.myShare, { showUnit: false }),
                       }),
                   } satisfies ImpactItem,
               ]
@@ -219,8 +233,8 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
                       severity: 'good' as const,
                       title: t('dutchPay.check.buffer', { amount: won(preview.buffer) }),
                       detail: t('dutchPay.check.bufferDetail', {
-                          received: formatAmount(preview.receivedTotal, { showUnit: false }),
-                          returned: formatAmount(preview.returned, { showUnit: false }),
+                          received: formatWon(preview.receivedTotal, { showUnit: false }),
+                          returned: formatWon(preview.returned, { showUnit: false }),
                       }),
                   },
               ]
@@ -292,6 +306,7 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
                         total={won(preview.paidTotal)}
                         items={payments}
                         addLabel={t('dutchPay.payments.add')}
+                        isDisabled={isBusy}
                         onAdd={() => setPicking('OUT')}
                     />
                     <TransactionGroup
@@ -300,19 +315,24 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
                         items={received}
                         emptyLabel={t('dutchPay.received.empty')}
                         addLabel={t('dutchPay.received.add')}
+                        isDisabled={isBusy}
                         onAdd={() => setPicking('IN')}
                     />
 
-                    {received.length > 0 && preview.receivedTotal > preview.paidTotal && (
-                        <View className="flex-row gap-2 rounded-12 bg-caution-soft-bg px-3 py-2.5">
-                            <View className="h-[18px] w-[18px] items-center justify-center rounded-[5px] bg-caution">
-                                <AppText className="font-bold text-12 text-caution-text">!</AppText>
+                    {received.length > 0 &&
+                        !isEdited &&
+                        preview.receivedTotal > preview.paidTotal && (
+                            <View className="flex-row gap-2 rounded-12 bg-caution-soft-bg px-3 py-2.5">
+                                <View className="h-[18px] w-[18px] items-center justify-center rounded-[5px] bg-caution">
+                                    <AppText className="font-bold text-12 text-caution-text">
+                                        !
+                                    </AppText>
+                                </View>
+                                <AppText className="flex-1 text-12 leading-[17px] text-caution-soft-text">
+                                    {t('dutchPay.overNotice')}
+                                </AppText>
                             </View>
-                            <AppText className="flex-1 text-12 leading-[17px] text-caution-soft-text">
-                                {t('dutchPay.overNotice')}
-                            </AppText>
-                        </View>
-                    )}
+                        )}
 
                     <View className="gap-1">
                         <View className="flex-row items-center gap-1">
@@ -323,11 +343,27 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
                                 {t('dutchPay.myShare.caption')}
                             </AppText>
                             {isEdited && (
-                                <View className="rounded-8 bg-surface-app px-2 py-0.5">
-                                    <AppText className="font-semibold text-12 text-primary-800">
-                                        {t('dutchPay.myShare.edited')}
-                                    </AppText>
-                                </View>
+                                <>
+                                    <View className="rounded-8 bg-surface-app px-2 py-0.5">
+                                        <AppText className="font-semibold text-12 text-primary-800">
+                                            {t('dutchPay.myShare.edited')}
+                                        </AppText>
+                                    </View>
+                                    <Pressable
+                                        accessibilityRole="button"
+                                        hitSlop={6}
+                                        onPress={() => {
+                                            setEditedShare(null);
+                                            setIsShareEmpty(false);
+                                            setErrorMessage(null);
+                                        }}
+                                        className="rounded-8 bg-surface-neutral px-2 py-0.5 active:bg-surface-chip"
+                                    >
+                                        <AppText className="font-semibold text-12 text-primary-700">
+                                            {t('dutchPay.myShare.reset')}
+                                        </AppText>
+                                    </Pressable>
+                                </>
                             )}
                         </View>
                         <View
@@ -339,8 +375,13 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
                             <BottomSheetTextInput
                                 ref={shareInputRef}
                                 accessibilityLabel={t('dutchPay.myShare.label')}
-                                value={formatAmount(preview.myShare, { showUnit: false })}
+                                value={
+                                    isShareEmpty
+                                        ? ''
+                                        : formatWon(preview.myShare, { showUnit: false })
+                                }
                                 onChangeText={handleChangeShare}
+                                onEndEditing={() => setIsShareEmpty(false)}
                                 keyboardType="number-pad"
                                 selectTextOnFocus
                                 style={{
@@ -365,6 +406,11 @@ export function DutchPaySheet({ target, isOpen, onClose }: DutchPaySheetProps) {
                             </Pressable>
                         </View>
                         <AppText className="text-12 text-ink-sub">{shareHint}</AppText>
+                        {isShareOver && (
+                            <AppText className="text-12 text-danger-text">
+                                {t('dutchPay.myShare.over', { amount: won(preview.paidTotal) })}
+                            </AppText>
+                        )}
                     </View>
 
                     {received.length > 0 && (
@@ -419,6 +465,8 @@ interface TransactionGroupProps {
     /** 비어 있을 때 문구 (받은 돈) */
     emptyLabel?: string;
     addLabel: string;
+    /** 저장·해제 중이면 거래를 더 고를 수 없다. */
+    isDisabled?: boolean;
     onAdd: () => void;
 }
 
@@ -429,6 +477,7 @@ function TransactionGroup({
     items,
     emptyLabel,
     addLabel,
+    isDisabled = false,
     onAdd,
 }: TransactionGroupProps) {
     return (
@@ -452,8 +501,13 @@ function TransactionGroup({
                 )}
                 <Pressable
                     accessibilityRole="button"
+                    accessibilityState={{ disabled: isDisabled }}
+                    disabled={isDisabled}
                     onPress={onAdd}
-                    className="h-[42px] items-center justify-center active:bg-surface-neutral"
+                    className={cn(
+                        'h-[42px] items-center justify-center active:bg-surface-neutral',
+                        isDisabled && 'opacity-50',
+                    )}
                 >
                     <AppText className="font-semibold text-13 text-primary-700">{addLabel}</AppText>
                 </Pressable>
