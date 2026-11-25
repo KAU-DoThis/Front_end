@@ -59,13 +59,19 @@ interface ContextQuestionSheetProps {
     question: ContextQuestion | null;
     isOpen: boolean;
     onClose: () => void;
+    /** '나눠서 냄 (더치페이)'을 고르고 누르면 이 시트를 닫고 그 결제로 더치페이 시트를 연다. */
+    onSplit?: (transactionId: number) => void;
 }
+
+/** '나눠서 냄 (더치페이)' 선택지 코드 */
+const SPLIT_OPTION_CODE = 'SPLIT';
 
 /** 09-1 에이전트 질문 답변 시트 */
 export function ContextQuestionSheet({
     question: latestQuestion,
     isOpen,
     onClose,
+    onSplit,
 }: ContextQuestionSheetProps) {
     const { mutate: answer, isPending, isError, reset } = useAnswerQuestionMutation();
     // 답한 뒤 목록을 다시 받으면 질문이 null이 된다. 시트가 내려가는 동안은 마지막 질문을 계속 그린다.
@@ -104,6 +110,14 @@ export function ContextQuestionSheet({
 
     const handleSubmit = () => {
         if (!canSubmit || isPending) return;
+        // 더치페이는 답 대신 더치페이 시트로 이어간다.
+        // TODO: 더치페이를 만들면 서버가 이 질문을 답한 것으로 처리할지 백엔드와 정한다. (지금은 질문이 남는다)
+        if (selected?.code === SPLIT_OPTION_CODE && onSplit) {
+            const { transactionId } = question;
+            handleClose();
+            onSplit(transactionId);
+            return;
+        }
         answer(
             {
                 questionId: question.questionId,
