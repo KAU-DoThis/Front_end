@@ -1,0 +1,12 @@
+{
+    "action": {
+        "retry": "もう一度試す",
+        "close": "閉じる",
+        "cancel": "キャンセル",
+        "confirm": "OK",
+        "save": "保存"
+    },
+    "error": {
+        "tryAgainLater": "しばらくしてからもう一度お試しください"
+    }
+}

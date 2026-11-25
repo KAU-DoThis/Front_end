@@ -1,0 +1,12 @@
+{
+    "action": {
+        "retry": "Thử lại",
+        "close": "Đóng",
+        "cancel": "Hủy",
+        "confirm": "OK",
+        "save": "Lưu"
+    },
+    "error": {
+        "tryAgainLater": "Vui lòng thử lại sau giây lát"
+    }
+}
