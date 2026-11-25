@@ -21,7 +21,7 @@ import { ApiError } from '@/shared/types/api';
 
 /**
  * 목업 모드(USE_MOCK) 전용 목업 계정. 백엔드 없이 로그인 이후 화면을 확인할 때 쓴다.
- * TODO: 로그인 API가 붙으면 제거한다.
+ * 서버 모드는 로그인 API(/auth/login)를 쓴다.
  */
 export const DEV_MOCK_ACCOUNT = {
     // 실제 사용자와 겹치지 않도록 예약된 도메인(example.com)을 쓴다.
