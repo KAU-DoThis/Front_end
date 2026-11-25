@@ -16,6 +16,7 @@ import { WAITING_FUND_ERROR_CODE } from '@/features/block/types/waitingFund';
 import { formatAmount, formatWon } from '@/lib/format';
 import { ApiError } from '@/shared/types/api';
 
+import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
 import {
     MAX_VISIBLE,
@@ -26,7 +27,7 @@ import {
     impactOf,
     shortfallOf,
     versionOf,
-} from './blockTransferMock';
+} from './blockMockUtils';
 
 /**
  * 나눌 돈 배분 목업 (시안 06 절약분 · 06-C 추가 입금)
@@ -232,8 +233,12 @@ export function allocateWaitingFundMock(
         );
     }
 
-    const received = allocations.map(({ blockId, amount }) => {
-        const block = findBlock(blockId);
+    // 블록을 모두 찾은 뒤에 잔액을 바꾼다. 중간에 실패하면 앞 블록만 바뀌는 일이 없게 한다.
+    const targets = allocations.map(({ blockId, amount }) => ({
+        block: findBlock(blockId),
+        amount,
+    }));
+    const received = targets.map(({ block, amount }) => {
         const shortfall = shortfallOf(block);
         applyBalance(
             block,
@@ -256,8 +261,12 @@ export function allocateWaitingFundMock(
         );
     }
 
-    const hasDefault = received.some((block) => block.isDefault);
+    const receivedDefault = received.find((block) => block.isDefault);
     const guide = BLOCK_HOME_MOCK.todayGuide;
+    // 오늘 남은 돈은 applyBalance가 오늘 쓴 돈을 빼서 상세에 저장한 값을 그대로 쓴다.
+    const defaultDetail = receivedDefault ? BLOCK_DETAIL_MOCK[receivedDefault.blockId] : undefined;
+    const todayRemaining =
+        defaultDetail?.type === 'SPENDING' ? defaultDetail.today.remaining : guide?.available;
 
     return {
         waitingFund: { waitingFundId, amount: fund.amount },
@@ -268,8 +277,11 @@ export function allocateWaitingFundMock(
             version: versionOf(block.blockId),
         })),
         dailyGuide:
-            hasDefault && guide
-                ? { todayAvailable: guide.available, todayRemaining: guide.available }
+            receivedDefault && guide
+                ? {
+                      todayAvailable: guide.available,
+                      todayRemaining: todayRemaining ?? guide.available,
+                  }
                 : null,
     };
 }
