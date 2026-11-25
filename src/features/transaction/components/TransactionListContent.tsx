@@ -146,7 +146,13 @@ export function TransactionListContent({
             .find((item) => item.transactionId === transactionId);
         if (payment) {
             openDutchPay({ mode: 'CREATE', payment });
+            return;
         }
+        // 필터나 첫 쪽 밖이라 목록에 없으면 아무 일 없이 닫히지 않게 알려준다.
+        Alert.alert(
+            '거래를 찾지 못했어요',
+            '필터를 풀거나 목록을 더 불러온 뒤 다시 시도해 주세요.',
+        );
     };
 
     const handleReview = (transactionId: number, action: 'KEEP' | 'DELETE') => {
