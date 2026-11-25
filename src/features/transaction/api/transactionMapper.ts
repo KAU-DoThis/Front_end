@@ -114,7 +114,21 @@ function toTransactionItem(
             transaction.block &&
             toTransactionBlock(transaction.block.blockId, transaction.block.name, lookup),
         isExcluded: transaction.excluded || transaction.isCanceled,
+        accountName: transaction.linkedAccount?.institutionName ?? null,
+        dutchPayId: transaction.dutchPay?.dutchPayId ?? null,
     };
+}
+
+/** 목록 밖에서 받은 거래 하나(GET /transactions/{id}) → 화면 모양. 목록 안내 문구·유지/삭제는 없다. */
+export function toSingleTransactionItem(
+    transaction: TransactionResponse,
+    lookup: BlockLookup,
+): TransactionItem {
+    return toTransactionItem(
+        { kind: 'TRANSACTION', transaction, notice: null, reviewActions: null, allocation: null },
+        transaction,
+        lookup,
+    );
 }
 
 /** GET /transactions 응답 → 화면 모양. blocks는 블록 점 색과 블록 필터 목록에 쓴다. */

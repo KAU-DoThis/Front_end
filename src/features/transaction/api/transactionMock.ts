@@ -58,6 +58,9 @@ const base = {
     review: null,
     block: LIVING,
     isExcluded: false,
+    // 계좌 이름은 목록을 보낼 때 linkedAccountId로 채운다.
+    accountName: null,
+    dutchPayId: null,
 } as const;
 
 const createTransactions = (): MockTransaction[] => [
@@ -156,7 +159,39 @@ const createTransactions = (): MockTransaction[] => [
         },
         linkedAccountId: null,
     },
-    // 10월 초 거래. 목록 합계가 시안의 쓴 돈(588,000원)과 같아지도록 둔다.
+    // 더치페이 예시 (시안 ③-1): 고깃집을 대표 결제하고 카카오페이 정산 + 계좌 송금으로 받았다.
+    {
+        ...base,
+        transactionId: 119,
+        occurredAt: '2026-10-11T19:40:00',
+        amount: 100_000,
+        merchantOrPayee: '강남 고깃집',
+        categoryName: '식비',
+        linkedAccountId: 3,
+    },
+    {
+        ...base,
+        transactionId: 120,
+        occurredAt: '2026-10-11T22:05:00',
+        amount: 60_000,
+        direction: 'IN',
+        merchantOrPayee: '카카오페이',
+        categoryName: null,
+        block: null,
+        linkedAccountId: 1,
+    },
+    {
+        ...base,
+        transactionId: 121,
+        occurredAt: '2026-10-11T22:31:00',
+        amount: 20_000,
+        direction: 'IN',
+        merchantOrPayee: '송승현',
+        categoryName: null,
+        block: null,
+        linkedAccountId: 1,
+    },
+    // 10월 초 거래. 더치페이 예시(10/11)를 빼면 목록 합계가 시안의 쓴 돈(588,000원)과 같다.
     {
         ...base,
         transactionId: 110,
@@ -321,12 +356,61 @@ const CATEGORY_BY_CODE: Record<string, string> = {
     SPLIT: '나눠서 냄',
 };
 
+/** 목업 더치페이. 고친 내 몫이 없으면(null) 결제 합 - 받은 돈으로 계산한다. */
+interface MockDutchPay {
+    dutchPayId: number;
+    paymentIds: number[];
+    receivedIds: number[];
+    editedMyShare: number | null;
+}
+
+let transactions = createTransactions();
+let dutchPays: MockDutchPay[] = [];
+let nextDutchPayId = 1;
+
+const amountOf = (ids: number[]) =>
+    transactions
+        .filter(({ transactionId }) => ids.includes(transactionId))
+        .reduce((sum, { amount }) => sum + amount, 0);
+
+/** 더치페이의 내 몫 합 (서버와 같이 결제 합 - 받은 돈, 0원 밑으로 안 감) */
+const myShareOf = (dutchPay: MockDutchPay) =>
+    dutchPay.editedMyShare ??
+    Math.max(0, amountOf(dutchPay.paymentIds) - amountOf(dutchPay.receivedIds));
+
+/**
+ * 쓴 돈: 더치페이 결제는 내 몫만 센다. (내 몫 합을 결제 금액 비율로 나눈다)
+ * 들어온 돈: 더치페이로 받은 돈은 뺀다.
+ * TODO: 서버 거래 목록 합계(feat/더치페이 f129f9c)는 지금 더치페이를 반영하지 않는다. 백엔드에 반영 요청함.
+ */
+const spentOf = (item: MockTransaction) => {
+    const dutchPay = dutchPays.find(({ paymentIds }) => paymentIds.includes(item.transactionId));
+    if (!dutchPay) {
+        return item.amount;
+    }
+    const paidTotal = amountOf(dutchPay.paymentIds);
+    return paidTotal > 0 ? Math.round((item.amount * myShareOf(dutchPay)) / paidTotal) : 0;
+};
+
 const sumSpent = (items: MockTransaction[]) =>
     items
         .filter(({ direction }) => direction === 'OUT')
+        .reduce((sum, item) => sum + spentOf(item), 0);
+
+const sumIncome = (items: MockTransaction[]) =>
+    items
+        .filter(({ direction, dutchPayId }) => direction === 'IN' && dutchPayId === null)
         .reduce((sum, { amount }) => sum + amount, 0);
 
-let transactions = createTransactions();
+const accountNameOf = (linkedAccountId: number | null) =>
+    FILTER_OPTIONS.accounts.find((account) => account.linkedAccountId === linkedAccountId)
+        ?.institutionName ?? null;
+
+/** 목업 안에서만 쓰는 값(linkedAccountId)을 빼고 계좌 이름을 채워 보낸다. */
+const toItem = ({ linkedAccountId, ...item }: MockTransaction): TransactionItem => ({
+    ...item,
+    accountName: accountNameOf(linkedAccountId),
+});
 let pendingQuestion: ContextQuestion | null = QUESTION;
 
 const findTransaction = (transactionId: number) => {
@@ -388,8 +472,7 @@ export function getTransactionListMock(
             dayTotal: items
                 .filter((item) => item.direction === 'OUT')
                 .reduce((sum, item) => sum + item.amount, 0),
-            // 목업 안에서만 쓰는 값은 빼고 보낸다.
-            transactions: items.map(({ linkedAccountId: _omit, ...item }) => item),
+            transactions: items.map(toItem),
             allocation: showAllocation ? (ALLOCATIONS[date] ?? null) : null,
         }));
 
@@ -407,7 +490,7 @@ export function getTransactionListMock(
         summary: {
             spentAmount,
             pendingCount: scoped.filter(({ status }) => status === 'PENDING').length,
-            incomeAmount: 0,
+            incomeAmount: sumIncome(scoped),
             nextExpectedIncome: isCurrentMonth
                 ? { label: '월급', expectedDate: '2026-10-25' }
                 : null,
@@ -573,4 +656,81 @@ function spendFromMockBlock(blockId: number, amount: number) {
     if (homeBlock.isDefault && todayGuide) {
         todayGuide.balance = homeBlock.balance;
     }
+}
+
+// 더치페이 목업 (dutchPayMock에서 부른다). 거래 목록 목업과 같은 거래를 쓰므로 여기서 상태를 같이 둔다.
+
+/** 목업 거래 (없는 ID는 빠진다) */
+export function getMockTransactionItems(ids: number[]): TransactionItem[] {
+    return ids.flatMap((id) => {
+        const target = transactions.find(({ transactionId }) => transactionId === id);
+        return target ? [toItem(target)] : [];
+    });
+}
+
+export function getMockDutchPay(dutchPayId: number) {
+    const dutchPay = dutchPays.find((item) => item.dutchPayId === dutchPayId);
+    if (!dutchPay) {
+        throw new ApiError('DUTCH_PAY_NOT_FOUND', '더치페이를 찾을 수 없습니다.', 404);
+    }
+    return { ...dutchPay, myShare: myShareOf(dutchPay) };
+}
+
+/** 만들기(dutchPayId가 null)·수정. 서버처럼 내 몫이 결제 합보다 크거나 다른 더치페이에 묶인 거래면 막는다. */
+export function saveMockDutchPay(
+    dutchPayId: number | null,
+    paymentIds: number[],
+    receivedIds: number[],
+    editedMyShare: number | null,
+) {
+    const ids = [...paymentIds, ...receivedIds];
+    if (
+        ids.some(
+            (id) =>
+                findTransaction(id).dutchPayId !== null &&
+                findTransaction(id).dutchPayId !== dutchPayId,
+        )
+    ) {
+        throw new ApiError(
+            'DUTCH_PAY_ALREADY_LINKED',
+            '이미 다른 더치페이에 들어간 거래입니다.',
+            409,
+        );
+    }
+    if (editedMyShare !== null && editedMyShare > amountOf(paymentIds)) {
+        throw new ApiError(
+            'DUTCH_PAY_INVALID_MY_SHARE',
+            '내 몫은 결제 합보다 클 수 없습니다.',
+            400,
+        );
+    }
+    const previous = dutchPayId === null ? null : getMockDutchPay(dutchPayId);
+    const id = dutchPayId ?? nextDutchPayId++;
+    if (previous) {
+        unlinkMockDutchPay(id);
+    }
+    // 수정할 때 내 몫을 안 보내면 고쳐 둔 값을 그대로 둔다. (서버와 같다)
+    const saved: MockDutchPay = {
+        dutchPayId: id,
+        paymentIds,
+        receivedIds,
+        editedMyShare: editedMyShare ?? previous?.editedMyShare ?? null,
+    };
+    dutchPays = [...dutchPays, saved];
+    ids.forEach((transactionId) => {
+        findTransaction(transactionId).dutchPayId = id;
+    });
+    return getMockDutchPay(id);
+}
+
+/** 해제: 묶음을 지우고 거래의 더치페이 표시를 뗀다. */
+export function unlinkMockDutchPay(dutchPayId: number) {
+    getMockDutchPay(dutchPayId);
+    dutchPays = dutchPays.filter((item) => item.dutchPayId !== dutchPayId);
+    transactions.forEach((item) => {
+        if (item.dutchPayId === dutchPayId) {
+            item.dutchPayId = null;
+        }
+    });
+    return null;
 }

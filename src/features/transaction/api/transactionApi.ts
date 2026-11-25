@@ -47,7 +47,7 @@ import {
 const MOCK_DELAY_MS = 300;
 
 /** 목업 값이 바뀌어도 TanStack Query가 알아채도록 매번 복사해서 준다. */
-function mockResponse<T>(create: () => T): Promise<T> {
+export function mockResponse<T>(create: () => T): Promise<T> {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             try {
@@ -86,7 +86,7 @@ export const getTransactionList = async (
  * 거래 화면에서 쓰는 블록 목록 (GET /blocks). 거래 응답의 블록에는 이름만 있어서 점 색·상태와 블록 필터 목록을 여기서 채운다.
  * TODO: 거래 응답의 블록에 색·상태가 오면 목록 조회는 블록 필터에만 쓴다.
  */
-const getBlocksForTransactions = () =>
+export const getBlocksForTransactions = () =>
     // 페이지·미리보기마다 다시 받지 않도록 캐시를 같이 쓴다. (기본 staleTime 동안 재사용, 블록이 바뀌면 blockKeys.all로 무효화)
     queryClient.fetchQuery({
         queryKey: blockKeys.list(),
