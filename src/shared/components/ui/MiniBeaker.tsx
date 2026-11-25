@@ -8,9 +8,10 @@ import { colors } from '@/styles/tokens';
 
 const STATUS_KEY = { SAFE: 'safe', CAUTION: 'caution', DANGER: 'danger' } as const;
 
-/** md 36 × 44 (03-2 블록 카드) / sm 20 × 26 (12 절약 목표 설정의 블록 칩) */
+/** md 36 × 44 (03-2 블록 카드) / list 26 × 32 (06 배분 블록 목록) / sm 20 × 26 (12 절약 목표 설정의 블록 칩) */
 const SIZE_CLASS = {
     md: { box: 'h-11 w-9', radius: 'rounded-8' },
+    list: { box: 'h-8 w-6.5', radius: 'rounded-[7px]' },
     sm: { box: 'h-6.5 w-5', radius: 'rounded-[5px]' },
 } as const;
 
