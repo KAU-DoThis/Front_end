@@ -11,7 +11,8 @@ import zhCommon from './zh/common.json';
 export const LANGUAGES = ['ko', 'en', 'ja', 'zh', 'es', 'fr', 'de', 'vi'] as const;
 export type Language = (typeof LANGUAGES)[number];
 
-export const DEFAULT_LANGUAGE: Language = 'ko';
+/** 기본 언어는 LANGUAGES 첫 번째 값 하나로만 정한다. (순서를 바꾸면 기본값도 같이 바뀐다) */
+export const DEFAULT_LANGUAGE: Language = LANGUAGES[0];
 
 /** 언어 선택 목록에 보여줄 이름 (각 언어로 적는다) */
 export const LANGUAGE_NAMES: Record<Language, string> = {
