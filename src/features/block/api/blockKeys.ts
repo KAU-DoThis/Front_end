@@ -9,6 +9,11 @@ export const blockKeys = {
     simulate: (fromBlockId: number, toBlockId: number, amount: number) =>
         [...blockKeys.all, 'simulate', fromBlockId, toBlockId, amount] as const,
     waitingFunds: () => [...blockKeys.all, 'waiting-funds'] as const,
+    allocationDraft: (waitingFundId: number) =>
+        [...blockKeys.waitingFunds(), waitingFundId, 'draft'] as const,
+    /** amounts: [blockId, 금액] 목록 (금액이 0보다 큰 것만) */
+    simulateAllocation: (waitingFundId: number, amounts: [number, number][]) =>
+        [...blockKeys.all, 'simulate-allocation', waitingFundId, amounts] as const,
     setupProposal: () => [...blockKeys.all, 'setup', 'proposal'] as const,
     setupPreview: (body: BlockSetupRequest) =>
         [...blockKeys.all, 'setup', 'preview', body] as const,

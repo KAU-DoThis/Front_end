@@ -23,8 +23,13 @@ import { BLOCK_HOME_MOCK } from './blockHomeMock';
  */
 
 const STATUS_LABEL: Record<Status, string> = { SAFE: '안전', CAUTION: '주의', DANGER: '위험' };
-const SEVERITY_ORDER: Record<ImpactSeverity, number> = { danger: 0, warn: 1, good: 2, info: 3 };
-const MAX_VISIBLE = 3;
+export const SEVERITY_ORDER: Record<ImpactSeverity, number> = {
+    danger: 0,
+    warn: 1,
+    good: 2,
+    info: 3,
+};
+export const MAX_VISIBLE = 3;
 /** 사용형 블록이 다시 안전으로 돌아가는 데 필요한 금액 (시안 03-2 값, 서버 상태 판정 전 임시) */
 const SPENDING_SHORTFALL_MOCK = 50_000;
 const WEEKS_PER_MONTH = 52 / 12;
@@ -33,9 +38,9 @@ const versions = new Map<number, number>();
 let nextTransferId = 1;
 let nextScheduledTransferId = 1;
 
-const versionOf = (blockId: number) => versions.get(blockId) ?? 1;
+export const versionOf = (blockId: number) => versions.get(blockId) ?? 1;
 
-function findBlock(blockId: number): HomeBlock {
+export function findBlock(blockId: number): HomeBlock {
     const block = BLOCK_HOME_MOCK.blocks.find((item) => item.blockId === blockId);
     if (!block) {
         throw new ApiError('BLOCK_NOT_FOUND', '블록을 찾을 수 없습니다.', 404);
@@ -57,7 +62,7 @@ function spendingDays(blockId: number) {
 }
 
 /** 받는 블록이 상태를 되찾는 데 모자란 금액 ([부족한 만큼] 버튼 값) */
-function shortfallOf(block: HomeBlock) {
+export function shortfallOf(block: HomeBlock) {
     const detail = BLOCK_DETAIL_MOCK[block.blockId];
     switch (block.type) {
         case 'SPENDING':
@@ -69,7 +74,7 @@ function shortfallOf(block: HomeBlock) {
     }
 }
 
-function fillRateOf(block: HomeBlock, balance: number) {
+export function fillRateOf(block: HomeBlock, balance: number) {
     const detail = BLOCK_DETAIL_MOCK[block.blockId];
     const capacity =
         detail?.type === 'SPENDING'
@@ -110,7 +115,7 @@ function goalMonthlyDetail(block: HomeBlock, diff: number) {
 }
 
 /** 블록 하나가 받거나(+) 보낼 때(−) 생기는 결과 한 줄 */
-function impactOf(block: HomeBlock, diff: number, shortfall: number): TransferImpactItem {
+export function impactOf(block: HomeBlock, diff: number, shortfall: number): TransferImpactItem {
     const { blockId, name } = block;
     const isReceiving = diff > 0;
     const recovers = isReceiving && block.status !== 'SAFE' && diff >= shortfall && shortfall > 0;
@@ -207,8 +212,8 @@ function untouchedFixedImpacts(excludeIds: number[]): TransferImpactItem[] {
 export function simulateTransferMock({ changes }: SimulateRequest): SimulateResponse {
     const [change] = changes;
     if (!change || !('fromBlockId' in change)) {
-        // 대기 자금 배분(06)은 ⑤ 작업에서 붙인다.
-        throw new ApiError('SIMULATE_NOT_SUPPORTED', '대기 자금 배분 미리보기는 아직 없습니다.');
+        // 대기 자금 배분(06)은 blockAllocationMock의 simulateAllocationMock이 맡는다.
+        throw new ApiError('SIMULATE_NOT_SUPPORTED', '블록 간 이동만 미리 볼 수 있습니다.');
     }
 
     const from = findBlock(change.fromBlockId);
@@ -262,7 +267,7 @@ export function simulateTransferMock({ changes }: SimulateRequest): SimulateResp
 }
 
 /** 확정 후 목업 값 반영 — 홈·상세가 다시 조회하면 바뀐 잔액이 보인다. */
-function applyBalance(block: HomeBlock, diff: number, recovers: boolean) {
+export function applyBalance(block: HomeBlock, diff: number, recovers: boolean) {
     block.balance += diff;
     block.fillRate = fillRateOf(block, block.balance);
     if (recovers) {
