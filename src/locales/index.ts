@@ -1,11 +1,19 @@
 import deCommon from './de/common.json';
+import deReport from './de/report.json';
 import enCommon from './en/common.json';
+import enReport from './en/report.json';
 import esCommon from './es/common.json';
+import esReport from './es/report.json';
 import frCommon from './fr/common.json';
+import frReport from './fr/report.json';
 import jaCommon from './ja/common.json';
+import jaReport from './ja/report.json';
 import koCommon from './ko/common.json';
+import koReport from './ko/report.json';
 import viCommon from './vi/common.json';
+import viReport from './vi/report.json';
 import zhCommon from './zh/common.json';
+import zhReport from './zh/report.json';
 
 /** 앱에서 고를 수 있는 언어 (첫 번째가 기본값). 서버에는 Accept-Language로 이 코드를 그대로 보낸다. */
 export const LANGUAGES = ['ko', 'en', 'ja', 'zh', 'es', 'fr', 'de', 'vi'] as const;
@@ -31,14 +39,14 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
  * 새 네임스페이스를 만들면 모든 언어에 등록한다. (ko가 기준, 나머지는 ko를 번역해 채운다)
  */
 export const resources = {
-    ko: { common: koCommon },
-    en: { common: enCommon },
-    ja: { common: jaCommon },
-    zh: { common: zhCommon },
-    es: { common: esCommon },
-    fr: { common: frCommon },
-    de: { common: deCommon },
-    vi: { common: viCommon },
+    ko: { common: koCommon, report: koReport },
+    en: { common: enCommon, report: enReport },
+    ja: { common: jaCommon, report: jaReport },
+    zh: { common: zhCommon, report: zhReport },
+    es: { common: esCommon, report: esReport },
+    fr: { common: frCommon, report: frReport },
+    de: { common: deCommon, report: deReport },
+    vi: { common: viCommon, report: viReport },
 } as const;
 
 export const DEFAULT_NAMESPACE = 'common';

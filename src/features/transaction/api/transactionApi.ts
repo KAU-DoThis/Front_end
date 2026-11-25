@@ -5,8 +5,6 @@ import { USE_MOCK } from '@/lib/mock';
 
 import { blockKeys } from '@/features/block/api/blockKeys';
 
-import type { SpendingAnalysis } from '@/features/transaction/types/spendingAnalysis';
-import type { SpendingAnalysisResponse } from '@/features/transaction/types/spendingAnalysisResponse';
 import type {
     AnswerQuestionRequest,
     CreateQuickInputRequest,
@@ -26,13 +24,10 @@ import {
     type UpdateTransactionCategoryRequest,
 } from '@/features/transaction/types/transactionResponse';
 
-import { getSpendingAnalysisMock } from './spendingAnalysisMock';
-import { toSpendingAnalysis } from './spendingAnalysisMapper';
 import {
     toQuickInputPreview,
     toTransactionListPage,
     toTransactionListQuery,
-    todayInKorea,
 } from './transactionMapper';
 import {
     answerQuestionMock,
@@ -124,19 +119,6 @@ export const updateTransactionCategory = (
 /** 카테고리 목록 (표시 순서). type을 빼면 16개 전부 */
 export const getCategories = (type?: CategoryResponse['type']) =>
     request<CategoryResponse[]>({ method: 'GET', url: '/categories', params: { type } });
-
-/** 소비 분석 (11). month(yyyy-MM)가 null이면 이번 달. 목업 모드에서는 목업을 쓴다. */
-export const getSpendingAnalysis = async (month: string | null): Promise<SpendingAnalysis> => {
-    if (USE_MOCK) {
-        return mockResponse(() => getSpendingAnalysisMock(month));
-    }
-    const response = await request<SpendingAnalysisResponse>({
-        method: 'GET',
-        url: '/analysis/spending',
-        params: month ? { month } : undefined,
-    });
-    return toSpendingAnalysis(response, todayInKorea());
-};
 
 // TODO: 맥락 질문은 서버에 아직 없어 목업만 쓴다.
 

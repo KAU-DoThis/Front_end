@@ -1,0 +1,53 @@
+{
+    "header": {
+        "title": "Rapport de {{month}}",
+        "pdf": "PDF"
+    },
+    "score": {
+        "title": "Score de gestion",
+        "outOf": "/ 100",
+        "compare": "vs le mois dernier",
+        "diff": "{{value}} pts",
+        "item": "{{label}} {{percent}} %",
+        "a11y": "Score de gestion {{score}} sur 100",
+        "items": {
+            "FIXED_SECURED": "Dépenses fixes couvertes",
+            "LIVING_PACE": "Rythme des dépenses",
+            "SAVING_GOAL": "Économies tenues",
+            "GOAL_FUNDING": "Progression des objectifs"
+        }
+    },
+    "summary": {
+        "spent": "Dépenses totales",
+        "saving": "Économies",
+        "savingTarget": "Objectif {{amount}}",
+        "allocation": "Répartition",
+        "allocationMore": "{{name}} et {{extra}} autre(s)",
+        "percent": "{{value}} %"
+    },
+    "trend": {
+        "title": "Évolution des dépenses",
+        "caption": "Dépenses cumulées par jour · vs {{month}}",
+        "firstDay": "1er",
+        "midDay": "15",
+        "lastDay": "Fin"
+    },
+    "delta": {
+        "decreased": "en moins",
+        "increased": "en plus"
+    },
+    "changes": {
+        "title": "Principaux changements",
+        "caption": "vs {{month}}"
+    },
+    "agent": {
+        "title": "Le bilan du mois de l'assistant",
+        "action": "Voir les pistes d'économies de {{month}}"
+    },
+    "state": {
+        "loading": "Chargement du rapport",
+        "error": "Impossible de charger le rapport",
+        "empty": "Aucun rapport pour ce mois",
+        "emptyDescription": "Le rapport de chaque mois est créé au début du mois suivant"
+    }
+}

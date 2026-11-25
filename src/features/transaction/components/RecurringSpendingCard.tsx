@@ -3,8 +3,7 @@ import { View } from 'react-native';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Card } from '@/shared/components/ui/Card';
-
-import type { SpendingAnalysis } from '@/features/transaction/types/spendingAnalysis';
+import type { SpendingAnalysis } from '@/shared/types/spendingAnalysis';
 
 interface RecurringSpendingCardProps {
     items: SpendingAnalysis['recurring'];

@@ -1,6 +1,7 @@
-import type { RichText } from '@/features/transaction/types/transaction';
+import type { RichText } from '@/shared/types/richText';
 
 // 금액·증감·비율·횟수는 모두 서버가 계산한 값이다. (GET /analysis/spending → spendingAnalysisMapper)
+// 내역 탭 소비 분석(11)과 월간 리포트(08)가 같이 쓴다.
 
 export interface SpendingCategoryStat {
     categoryName: string;

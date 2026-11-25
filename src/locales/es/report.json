@@ -1,0 +1,53 @@
+{
+    "header": {
+        "title": "Informe de {{month}}",
+        "pdf": "PDF"
+    },
+    "score": {
+        "title": "Puntuación financiera",
+        "outOf": "/ 100",
+        "compare": "vs. el mes pasado",
+        "diff": "{{value}} pts",
+        "item": "{{label}} {{percent}}%",
+        "a11y": "Puntuación financiera {{score}} de 100",
+        "items": {
+            "FIXED_SECURED": "Gastos fijos cubiertos",
+            "LIVING_PACE": "Ritmo de gastos",
+            "SAVING_GOAL": "Ahorro cumplido",
+            "GOAL_FUNDING": "Avance de metas"
+        }
+    },
+    "summary": {
+        "spent": "Gasto total",
+        "saving": "Ahorro",
+        "savingTarget": "Meta {{amount}}",
+        "allocation": "Reparto en bloques",
+        "allocationMore": "{{name}} y {{extra}} más",
+        "percent": "{{value}}%"
+    },
+    "trend": {
+        "title": "Evolución del gasto",
+        "caption": "Gasto acumulado por día · vs. {{month}}",
+        "firstDay": "1",
+        "midDay": "15",
+        "lastDay": "Fin"
+    },
+    "delta": {
+        "decreased": "menos",
+        "increased": "más"
+    },
+    "changes": {
+        "title": "Principales cambios de gasto",
+        "caption": "vs. {{month}}"
+    },
+    "agent": {
+        "title": "Resumen del mes del asistente",
+        "action": "Ver ideas de ahorro de {{month}}"
+    },
+    "state": {
+        "loading": "Cargando el informe",
+        "error": "No se pudo cargar el informe",
+        "empty": "No hay informe para este mes",
+        "emptyDescription": "El informe de cada mes se crea a principios del mes siguiente"
+    }
+}

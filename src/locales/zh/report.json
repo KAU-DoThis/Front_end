@@ -1,0 +1,53 @@
+{
+    "header": {
+        "title": "{{month}}报告",
+        "pdf": "PDF"
+    },
+    "score": {
+        "title": "理财评分",
+        "outOf": "/ 100",
+        "compare": "比上月",
+        "diff": "{{value}}分",
+        "item": "{{label}} {{percent}}%",
+        "a11y": "理财评分 {{score}} 分（满分 100）",
+        "items": {
+            "FIXED_SECURED": "固定支出保障",
+            "LIVING_PACE": "生活费节奏",
+            "SAVING_GOAL": "节省执行",
+            "GOAL_FUNDING": "目标达成率"
+        }
+    },
+    "summary": {
+        "spent": "总支出",
+        "saving": "节省",
+        "savingTarget": "目标 {{amount}}",
+        "allocation": "区块分配",
+        "allocationMore": "{{name}} 等 {{extra}} 处",
+        "percent": "{{value}}%"
+    },
+    "trend": {
+        "title": "总支出走势",
+        "caption": "每日累计支出 · 对比{{month}}",
+        "firstDay": "1日",
+        "midDay": "15日",
+        "lastDay": "月末"
+    },
+    "delta": {
+        "decreased": "减少了",
+        "increased": "增加了"
+    },
+    "changes": {
+        "title": "主要消费变化",
+        "caption": "对比{{month}}"
+    },
+    "agent": {
+        "title": "助手的月度总结",
+        "action": "查看{{month}}节省建议"
+    },
+    "state": {
+        "loading": "正在加载报告",
+        "error": "无法加载报告",
+        "empty": "本月没有报告",
+        "emptyDescription": "每月初会生成上个月的报告"
+    }
+}

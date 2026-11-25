@@ -9,12 +9,17 @@ interface DeltaBadgeProps {
     diffAmount: number;
     /** 있으면 금액 뒤에 붙인다. (예: 12%) */
     diffPercent?: number;
+    /** 맨 뒤에 붙는 문구 (예: 줄었어요 — 월간 리포트) */
+    label?: string;
 }
 
 /** 지출 증감 칩 (모서리 8 · 12 SemiBold). 지출이 늘어나는 건 내 돈이 줄어드는 쪽이라 빨강이다. */
-export function DeltaBadge({ diffAmount, diffPercent }: DeltaBadgeProps) {
+export function DeltaBadge({ diffAmount, diffPercent, label }: DeltaBadgeProps) {
     const isIncrease = diffAmount > 0;
-    const text = `${isIncrease ? '▲' : '▼'} ${formatWon(Math.abs(diffAmount), { showUnit: false })}`;
+    const amountText = `${isIncrease ? '▲' : '▼'} ${formatWon(Math.abs(diffAmount), { showUnit: false })}`;
+    const percentText =
+        diffPercent === undefined ? amountText : `${amountText}  ${Math.abs(diffPercent)}%`;
+    const text = label ? `${percentText} ${label}` : percentText;
 
     return (
         <View
@@ -29,7 +34,7 @@ export function DeltaBadge({ diffAmount, diffPercent }: DeltaBadgeProps) {
                     isIncrease ? 'text-delta-down' : 'text-delta-up',
                 )}
             >
-                {diffPercent === undefined ? text : `${text}  ${Math.abs(diffPercent)}%`}
+                {text}
             </AppText>
         </View>
     );

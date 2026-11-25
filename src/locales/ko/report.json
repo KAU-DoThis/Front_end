@@ -1,0 +1,53 @@
+{
+    "header": {
+        "title": "{{month}} 리포트",
+        "pdf": "PDF"
+    },
+    "score": {
+        "title": "금융관리 점수",
+        "outOf": "/ 100",
+        "compare": "지난달보다",
+        "diff": "{{value}}점",
+        "item": "{{label}} {{percent}}%",
+        "a11y": "금융관리 점수 100점 중 {{score}}점",
+        "items": {
+            "FIXED_SECURED": "고정지출 확보",
+            "LIVING_PACE": "생활비 페이스",
+            "SAVING_GOAL": "절약 실천",
+            "GOAL_FUNDING": "목표 달성률"
+        }
+    },
+    "summary": {
+        "spent": "총 지출",
+        "saving": "절약",
+        "savingTarget": "목표 {{amount}}",
+        "allocation": "블록 배분",
+        "allocationMore": "{{name}} 외 {{extra}}곳",
+        "percent": "{{value}}%"
+    },
+    "trend": {
+        "title": "총 지출 추이",
+        "caption": "날짜별 누적 지출 · {{month}} 대비",
+        "firstDay": "1일",
+        "midDay": "15일",
+        "lastDay": "말일"
+    },
+    "delta": {
+        "decreased": "줄었어요",
+        "increased": "늘었어요"
+    },
+    "changes": {
+        "title": "주요 소비 변화",
+        "caption": "{{month}} 대비"
+    },
+    "agent": {
+        "title": "에이전트의 한 달 정리",
+        "action": "{{month}} 절약 후보 보기"
+    },
+    "state": {
+        "loading": "리포트를 불러오는 중이에요",
+        "error": "리포트를 불러오지 못했어요",
+        "empty": "이 달 리포트가 없어요",
+        "emptyDescription": "리포트는 매달 초에 지난달 것이 만들어져요"
+    }
+}

@@ -1,0 +1,53 @@
+{
+    "header": {
+        "title": "{{month}} report",
+        "pdf": "PDF"
+    },
+    "score": {
+        "title": "Money score",
+        "outOf": "/ 100",
+        "compare": "vs last month",
+        "diff": "{{value}} pts",
+        "item": "{{label}} {{percent}}%",
+        "a11y": "Money score {{score}} out of 100",
+        "items": {
+            "FIXED_SECURED": "Fixed costs covered",
+            "LIVING_PACE": "Living cost pace",
+            "SAVING_GOAL": "Savings kept",
+            "GOAL_FUNDING": "Goal progress"
+        }
+    },
+    "summary": {
+        "spent": "Total spent",
+        "saving": "Saved",
+        "savingTarget": "Goal {{amount}}",
+        "allocation": "Allocated",
+        "allocationMore": "{{name}} +{{extra}} more",
+        "percent": "{{value}}%"
+    },
+    "trend": {
+        "title": "Spending trend",
+        "caption": "Cumulative daily spending · vs {{month}}",
+        "firstDay": "1st",
+        "midDay": "15th",
+        "lastDay": "End"
+    },
+    "delta": {
+        "decreased": "less",
+        "increased": "more"
+    },
+    "changes": {
+        "title": "Key spending changes",
+        "caption": "vs {{month}}"
+    },
+    "agent": {
+        "title": "Your month in review",
+        "action": "See {{month}} saving ideas"
+    },
+    "state": {
+        "loading": "Loading your report",
+        "error": "Couldn't load the report",
+        "empty": "No report for this month",
+        "emptyDescription": "Each month's report is ready early the next month"
+    }
+}

@@ -1,5 +1,5 @@
-import type { SpendingAnalysis } from '@/features/transaction/types/spendingAnalysis';
-import type { SpendingAnalysisResponse } from '@/features/transaction/types/spendingAnalysisResponse';
+import type { SpendingAnalysis } from '@/shared/types/spendingAnalysis';
+import type { SpendingAnalysisResponse } from '@/shared/types/spendingAnalysisResponse';
 
 const RECURRING_TAG = {
     REPEAT: '반복 소비',

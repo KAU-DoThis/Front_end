@@ -12,6 +12,8 @@ interface MonthNavigatorProps {
     onChange: (month: string) => void;
     /** 오른쪽 보조 문구 (예: 1일 ~ 14일 · 9월 같은 기간과 비교) */
     caption?: string;
+    /** 가운데 글자 (기본: 10월). 리포트는 '9월 리포트'처럼 바꿔 쓴다. */
+    label?: string;
 }
 
 /** yyyy-MM에서 달을 더하거나 뺀다. */
@@ -22,7 +24,13 @@ function shiftMonth(month: string, diff: number) {
 }
 
 /** ‹ 10월 › + 오른쪽 기간 문구 */
-export function MonthNavigator({ month, canGoNext, onChange, caption }: MonthNavigatorProps) {
+export function MonthNavigator({
+    month,
+    canGoNext,
+    onChange,
+    caption,
+    label,
+}: MonthNavigatorProps) {
     const monthNumber = Number(month.slice(5, 7));
 
     return (
@@ -36,7 +44,9 @@ export function MonthNavigator({ month, canGoNext, onChange, caption }: MonthNav
             >
                 <Icon name="chevron-left" size={16} color={colors.ink.sub} strokeWidth={1.47} />
             </Pressable>
-            <AppText className="ml-2 mr-[11px] font-bold text-17">{monthNumber}월</AppText>
+            <AppText className="ml-2 mr-[11px] font-bold text-17">
+                {label ?? `${monthNumber}월`}
+            </AppText>
             <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="다음 달"

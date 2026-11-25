@@ -1,7 +1,7 @@
-import type { SpendingAnalysis } from '@/features/transaction/types/spendingAnalysis';
+import type { SpendingAnalysis } from '@/shared/types/spendingAnalysis';
 
 /**
- * 소비 분석 목업 (시안 11 숫자 그대로)
+ * 소비 분석 목업 (10월: 시안 11 숫자 그대로)
  * 서버 모드는 소비 분석 API(/analysis/spending)를 쓰고, 이 파일은 목업 모드(USE_MOCK)에서만 쓴다.
  */
 const OCTOBER_ANALYSIS: SpendingAnalysis = {
@@ -71,11 +71,55 @@ const OCTOBER_ANALYSIS: SpendingAnalysis = {
     },
 };
 
-/** 목업은 10월만 분석 결과가 있다. 다른 달은 쓴 돈이 없는 빈 결과를 준다. */
+/**
+ * 9월 한 달 전체 (시안 08 월간 리포트 숫자 그대로 — 총 지출 2,140,000 · 8월 2,230,000 · 배달·카페·쇼핑 변화)
+ * 리포트에 안 보이는 분류는 합계가 맞도록 채운 값이다.
+ */
+const SEPTEMBER_ANALYSIS: SpendingAnalysis = {
+    month: '2026-09',
+    compareLabel: '8월',
+    periodLabel: '9월 1일 ~ 30일',
+    isCurrentMonth: false,
+    spent: { amount: 2_140_000, previousAmount: 2_230_000, diffAmount: -90_000, diffPercent: -4 },
+    categories: [
+        { categoryName: '주거', count: 1, amount: 650_000, diffAmount: 0 },
+        { categoryName: '식비', count: 38, amount: 410_000, diffAmount: -14_000 },
+        { categoryName: '여가', count: 9, amount: 238_000, diffAmount: -24_000 },
+        { categoryName: '기타', count: 12, amount: 210_000, diffAmount: -20_000 },
+        { categoryName: '쇼핑', count: 7, amount: 129_000, diffAmount: 41_000 },
+        { categoryName: '배달', count: 9, amount: 120_000, diffAmount: -52_000 },
+        { categoryName: '경조사', count: 2, amount: 120_000, diffAmount: 20_000 },
+        { categoryName: '교통', count: 46, amount: 115_000, diffAmount: -6_000 },
+        { categoryName: '카페', count: 14, amount: 66_000, diffAmount: -35_000 },
+        { categoryName: '통신', count: 1, amount: 55_000, diffAmount: 0 },
+        { categoryName: '구독', count: 2, amount: 27_000, diffAmount: 0 },
+    ],
+    topIncrease: {
+        categoryName: '쇼핑',
+        diffAmount: 41_000,
+        diffPercent: 47,
+        previousLabel: '8월',
+        currentLabel: '9월',
+        previousAmount: 88_000,
+        currentAmount: 129_000,
+        message: '횟수가 4번에서 7번으로 늘었고, 한 번에 쓰는 돈은 비슷해요.',
+    },
+    timeOfDay: null,
+    recurring: [],
+    savingTip: null,
+};
+
+const ANALYSIS_BY_MONTH: Record<string, SpendingAnalysis> = {
+    [OCTOBER_ANALYSIS.month]: OCTOBER_ANALYSIS,
+    [SEPTEMBER_ANALYSIS.month]: SEPTEMBER_ANALYSIS,
+};
+
+/** 목업은 9월(월간 리포트)·10월(소비 분석)만 결과가 있다. 다른 달은 쓴 돈이 없는 빈 결과를 준다. */
 export function getSpendingAnalysisMock(month: string | null): SpendingAnalysis {
     const target = month ?? OCTOBER_ANALYSIS.month;
-    if (target === OCTOBER_ANALYSIS.month) {
-        return OCTOBER_ANALYSIS;
+    const analysis = ANALYSIS_BY_MONTH[target];
+    if (analysis) {
+        return analysis;
     }
     const monthNumber = Number(target.slice(5, 7));
     const previousMonth = monthNumber === 1 ? 12 : monthNumber - 1;

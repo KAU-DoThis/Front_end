@@ -4,6 +4,7 @@ import { ActivityIndicator, Alert, FlatList, Pressable, View } from 'react-nativ
 import { AppText } from '@/shared/components/ui/AppText';
 import { getWaterColor } from '@/shared/components/ui/BlockBeaker';
 import { Button } from '@/shared/components/ui/Button';
+import { MonthNavigator } from '@/shared/components/ui/MonthNavigator';
 import { colors } from '@/styles/tokens';
 
 import { mergeTransactionDays } from '@/features/transaction/api/transactionMapper';
@@ -12,7 +13,6 @@ import { useTransactionListQuery } from '@/features/transaction/api/useTransacti
 import { AgentQuestionBanner } from '@/features/transaction/components/AgentQuestionBanner';
 import { ContextQuestionSheet } from '@/features/transaction/components/ContextQuestionSheet';
 import { FilterPickerSheet } from '@/features/transaction/components/FilterPickerSheet';
-import { MonthNavigator } from '@/features/transaction/components/MonthNavigator';
 import { TransactionDaySection } from '@/features/transaction/components/TransactionDaySection';
 import { TransactionFilterBar } from '@/features/transaction/components/TransactionFilterBar';
 import { TransactionSummaryCard } from '@/features/transaction/components/TransactionSummaryCard';

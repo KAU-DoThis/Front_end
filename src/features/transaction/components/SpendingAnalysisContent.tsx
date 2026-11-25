@@ -1,13 +1,13 @@
 import { router } from 'expo-router';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 
+import { useSpendingAnalysisQuery } from '@/shared/api/spendingAnalysis/useSpendingAnalysisQuery';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Button } from '@/shared/components/ui/Button';
+import { MonthNavigator } from '@/shared/components/ui/MonthNavigator';
 import { SuggestionCard } from '@/shared/components/ui/SuggestionCard';
 import { colors } from '@/styles/tokens';
 
-import { useSpendingAnalysisQuery } from '@/features/transaction/api/useSpendingAnalysisQuery';
-import { MonthNavigator } from '@/features/transaction/components/MonthNavigator';
 import { RecurringSpendingCard } from '@/features/transaction/components/RecurringSpendingCard';
 import { RichTextView } from '@/features/transaction/components/RichTextView';
 import { SpendingOverviewCard } from '@/features/transaction/components/SpendingOverviewCard';

@@ -1,0 +1,53 @@
+{
+    "header": {
+        "title": "Bericht {{month}}",
+        "pdf": "PDF"
+    },
+    "score": {
+        "title": "Finanz-Score",
+        "outOf": "/ 100",
+        "compare": "zum Vormonat",
+        "diff": "{{value}} Pkt.",
+        "item": "{{label}} {{percent}} %",
+        "a11y": "Finanz-Score {{score}} von 100",
+        "items": {
+            "FIXED_SECURED": "Fixkosten gedeckt",
+            "LIVING_PACE": "Ausgabentempo",
+            "SAVING_GOAL": "Sparziele eingehalten",
+            "GOAL_FUNDING": "Zielfortschritt"
+        }
+    },
+    "summary": {
+        "spent": "Ausgaben gesamt",
+        "saving": "Gespart",
+        "savingTarget": "Ziel {{amount}}",
+        "allocation": "Blockverteilung",
+        "allocationMore": "{{name}} und {{extra}} weitere",
+        "percent": "{{value}} %"
+    },
+    "trend": {
+        "title": "Ausgabenverlauf",
+        "caption": "Kumulierte Ausgaben pro Tag · vs. {{month}}",
+        "firstDay": "1.",
+        "midDay": "15.",
+        "lastDay": "Ende"
+    },
+    "delta": {
+        "decreased": "weniger",
+        "increased": "mehr"
+    },
+    "changes": {
+        "title": "Wichtigste Änderungen",
+        "caption": "vs. {{month}}"
+    },
+    "agent": {
+        "title": "Monatsrückblick des Assistenten",
+        "action": "Sparideen für {{month}} ansehen"
+    },
+    "state": {
+        "loading": "Bericht wird geladen",
+        "error": "Bericht konnte nicht geladen werden",
+        "empty": "Für diesen Monat gibt es keinen Bericht",
+        "emptyDescription": "Der Bericht eines Monats wird Anfang des Folgemonats erstellt"
+    }
+}

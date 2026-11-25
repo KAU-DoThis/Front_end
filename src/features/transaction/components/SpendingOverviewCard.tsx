@@ -5,11 +5,10 @@ import { formatWon } from '@/lib/format';
 import { AmountText } from '@/shared/components/ui/AmountText';
 import { AppText } from '@/shared/components/ui/AppText';
 import { Card } from '@/shared/components/ui/Card';
+import { DeltaBadge } from '@/shared/components/ui/DeltaBadge';
 import { HorizontalBar } from '@/shared/components/ui/HorizontalBar';
+import type { SpendingAnalysis } from '@/shared/types/spendingAnalysis';
 import { colors } from '@/styles/tokens';
-
-import { DeltaBadge } from '@/features/transaction/components/DeltaBadge';
-import type { SpendingAnalysis } from '@/features/transaction/types/spendingAnalysis';
 
 /** 분류 색: 1위만 청록, 나머지는 진한 회색부터 (시안 11 분류별 지출 비율) */
 // 막대(svg)는 색 값, 목록 점은 className을 쓴다.
