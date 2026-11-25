@@ -1,0 +1,53 @@
+{
+    "header": {
+        "title": "{{month}}のレポート",
+        "pdf": "PDF"
+    },
+    "score": {
+        "title": "家計管理スコア",
+        "outOf": "/ 100",
+        "compare": "先月より",
+        "diff": "{{value}}点",
+        "item": "{{label}} {{percent}}%",
+        "a11y": "家計管理スコア 100点中{{score}}点",
+        "items": {
+            "FIXED_SECURED": "固定費の確保",
+            "LIVING_PACE": "生活費のペース",
+            "SAVING_GOAL": "節約の実践",
+            "GOAL_FUNDING": "目標達成率"
+        }
+    },
+    "summary": {
+        "spent": "総支出",
+        "saving": "節約",
+        "savingTarget": "目標 {{amount}}",
+        "allocation": "ブロック配分",
+        "allocationMore": "{{name}} ほか{{extra}}件",
+        "percent": "{{value}}%"
+    },
+    "trend": {
+        "title": "総支出の推移",
+        "caption": "日別の累計支出 · {{month}}比",
+        "firstDay": "1日",
+        "midDay": "15日",
+        "lastDay": "月末"
+    },
+    "delta": {
+        "decreased": "減りました",
+        "increased": "増えました"
+    },
+    "changes": {
+        "title": "主な支出の変化",
+        "caption": "{{month}}比"
+    },
+    "agent": {
+        "title": "エージェントの1か月まとめ",
+        "action": "{{month}}の節約候補を見る"
+    },
+    "state": {
+        "loading": "レポートを読み込んでいます",
+        "error": "レポートを読み込めませんでした",
+        "empty": "この月のレポートはありません",
+        "emptyDescription": "レポートは毎月初めに前月分が作成されます"
+    }
+}

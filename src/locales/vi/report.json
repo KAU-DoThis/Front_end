@@ -1,0 +1,53 @@
+{
+    "header": {
+        "title": "Báo cáo {{month}}",
+        "pdf": "PDF"
+    },
+    "score": {
+        "title": "Điểm quản lý tài chính",
+        "outOf": "/ 100",
+        "compare": "so với tháng trước",
+        "diff": "{{value}} điểm",
+        "item": "{{label}} {{percent}}%",
+        "a11y": "Điểm quản lý tài chính {{score}} trên 100",
+        "items": {
+            "FIXED_SECURED": "Đảm bảo chi cố định",
+            "LIVING_PACE": "Nhịp chi tiêu",
+            "SAVING_GOAL": "Thực hiện tiết kiệm",
+            "GOAL_FUNDING": "Tỷ lệ đạt mục tiêu"
+        }
+    },
+    "summary": {
+        "spent": "Tổng chi",
+        "saving": "Tiết kiệm",
+        "savingTarget": "Mục tiêu {{amount}}",
+        "allocation": "Phân bổ khối",
+        "allocationMore": "{{name}} và {{extra}} nơi khác",
+        "percent": "{{value}}%"
+    },
+    "trend": {
+        "title": "Xu hướng tổng chi",
+        "caption": "Chi tiêu cộng dồn theo ngày · so với {{month}}",
+        "firstDay": "Ngày 1",
+        "midDay": "Ngày 15",
+        "lastDay": "Cuối tháng"
+    },
+    "delta": {
+        "decreased": "giảm",
+        "increased": "tăng"
+    },
+    "changes": {
+        "title": "Thay đổi chi tiêu chính",
+        "caption": "so với {{month}}"
+    },
+    "agent": {
+        "title": "Tổng kết tháng của trợ lý",
+        "action": "Xem gợi ý tiết kiệm {{month}}"
+    },
+    "state": {
+        "loading": "Đang tải báo cáo",
+        "error": "Không tải được báo cáo",
+        "empty": "Tháng này chưa có báo cáo",
+        "emptyDescription": "Báo cáo của mỗi tháng được tạo vào đầu tháng sau"
+    }
+}
