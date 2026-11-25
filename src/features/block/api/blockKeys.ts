@@ -9,11 +9,13 @@ export const blockKeys = {
     simulate: (fromBlockId: number, toBlockId: number, amount: number) =>
         [...blockKeys.all, 'simulate', fromBlockId, toBlockId, amount] as const,
     waitingFunds: () => [...blockKeys.all, 'waiting-funds'] as const,
+    /** 배분하기 화면(06)이 쓰는 쿼리 묶음. 다 나누면 그 나눌 돈이 없어져서 배분 확정 뒤 다시 받지 않는다. */
+    allocation: () => [...blockKeys.all, 'allocation'] as const,
     allocationDraft: (waitingFundId: number) =>
-        [...blockKeys.waitingFunds(), waitingFundId, 'draft'] as const,
+        [...blockKeys.allocation(), 'draft', waitingFundId] as const,
     /** amounts: [blockId, 금액] 목록 (금액이 0보다 큰 것만) */
     simulateAllocation: (waitingFundId: number, amounts: [number, number][]) =>
-        [...blockKeys.all, 'simulate-allocation', waitingFundId, amounts] as const,
+        [...blockKeys.allocation(), 'simulate', waitingFundId, amounts] as const,
     setupProposal: () => [...blockKeys.all, 'setup', 'proposal'] as const,
     setupPreview: (body: BlockSetupRequest) =>
         [...blockKeys.all, 'setup', 'preview', body] as const,

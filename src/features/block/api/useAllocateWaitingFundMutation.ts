@@ -13,8 +13,7 @@ interface AllocateWaitingFundParams {
 
 /** 배분하기 화면이 쓰는 초기값·미리보기. 다 나누면 그 나눌 돈이 없어져서 다시 받으면 404가 난다. */
 const isAllocationScreenQuery = (queryKey: readonly unknown[]) =>
-    queryKey[1] === 'simulate-allocation' ||
-    (queryKey[1] === 'waiting-funds' && queryKey[3] === 'draft');
+    blockKeys.allocation().every((part, index) => queryKey[index] === part);
 
 /**
  * 나눌 돈 배분 확정 — 성공하면 홈·상세·나눌 돈 목록을 모두 다시 받는다.
