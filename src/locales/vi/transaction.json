@@ -1,0 +1,66 @@
+{
+    "dutchPay": {
+        "title": "Chia hóa đơn",
+        "titleEdit": "Sửa chia hóa đơn",
+        "amount": "{{amount}} ₩",
+        "unit": "₩",
+        "rowMyShare": "Phần của tôi {{amount}}",
+        "payments": {
+            "label": "Tôi đã trả",
+            "add": "+ Chọn thêm khoản trả"
+        },
+        "received": {
+            "label": "Tiền được trả lại",
+            "add": "+ Chọn tiền nhận được",
+            "empty": "Chưa chọn khoản tiền vào nào"
+        },
+        "overNotice": "Tiền nhận lại nhiều hơn số đã trả nên phần của tôi được tính là 0 ₩. Hãy sửa nếu bạn có phần.",
+        "myShare": {
+            "label": "Phần của tôi",
+            "caption": "· số tiền tôi thực sự tiêu",
+            "edited": "Đã sửa",
+            "edit": "Sửa phần của tôi",
+            "hint": "Hãy sửa nếu phần thực tế của bạn khác.",
+            "hintEdited": "Giá trị tự tính là {{amount}}. Bạn có thể sửa bất cứ lúc nào.",
+            "hintEmpty": "Sẽ tự tính khi bạn chọn tiền nhận được."
+        },
+        "check": {
+            "title": "Kiểm tra trước khi xác nhận",
+            "summary": "Trong {{paid}} đã trả, phần của bạn là {{share}}, nên {{returned}} trở về khối {{block}}.",
+            "summaryBuffer": "Phần dư {{buffer}} được đưa vào tiền cần chia.",
+            "returned": "{{amount}} trở về {{block}}",
+            "returnedDetail": "Đã trả {{paid}} − phần của tôi {{share}}",
+            "buffer": "{{amount}} vào tiền cần chia",
+            "bufferDetail": "Nhận {{received}} trừ phần thanh toán {{returned}} · tiền vào thêm",
+            "outstanding": "Còn phải nhận {{amount}}",
+            "outstandingDetail": "Khi nhận được, hãy chọn thêm khoản tiền vào đó",
+            "defaultBlock": "Sinh hoạt phí"
+        },
+        "confirm": "Xác nhận chia hóa đơn",
+        "save": "Lưu thay đổi",
+        "saving": "Đang lưu",
+        "needPayment": "Hãy chọn khoản trả",
+        "needReceived": "Chọn tiền nhận được để xác nhận",
+        "release": "Hủy chia hóa đơn",
+        "releaseTitle": "Hủy chia hóa đơn này?",
+        "releaseMessage": "Tiền đã trả về khối và tiền đã đưa vào tiền cần chia sẽ bị trừ lại, và toàn bộ khoản trả lại tính là chi tiêu.",
+        "picker": {
+            "paymentsTitle": "Chọn khoản trả",
+            "receivedTitle": "Chọn tiền nhận được",
+            "paymentsDescription": "Hãy chọn tất cả khoản trả cần thanh toán cùng nhau.\nNếu trả làm nhiều lượt, hãy chọn hết.",
+            "receivedDescription": "Hãy chọn tất cả khoản tiền vào nhận từ việc chia.",
+            "paymentsHidden": "Khoản trả đã thuộc lần chia khác sẽ bị ẩn.",
+            "receivedHidden": "Khoản tiền vào đã thuộc lần chia khác sẽ bị ẩn.",
+            "empty": "Tháng này không có gì để chọn",
+            "more": "Xem giao dịch trước đó",
+            "count": "Đã chọn {{count}}",
+            "pick": "Chọn",
+            "loadError": "Không tải được giao dịch"
+        },
+        "error": {
+            "load": "Không tải được chia hóa đơn",
+            "save": "Không lưu được. Vui lòng thử lại sau",
+            "release": "Không hủy được. Vui lòng thử lại sau"
+        }
+    }
+}

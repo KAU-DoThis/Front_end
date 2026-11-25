@@ -1,0 +1,66 @@
+{
+    "dutchPay": {
+        "title": "Partage de note",
+        "titleEdit": "Modifier le partage",
+        "amount": "{{amount}} ₩",
+        "unit": "₩",
+        "rowMyShare": "Ma part {{amount}}",
+        "payments": {
+            "label": "Ce que j'ai payé",
+            "add": "+ Ajouter des paiements"
+        },
+        "received": {
+            "label": "Ce qu'on m'a rendu",
+            "add": "+ Ajouter l'argent reçu",
+            "empty": "Aucun versement choisi pour le moment"
+        },
+        "overNotice": "On vous a rendu plus que ce que vous avez payé, votre part est donc à 0 ₩. Modifiez-la si vous aviez une part.",
+        "myShare": {
+            "label": "Ma part",
+            "caption": "· ce que j'ai vraiment dépensé",
+            "edited": "Modifié",
+            "edit": "Modifier ma part",
+            "hint": "Modifiez-la si votre vraie part est différente.",
+            "hintEdited": "Le montant calculé est {{amount}}. Vous pouvez le changer à tout moment.",
+            "hintEmpty": "Elle est calculée une fois l'argent reçu choisi."
+        },
+        "check": {
+            "title": "Avant de confirmer",
+            "summary": "Sur {{paid}} payés, votre part est de {{share}}, donc {{returned}} reviennent au bloc {{block}}.",
+            "summaryBuffer": "Les {{buffer}} en plus vont dans l’argent à répartir.",
+            "returned": "{{amount}} reviennent à {{block}}",
+            "returnedDetail": "Payé {{paid}} − ma part {{share}}",
+            "buffer": "{{amount}} dans l’argent à répartir",
+            "bufferDetail": "{{received}} reçus moins {{returned}} réglés · versement supplémentaire",
+            "outstanding": "Encore {{amount}} à recevoir",
+            "outstandingDetail": "Ajoutez le versement quand vous le recevez",
+            "defaultBlock": "Dépenses courantes"
+        },
+        "confirm": "Confirmer le partage",
+        "save": "Enregistrer",
+        "saving": "Enregistrement",
+        "needPayment": "Choisissez un paiement",
+        "needReceived": "Choisissez l'argent reçu pour confirmer",
+        "release": "Annuler le partage",
+        "releaseTitle": "Annuler ce partage ?",
+        "releaseMessage": "L'argent rendu aux blocs et ajouté à l'argent à répartir est retiré, et tout le paiement redevient une dépense.",
+        "picker": {
+            "paymentsTitle": "Choisir des paiements",
+            "receivedTitle": "Choisir l'argent reçu",
+            "paymentsDescription": "Choisissez tous les paiements à régler ensemble.\nSi vous avez payé en plusieurs fois, choisissez-les tous.",
+            "receivedDescription": "Choisissez tous les versements reçus pour ce partage.",
+            "paymentsHidden": "Les paiements déjà dans un autre partage sont masqués.",
+            "receivedHidden": "Les versements déjà dans un autre partage sont masqués.",
+            "empty": "Rien à choisir ce mois-ci",
+            "more": "Voir les transactions précédentes",
+            "count": "{{count}} choisi(s)",
+            "pick": "Choisir",
+            "loadError": "Impossible de charger les transactions"
+        },
+        "error": {
+            "load": "Impossible de charger le partage",
+            "save": "Impossible d'enregistrer. Réessayez dans un instant",
+            "release": "Impossible d'annuler. Réessayez dans un instant"
+        }
+    }
+}

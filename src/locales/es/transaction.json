@@ -1,0 +1,66 @@
+{
+    "dutchPay": {
+        "title": "Dividir la cuenta",
+        "titleEdit": "Editar cuenta dividida",
+        "amount": "{{amount}} ₩",
+        "unit": "₩",
+        "rowMyShare": "Mi parte {{amount}}",
+        "payments": {
+            "label": "Lo que pagué",
+            "add": "+ Añadir más pagos"
+        },
+        "received": {
+            "label": "Lo que me devolvieron",
+            "add": "+ Añadir dinero recibido",
+            "empty": "Aún no elegiste ningún ingreso"
+        },
+        "overNotice": "Te devolvieron más de lo que pagaste, así que tu parte queda en 0 ₩. Cámbiala si tenías una parte.",
+        "myShare": {
+            "label": "Mi parte",
+            "caption": "· lo que gasté de verdad",
+            "edited": "Editado",
+            "edit": "Editar mi parte",
+            "hint": "Cámbiala si tu parte real es distinta.",
+            "hintEdited": "El valor calculado es {{amount}}. Puedes cambiarlo cuando quieras.",
+            "hintEmpty": "Se calcula al elegir el dinero recibido."
+        },
+        "check": {
+            "title": "Antes de confirmar",
+            "summary": "De {{paid}} pagados, tu parte es {{share}}, así que {{returned}} vuelven al bloque {{block}}.",
+            "summaryBuffer": "Los {{buffer}} de más van al dinero por repartir.",
+            "returned": "{{amount}} vuelven a {{block}}",
+            "returnedDetail": "Pagado {{paid}} − mi parte {{share}}",
+            "buffer": "{{amount}} al dinero por repartir",
+            "bufferDetail": "{{received}} recibidos menos {{returned}} saldados · ingreso extra",
+            "outstanding": "Faltan por recibir {{amount}}",
+            "outstandingDetail": "Añade el ingreso cuando lo recibas",
+            "defaultBlock": "Gastos diarios"
+        },
+        "confirm": "Confirmar",
+        "save": "Guardar cambios",
+        "saving": "Guardando",
+        "needPayment": "Elige un pago",
+        "needReceived": "Elige el dinero recibido para confirmar",
+        "release": "Deshacer división",
+        "releaseTitle": "¿Deshacer esta cuenta dividida?",
+        "releaseMessage": "Se retira el dinero devuelto a los bloques y el añadido al dinero por repartir, y el pago completo vuelve a contar como gasto.",
+        "picker": {
+            "paymentsTitle": "Elegir pagos",
+            "receivedTitle": "Elegir dinero recibido",
+            "paymentsDescription": "Elige todos los pagos que se saldan juntos.\nSi pagaste en varias rondas, elígelas todas.",
+            "receivedDescription": "Elige todos los ingresos que recibiste por la división.",
+            "paymentsHidden": "Los pagos que ya están en otra división no se muestran.",
+            "receivedHidden": "Los ingresos que ya están en otra división no se muestran.",
+            "empty": "No hay nada que elegir este mes",
+            "more": "Ver transacciones anteriores",
+            "count": "{{count}} elegidos",
+            "pick": "Elegir",
+            "loadError": "No se pudieron cargar las transacciones"
+        },
+        "error": {
+            "load": "No se pudo cargar la división",
+            "save": "No se pudo guardar. Inténtalo de nuevo en un momento",
+            "release": "No se pudo deshacer. Inténtalo de nuevo en un momento"
+        }
+    }
+}

@@ -1,0 +1,66 @@
+{
+    "dutchPay": {
+        "title": "더치페이",
+        "titleEdit": "더치페이 수정",
+        "amount": "{{amount}}원",
+        "unit": "원",
+        "rowMyShare": "내 몫 {{amount}}",
+        "payments": {
+            "label": "내가 결제한 돈",
+            "add": "+ 결제 더 고르기"
+        },
+        "received": {
+            "label": "정산으로 받은 돈",
+            "add": "+ 받은 돈 고르기",
+            "empty": "아직 고른 입금이 없어요"
+        },
+        "overNotice": "받은 돈이 결제한 돈보다 많아서 내 몫을 0원으로 잡았어요. 내 몫이 있었다면 고쳐 주세요.",
+        "myShare": {
+            "label": "내 몫",
+            "caption": "· 내가 실제로 쓴 돈",
+            "edited": "직접 고침",
+            "edit": "내 몫 고치기",
+            "hint": "실제 내 몫과 다르면 고쳐 주세요.",
+            "hintEdited": "자동 계산값은 {{amount}}이에요. 언제든 다시 고칠 수 있어요.",
+            "hintEmpty": "받은 돈을 고르면 자동으로 계산해요."
+        },
+        "check": {
+            "title": "확정 전 확인",
+            "summary": "결제한 {{paid}} 중 내 몫 {{share}}을 빼고 {{returned}}은 {{block}} 블록으로 돌아가요.",
+            "summaryBuffer": "더 들어온 {{buffer}}은 나눌 돈에 넣어둘게요.",
+            "returned": "{{block}} 블록으로 {{amount}} 돌아가요",
+            "returnedDetail": "결제 {{paid}} − 내 몫 {{share}}",
+            "buffer": "나눌 돈에 {{amount}} 들어가요",
+            "bufferDetail": "받은 돈 {{received}} 중 정산분 {{returned}}을 뺀 금액 · 추가 입금",
+            "outstanding": "아직 받을 돈 {{amount}}",
+            "outstandingDetail": "받으면 그 입금을 더 골라 주세요",
+            "defaultBlock": "생활비"
+        },
+        "confirm": "더치페이 확정",
+        "save": "수정 저장",
+        "saving": "저장하는 중",
+        "needPayment": "결제를 골라 주세요",
+        "needReceived": "받은 돈을 골라야 확정할 수 있어요",
+        "release": "더치페이 해제",
+        "releaseTitle": "더치페이를 해제할까요?",
+        "releaseMessage": "블록에 돌려놓은 돈과 나눌 돈에 넣은 돈이 다시 빠지고, 결제 금액 전체가 쓴 돈이 돼요.",
+        "picker": {
+            "paymentsTitle": "결제 고르기",
+            "receivedTitle": "받은 돈 고르기",
+            "paymentsDescription": "같이 정산할 결제를 모두 골라 주세요.\n1차·2차처럼 나눠서 결제했다면 함께 골라요.",
+            "receivedDescription": "정산으로 받은 입금을 모두 골라 주세요.",
+            "paymentsHidden": "이미 다른 더치페이에 묶인 결제는 보이지 않아요.",
+            "receivedHidden": "이미 다른 더치페이에 묶인 입금은 보이지 않아요.",
+            "empty": "이 달에는 고를 거래가 없어요",
+            "more": "이전 거래 더 보기",
+            "count": "{{count}}건 골랐어요",
+            "pick": "고르기",
+            "loadError": "거래를 불러오지 못했어요"
+        },
+        "error": {
+            "load": "더치페이를 불러오지 못했어요",
+            "save": "저장하지 못했어요. 잠시 후 다시 시도해 주세요",
+            "release": "해제하지 못했어요. 잠시 후 다시 시도해 주세요"
+        }
+    }
+}
