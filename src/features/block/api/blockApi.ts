@@ -22,6 +22,8 @@ import type {
     TransferResponse,
 } from '@/features/block/types/blockTransfer';
 import type {
+    AllocationDraft,
+    AllocationDraftResponse,
     AllocationRequest,
     AllocationResponse,
     WaitingFundListResponse,
@@ -29,6 +31,11 @@ import type {
 import { request } from '@/lib/apiClient';
 import { USE_MOCK } from '@/lib/mock';
 
+import {
+    allocateWaitingFundMock,
+    getAllocationDraftMock,
+    simulateAllocationMock,
+} from './blockAllocationMock';
 import { toBlockDetail } from './blockDetailMapper';
 import { BLOCK_DETAIL_MOCK } from './blockDetailMock';
 import { BLOCK_HOME_MOCK } from './blockHomeMock';
@@ -43,6 +50,7 @@ import {
 import { BLOCK_SETUP_PROPOSAL_MOCK, mockBlockSetupPreview } from './blockSetupMock';
 import { simulateTransferMock, transferBlockMock } from './blockTransferMock';
 import { toBlockUpdateRequest } from './blockUpdateMapper';
+import { toAllocationDraft } from './waitingFundMapper';
 
 /** 목업 응답 지연 (로딩 상태 확인용) */
 const MOCK_DELAY_MS = 200;
@@ -93,7 +101,10 @@ export const getBlockDetail = async (blockId: number): Promise<BlockDetail | nul
 /** 이동·배분 미리보기 (03-2 이동 전 검증, 06 나눌 돈 배분). 저장하지 않는다. */
 export const simulateTransfer = (body: SimulateRequest): Promise<SimulateResponse> => {
     if (USE_MOCK) {
-        return mockResponse(() => simulateTransferMock(body));
+        const isAllocation = body.changes.some((change) => 'fromWaitingFundId' in change);
+        return mockResponse(() =>
+            isAllocation ? simulateAllocationMock(body) : simulateTransferMock(body),
+        );
     }
     return request<SimulateResponse>({ method: 'POST', url: '/blocks/simulate', data: body });
 };
@@ -168,18 +179,33 @@ export const getWaitingFunds = (): Promise<WaitingFundListResponse> => {
 };
 
 /**
- * 나눌 돈 배분 확정 (06)
- * TODO: 배분 화면(06)을 붙일 때 목업 모드용 목업도 같이 만든다. 지금은 부르는 화면이 없다.
+ * 배분하기(06 절약분 · 06-C 추가 입금) 초기값: 요약 카드 내역, 넣을 수 있는 블록, 처음 채워 둘 금액
+ * TODO: 명세에 없는 API라 경로와 응답을 가정했다. 백엔드와 맞춘 뒤 고친다.
  */
+export const getAllocationDraft = async (waitingFundId: number): Promise<AllocationDraft> => {
+    const response = USE_MOCK
+        ? await mockResponse(() => getAllocationDraftMock(waitingFundId))
+        : await request<AllocationDraftResponse>({
+              method: 'GET',
+              url: `/waiting-funds/${waitingFundId}/allocation-draft`,
+          });
+    return toAllocationDraft(response);
+};
+
+/** 나눌 돈 배분 확정 (06) */
 export const allocateWaitingFund = (
     waitingFundId: number,
     body: AllocationRequest,
-): Promise<AllocationResponse> =>
-    request<AllocationResponse>({
+): Promise<AllocationResponse> => {
+    if (USE_MOCK) {
+        return mockResponse(() => allocateWaitingFundMock(waitingFundId, body));
+    }
+    return request<AllocationResponse>({
         method: 'POST',
         url: `/waiting-funds/${waitingFundId}/allocations`,
         data: body,
     });
+};
 
 /** 온보딩 블록 구성은 목업 모드(USE_MOCK)에서 목업으로 처리한다. */
 const USE_BLOCK_SETUP_MOCK = USE_MOCK;

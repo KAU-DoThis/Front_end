@@ -116,14 +116,22 @@ function SavingContent({ overview, suggestionList }: SavingContentProps) {
         });
     };
 
+    const handleSplit = (waitingFundId: number) => {
+        router.push({
+            pathname: '/allocation/[waitingFundId]',
+            params: { waitingFundId: String(waitingFundId) },
+        });
+    };
+
     const handlePressAnalysis = () => {
         router.navigate({ pathname: '/transactions', params: { tab: 'ANALYSIS' } });
     };
 
     return (
         <ScrollView contentContainerClassName="px-5 pb-10 pt-4">
-            {/* TODO: 배분하기(06 절약분) 화면이 생기면 onSplit으로 연결한다. (waitingFundId로 연다) */}
-            {overview.confirmed && <ConfirmedSavingBanner confirmed={overview.confirmed} />}
+            {overview.confirmed && (
+                <ConfirmedSavingBanner confirmed={overview.confirmed} onSplit={handleSplit} />
+            )}
 
             <View className={overview.confirmed ? 'mt-3' : undefined}>
                 {overview.activeGoals && overview.activeGoals.goals.length > 0 ? (

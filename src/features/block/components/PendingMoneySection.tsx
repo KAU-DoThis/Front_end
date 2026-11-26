@@ -9,7 +9,7 @@ import type { PendingMoney } from '@/features/block/types/blockHome';
 
 interface PendingMoneySectionProps {
     items: PendingMoney[];
-    /** 나누기 (⑤ 대기 블록 배분 화면에서 연결) */
+    /** 나누기 → 배분하기(06 · 06-C) 화면 */
     onSplit?: (item: PendingMoney) => void;
 }
 

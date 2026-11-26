@@ -22,7 +22,7 @@ import { HomeHeader } from '@/features/block/components/HomeHeader';
 import { PendingMoneySection } from '@/features/block/components/PendingMoneySection';
 import { TransferSheet } from '@/features/block/components/TransferSheet';
 import type { HomeBlock } from '@/features/block/types/block';
-import type { AgentMessage, BlockHome } from '@/features/block/types/blockHome';
+import type { AgentMessage, BlockHome, PendingMoney } from '@/features/block/types/blockHome';
 import {
     useCoachActivityStore,
     type CoachMove,
@@ -93,6 +93,13 @@ function HomeContent({ home }: { home: BlockHome }) {
         router.push({ pathname: '/block/[blockId]', params: { blockId: String(block.blockId) } });
     };
 
+    const handleSplit = (item: PendingMoney) => {
+        router.push({
+            pathname: '/allocation/[waitingFundId]',
+            params: { waitingFundId: String(item.waitingFundId) },
+        });
+    };
+
     return (
         <View className="flex-1">
             <ScrollView contentContainerClassName="px-5 pb-10" scrollEnabled={!isDragging}>
@@ -147,9 +154,8 @@ function HomeContent({ home }: { home: BlockHome }) {
                     </AppText>
                 </View>
 
-                {/* 나누기(⑤ 대기 블록 배분)는 해당 작업에서 onSplit으로 연결한다. */}
                 <View className={cn('mt-3', dimClass)}>
-                    <PendingMoneySection items={home.pendingMoney} />
+                    <PendingMoneySection items={home.pendingMoney} onSplit={handleSplit} />
                 </View>
 
                 <View className="mt-3">

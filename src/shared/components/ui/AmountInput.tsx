@@ -16,6 +16,8 @@ interface AmountInputProps {
     onChangeValue: (value: number | null) => void;
     /** 칸 위 작은 라벨 (예: 한 달 금액) */
     label?: string;
+    /** 라벨 없이 쓸 때 읽어 줄 이름 (기본: 라벨 또는 '금액') */
+    accessibilityLabel?: string;
     /** 있으면 오류 상태로 바꾸고 칸 바로 아래에 보여준다. */
     errorMessage?: string;
     /** 오류가 없을 때 칸 아래에 보여줄 안내 */
@@ -53,6 +55,7 @@ export function AmountInput({
     value,
     onChangeValue,
     label,
+    accessibilityLabel,
     errorMessage,
     helperText,
     disabled = false,
@@ -105,7 +108,9 @@ export function AmountInput({
                         placeholder="0"
                         placeholderTextColor={colors.ink.disabled}
                         editable={!disabled}
-                        accessibilityLabel={label ? `${label} (원)` : '금액 (원)'}
+                        accessibilityLabel={
+                            accessibilityLabel ?? (label ? `${label} (원)` : '금액 (원)')
+                        }
                         accessibilityState={{ disabled }}
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
