@@ -30,10 +30,8 @@ export function GoalGuardScreen() {
     return (
         <Screen>
             <ScreenHeader title={guard.data ? `${guard.data.block.name} 목표 지키기` : ''} />
-            {/* 반영 뒤 다시 받다가 실패해도 받아 둔 값이 있으면 그대로 보여준다. */}
-            {guard.data ? (
-                <GoalGuardContent guard={guard.data} />
-            ) : isNotLate ? (
+            {/* 이미 맞춰진 블록이면 받아 둔 방법이 있어도 빈 화면을 먼저 보여준다. (다른 기기에서 맞춘 경우 등) */}
+            {isNotLate ? (
                 <ScreenState
                     variant="empty"
                     title="지금은 맞출 게 없어요"
@@ -41,6 +39,9 @@ export function GoalGuardScreen() {
                     actionTitle="돌아가기"
                     onPressAction={router.back}
                 />
+            ) : guard.data ? (
+                // 다시 받다가 다른 이유로 실패해도 받아 둔 값이 있으면 그대로 보여준다.
+                <GoalGuardContent guard={guard.data} />
             ) : guard.isError ? (
                 <ScreenState
                     variant="error"
