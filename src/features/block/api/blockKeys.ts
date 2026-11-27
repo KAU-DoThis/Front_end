@@ -6,6 +6,8 @@ export const blockKeys = {
     /** GET /blocks 목록 (거래 화면의 블록 점 색·필터에 쓴다) */
     list: () => [...blockKeys.all, 'list'] as const,
     detail: (blockId: number) => [...blockKeys.all, blockId] as const,
+    /** 목표 지키기(16). 상세 아래에 두어 상세가 갱신될 때 같이 갱신된다. */
+    goalGuard: (blockId: number) => [...blockKeys.detail(blockId), 'goal-guard'] as const,
     simulate: (fromBlockId: number, toBlockId: number, amount: number) =>
         [...blockKeys.all, 'simulate', fromBlockId, toBlockId, amount] as const,
     waitingFunds: () => [...blockKeys.all, 'waiting-funds'] as const,

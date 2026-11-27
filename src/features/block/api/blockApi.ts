@@ -8,6 +8,7 @@ import type {
     BlockProposalResponse,
 } from '@/features/block/types/blockProposalResponse';
 import type { BlockHome } from '@/features/block/types/blockHome';
+import type { GoalGuard, ApplyGoalGuardRequest } from '@/features/block/types/goalGuard';
 import type { HomeResponse } from '@/features/block/types/homeResponse';
 import type {
     BlockSetupPreview,
@@ -49,6 +50,7 @@ import {
 } from './blockSetupMapper';
 import { BLOCK_SETUP_PROPOSAL_MOCK, mockBlockSetupPreview } from './blockSetupMock';
 import { simulateTransferMock, transferBlockMock } from './blockTransferMock';
+import { applyGoalGuardMock, getGoalGuardMock } from './goalGuardMock';
 import { toBlockUpdateRequest } from './blockUpdateMapper';
 import { toAllocationDraft } from './waitingFundMapper';
 
@@ -205,6 +207,25 @@ export const allocateWaitingFund = (
         url: `/waiting-funds/${waitingFundId}/allocations`,
         data: body,
     });
+};
+
+/**
+ * 목표 지키기 (16): 늦어지는 목표형 블록을 맞출 방법 목록
+ * TODO: 명세에 없는 API라 경로와 응답을 가정했다. 백엔드와 맞춘 뒤 고친다.
+ */
+export const getGoalGuard = (blockId: number): Promise<GoalGuard> => {
+    if (USE_MOCK) {
+        return mockResponse(() => getGoalGuardMock(blockId));
+    }
+    return request<GoalGuard>({ method: 'GET', url: `/blocks/${blockId}/goal-guard` });
+};
+
+/** 목표 지키기 반영 (16): 고른 방법을 블록에 바로 반영한다. */
+export const applyGoalGuard = (blockId: number, body: ApplyGoalGuardRequest) => {
+    if (USE_MOCK) {
+        return mockResponse(() => applyGoalGuardMock(blockId, body));
+    }
+    return request<unknown>({ method: 'POST', url: `/blocks/${blockId}/goal-guard`, data: body });
 };
 
 /** 온보딩 블록 구성은 목업 모드(USE_MOCK)에서 목업으로 처리한다. */
