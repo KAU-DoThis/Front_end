@@ -19,7 +19,8 @@ interface ShownRecord {
 
 const keyOf = (blockId: number) => `goalGuardShown.${blockId}`;
 
-const currentMonth = () => new Date(Date.now() + KST_OFFSET_MS).toISOString().slice(0, 7);
+/** 지금 달 (yyyy-MM, 한국 날짜 기준) */
+export const currentMonth = () => new Date(Date.now() + KST_OFFSET_MS).toISOString().slice(0, 7);
 
 function parseRecord(value: string | null): ShownRecord | null {
     if (!value) return null;
