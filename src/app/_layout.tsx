@@ -66,6 +66,8 @@ export default function RootLayout() {
                                     }}
                                 />
                                 <Stack.Screen name="block/[blockId]" />
+                                {/* 목표 지키기: 블록 상세에 들어올 때 늦어지는 목표형이면 상세 위에 뜬다. */}
+                                <Stack.Screen name="goal-guard/[blockId]" />
                                 <Stack.Screen name="allocation/[waitingFundId]" />
                             </Stack.Protected>
                             {/* 가입 직후: 온보딩을 마치기 전까지는 홈 대신 온보딩만 연다. */}
