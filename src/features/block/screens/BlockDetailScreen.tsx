@@ -21,6 +21,7 @@ import { GoalDetailContent } from '@/features/block/components/GoalDetailContent
 import { RenameBlockSheet } from '@/features/block/components/RenameBlockSheet';
 import { SpendingDetailContent } from '@/features/block/components/SpendingDetailContent';
 import { TransferSheet } from '@/features/block/components/TransferSheet';
+import { useGoalGuardAutoOpen } from '@/features/block/hooks/useGoalGuardAutoOpen';
 import type { BlockDetail } from '@/features/block/types/blockDetail';
 
 /** 02 블록 상세 — 블록 유형(사용형 · 목표형 · 고정지출형)에 맞는 화면을 보여준다. */
@@ -30,6 +31,8 @@ export function BlockDetailScreen() {
     // 숫자가 아닌 ID(딥링크 block/abc 등)는 쿼리가 꺼진 채 isPending으로 남으므로 먼저 걸러 낸다.
     const isValidId = Number.isInteger(id) && id > 0;
     const { data: detail, isPending, isError, refetch } = useBlockDetailQuery(id);
+    // 목표형 블록이 늦어지는 중이면 목표 지키기(16)를 상세 위에 한 번 띄운다.
+    useGoalGuardAutoOpen(detail);
     const [isTransferOpen, setIsTransferOpen] = useState(false);
     const [openSheet, setOpenSheet] = useState<'menu' | 'rename' | 'edit' | null>(null);
     // 이름 바꾸기·수정 시트를 열 때마다 입력칸을 지금 블록 값으로 새로 시작한다.
