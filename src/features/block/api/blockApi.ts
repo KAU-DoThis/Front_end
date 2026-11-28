@@ -9,6 +9,7 @@ import type {
 } from '@/features/block/types/blockProposalResponse';
 import type { BlockHome } from '@/features/block/types/blockHome';
 import type { GoalGuard, ApplyGoalGuardRequest } from '@/features/block/types/goalGuard';
+import type { ApplyGoalOutcomeRequest } from '@/features/block/types/goalOutcome';
 import type { HomeResponse } from '@/features/block/types/homeResponse';
 import type {
     BlockSetupPreview,
@@ -51,6 +52,7 @@ import {
 import { BLOCK_SETUP_PROPOSAL_MOCK, mockBlockSetupPreview } from './blockSetupMock';
 import { simulateTransferMock, transferBlockMock } from './blockTransferMock';
 import { applyGoalGuardMock, getGoalGuardMock } from './goalGuardMock';
+import { applyGoalOutcomeMock } from './goalOutcomeMock';
 import { toBlockUpdateRequest } from './blockUpdateMapper';
 import { toAllocationDraft } from './waitingFundMapper';
 
@@ -226,6 +228,17 @@ export const applyGoalGuard = (blockId: number, body: ApplyGoalGuardRequest) => 
         return mockResponse(() => applyGoalGuardMock(blockId, body));
     }
     return request<unknown>({ method: 'POST', url: `/blocks/${blockId}/goal-guard`, data: body });
+};
+
+/**
+ * 목표 달성(17) · 기한 지남(17-1) 처리: 끝난 목표형 블록을 고른 방법으로 바꾼다.
+ * TODO: 명세 v4 7장의 경로·요청 모양을 확인하지 못해 가정했다. 백엔드와 맞춘 뒤 고친다.
+ */
+export const applyGoalOutcome = (blockId: number, body: ApplyGoalOutcomeRequest) => {
+    if (USE_MOCK) {
+        return mockResponse(() => applyGoalOutcomeMock(blockId, body));
+    }
+    return request<unknown>({ method: 'POST', url: `/blocks/${blockId}/goal-outcome`, data: body });
 };
 
 /** 온보딩 블록 구성은 목업 모드(USE_MOCK)에서 목업으로 처리한다. */
