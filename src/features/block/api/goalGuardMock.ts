@@ -5,6 +5,7 @@ import type {
     GoalGuardOption,
 } from '@/features/block/types/goalGuard';
 import { GOAL_GUARD_ERROR_CODE } from '@/features/block/types/goalGuard';
+import { goalOutcomeOf, todayKst } from '@/features/block/utils/goalOutcome';
 import { formatAmount, formatMonthDay } from '@/lib/format';
 import { ApiError } from '@/shared/types/api';
 
@@ -169,7 +170,13 @@ function raiseMonthlyTarget(detail: GoalBlockDetail, amount: number) {
 function findLateGoal(blockId: number) {
     const detail = BLOCK_DETAIL_MOCK[blockId];
     const dueDate = detail?.block.dueDate;
-    if (detail?.type !== 'GOAL' || !detail.projection?.isLate || !dueDate) {
+    if (
+        detail?.type !== 'GOAL' ||
+        !detail.projection?.isLate ||
+        !dueDate ||
+        // 기한이 지났거나 다 모은 목표는 목표 지키기 대상이 아니다. (17 · 17-1이 맡는다)
+        goalOutcomeOf(detail, todayKst()) !== null
+    ) {
         throw new ApiError(GOAL_GUARD_ERROR_CODE.NOT_LATE, '늦어지는 목표가 아닙니다.', 400);
     }
     const { expectedDate, expectedLabel } = detail.projection;

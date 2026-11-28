@@ -18,10 +18,12 @@ import { BlockMenuSheet, type BlockMenuItem } from '@/features/block/components/
 import { EditBlockSheet, type EditBlockPicker } from '@/features/block/components/EditBlockSheet';
 import { FixedDetailContent } from '@/features/block/components/FixedDetailContent';
 import { GoalDetailContent } from '@/features/block/components/GoalDetailContent';
+import { GoalOutcomeSheet } from '@/features/block/components/GoalOutcomeSheet';
 import { RenameBlockSheet } from '@/features/block/components/RenameBlockSheet';
 import { SpendingDetailContent } from '@/features/block/components/SpendingDetailContent';
 import { TransferSheet } from '@/features/block/components/TransferSheet';
 import { useGoalGuardAutoOpen } from '@/features/block/hooks/useGoalGuardAutoOpen';
+import { useGoalOutcomeAutoOpen } from '@/features/block/hooks/useGoalOutcomeAutoOpen';
 import type { BlockDetail } from '@/features/block/types/blockDetail';
 
 /** 02 블록 상세 — 블록 유형(사용형 · 목표형 · 고정지출형)에 맞는 화면을 보여준다. */
@@ -33,7 +35,11 @@ export function BlockDetailScreen() {
     const { data: detail, isPending, isError, refetch } = useBlockDetailQuery(id);
     // 목표형 블록이 늦어지는 중이면 목표 지키기(16)를 상세 위에 한 번 띄운다.
     useGoalGuardAutoOpen(detail);
+    // 목표형 블록이 끝났으면(다 모음 · 기한 지남) 목표 달성(17) · 기한 지남(17-1) 시트를 띄운다.
+    const goalOutcome = useGoalOutcomeAutoOpen(detail);
     const [isTransferOpen, setIsTransferOpen] = useState(false);
+    // 목표 달성 '다른 블록으로 옮기기': 이 블록에서 보내는 자금 이동
+    const [isMoveOutOpen, setIsMoveOutOpen] = useState(false);
     const [openSheet, setOpenSheet] = useState<'menu' | 'rename' | 'edit' | null>(null);
     // 이름 바꾸기·수정 시트를 열 때마다 입력칸을 지금 블록 값으로 새로 시작한다.
     const [formKey, setFormKey] = useState(0);
@@ -141,6 +147,12 @@ export function BlockDetailScreen() {
                 initialToBlockId={isValidId ? id : null}
                 lockedSide="to"
             />
+            <TransferSheet
+                isOpen={isMoveOutOpen}
+                onClose={() => setIsMoveOutOpen(false)}
+                initialFromBlockId={isValidId ? id : null}
+                lockedSide="from"
+            />
             <BlockMenuSheet
                 isOpen={openSheet === 'menu'}
                 onClose={closeSheet}
@@ -165,6 +177,16 @@ export function BlockDetailScreen() {
                         initialPicker={editPicker}
                     />
                 </>
+            )}
+            {detail?.type === 'GOAL' && goalOutcome.kind && (
+                <GoalOutcomeSheet
+                    isOpen={goalOutcome.isOpen}
+                    kind={goalOutcome.kind}
+                    detail={detail}
+                    today={goalOutcome.today}
+                    onClose={goalOutcome.close}
+                    onMove={() => setIsMoveOutOpen(true)}
+                />
             )}
         </Screen>
     );

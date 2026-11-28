@@ -205,6 +205,45 @@ export const BLOCK_DETAIL_MOCK: Record<number, BlockDetail> = {
             },
         ],
     },
+    // 기한(10월 31일)이 지났는데 다 못 모은 목표형 (17-1 확인용, 시안에 없는 블록)
+    6: {
+        type: 'GOAL',
+        block: homeBlock(6),
+        statusReason: '기한 지남',
+        explanation:
+            '목표일이 지났는데 60,000원이 모자라요. 기한을 늘리거나 모은 만큼으로 끝낼 수 있어요.',
+        version: 1,
+        ruleText: '목표 300,000 · 10월 31일 · 매달 60,000',
+        actions: [],
+        targetAmount: 300_000,
+        daysLeft: 0,
+        monthly: { target: 60_000, saved: 0, remaining: 60_000 },
+        projection: {
+            paceText: '목표보다 4주 늦음',
+            isLate: true,
+            expectedDate: '2026-11-30',
+            expectedLabel: '11월 말',
+            startMonth: '2026-07',
+            endMonth: '2026-12',
+            saved: [
+                { date: '2026-07-01', amount: 60_000 },
+                { date: '2026-08-01', amount: 120_000 },
+                { date: '2026-09-01', amount: 180_000 },
+                { date: '2026-10-01', amount: 240_000 },
+            ],
+        },
+        inflows: [
+            { title: '10월 블록 배분', note: '월급에서', occurredAt: '2026-10-01', amount: 60_000 },
+            { title: '9월 블록 배분', note: '월급에서', occurredAt: '2026-09-01', amount: 60_000 },
+            { title: '8월 블록 배분', note: '월급에서', occurredAt: '2026-08-01', amount: 60_000 },
+            {
+                title: '콘서트 블록 만듦',
+                note: '첫 배분',
+                occurredAt: '2026-07-01',
+                amount: 60_000,
+            },
+        ],
+    },
     4: {
         type: 'FIXED',
         block: homeBlock(4),
