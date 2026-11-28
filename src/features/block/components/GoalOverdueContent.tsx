@@ -7,7 +7,7 @@ import { Button } from '@/shared/components/ui/Button';
 import { colors } from '@/styles/tokens';
 
 import type { GoalBlockDetail } from '@/features/block/types/blockDetail';
-import { achievementRate, extendPlan } from '@/features/block/utils/goalOutcome';
+import { extendPlan } from '@/features/block/utils/goalOutcome';
 
 import { GoalChoiceCard } from './GoalChoiceCard';
 
@@ -41,7 +41,8 @@ export function GoalOverdueContent({
     const hasSaved = balance > 0;
     const [choice, setChoice] = useState<OverdueChoice>('EXTEND');
     const plan = extendPlan(targetAmount, balance, today);
-    const rate = achievementRate(balance, targetAmount);
+    // 달성률은 서버 값(목표형 물 높이 = 달성률)을 그대로 쓴다. (목표 상세와 같은 값)
+    const rate = Math.min(100, Math.max(0, block.fillRate));
     const fillColor = colors.block[block.color][STATUS_KEY[block.status]];
 
     const choices: {

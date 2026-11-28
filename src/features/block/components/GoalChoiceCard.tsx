@@ -28,7 +28,7 @@ export function GoalChoiceCard({
     return (
         <Pressable
             accessibilityRole="radio"
-            accessibilityState={{ selected: isSelected, disabled }}
+            accessibilityState={{ checked: isSelected, disabled }}
             disabled={disabled}
             onPress={onPress}
             className={cn(

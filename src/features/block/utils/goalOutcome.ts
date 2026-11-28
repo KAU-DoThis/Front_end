@@ -31,10 +31,6 @@ export function goalOutcomeOf(
     return null;
 }
 
-/** 달성률 0~100, 내림 (서버 achievementRate와 같은 식) */
-export const achievementRate = (balance: number, targetAmount: number) =>
-    targetAmount <= 0 ? 0 : Math.min(100, Math.max(0, Math.floor((balance / targetAmount) * 100)));
-
 /** 시작한 달과 지금까지 걸린 개월 (시작한 달 포함). 예: 3월부터 7개월 */
 export function monthsSince(startDate: string, today: string) {
     const [startYear, startMonth] = parse(startDate);
