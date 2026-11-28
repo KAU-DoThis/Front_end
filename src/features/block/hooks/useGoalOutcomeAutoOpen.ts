@@ -15,42 +15,49 @@ import { shouldShowGoalOutcome } from '@/features/block/utils/goalOutcomeDismiss
  * - 기한 지남을 고르지 않고 닫았으면 3일 동안 띄우지 않는다.
  */
 export function useGoalOutcomeAutoOpen(detail: BlockDetail | null | undefined) {
-    // 이 화면에서 이미 확인한 목표 (blockId + 종류 + 목표 금액 + 기한). 상세를 다시 받아도 또 띄우지 않는다.
+    // 이번 포커스에서 이미 확인한 목표 (blockId + 종류 + 목표 금액 + 기한). 같은 포커스에서 상세를 다시 받아도 또 띄우지 않는다.
     const checkedKey = useRef<string | null>(null);
     // 닫는 동안에도 시트 내용을 그대로 그리도록 마지막으로 띄운 종류를 남겨 둔다.
     const [kind, setKind] = useState<GoalOutcomeKind | null>(null);
-    const [isOpen, setIsOpen] = useState(false);
+    // 지금 띄운 목표의 키. 닫으면 null
+    const [openKey, setOpenKey] = useState<string | null>(null);
 
     const today = todayKst();
     const outcome = goalOutcomeOf(detail, today);
     const blockId = detail?.block.blockId;
     const targetAmount = detail?.type === 'GOAL' ? detail.targetAmount : 0;
     const dueDate = detail?.block.dueDate?.slice(0, 10) ?? null;
+    const currentKey =
+        blockId !== undefined && outcome
+            ? `${blockId}:${outcome}:${targetAmount}:${dueDate}`
+            : null;
 
     useFocusEffect(
         useCallback(() => {
-            if (blockId === undefined || !outcome) return;
-            const key = `${blockId}:${outcome}:${targetAmount}:${dueDate}`;
+            if (blockId === undefined || !outcome || !currentKey) return;
+            const key = currentKey;
             if (checkedKey.current === key) return;
             checkedKey.current = key;
 
             let isCancelled = false;
-            let isDone = false;
             shouldShowGoalOutcome(blockId, { kind: outcome, targetAmount, dueDate }, today).then(
                 (shouldShow) => {
-                    isDone = true;
                     if (isCancelled || !shouldShow) return;
                     setKind(outcome);
-                    setIsOpen(true);
+                    setOpenKey(key);
                 },
             );
             return () => {
                 isCancelled = true;
-                // 확인을 끝내기 전에 다른 화면으로 넘어가면 돌아왔을 때 다시 확인한다.
-                if (!isDone) checkedKey.current = null;
+                // 다른 화면으로 넘어가면 돌아왔을 때 다시 확인한다. (확인을 끝냈어도)
+                checkedKey.current = null;
             };
-        }, [blockId, outcome, targetAmount, dueDate, today]),
+        }, [blockId, outcome, targetAmount, dueDate, today, currentKey]),
     );
 
-    return { kind, isOpen, today, close: () => setIsOpen(false) };
+    // 띄운 뒤 목표가 바뀌었거나 끝난 상태가 아니게 되면(다른 기기에서 기한을 늘림 등) 열린 시트를 닫힌 것으로 본다.
+    // 종류(kind)는 닫히는 동안 내용을 그대로 그리도록 남겨 둔다.
+    const isOpen = openKey !== null && openKey === currentKey;
+
+    return { kind, isOpen, today, close: () => setOpenKey(null) };
 }
