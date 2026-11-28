@@ -51,10 +51,16 @@ function setMonthlyTarget(detail: GoalBlockDetail, monthlyTarget: number) {
     };
 }
 
-/** 새 기한에 맞춰 남은 금액 ÷ 남은 개월로 월 확보 금액을 다시 잡고, 늦어짐 표시를 지운다. */
+/**
+ * 새 기한에 맞춰 남은 금액 ÷ 남은 개월로 월 확보 금액을 다시 잡고, 늦어짐 표시를 지운다.
+ * 월 목표는 이번 달 총목표라서 이번 달에 이미 모은 돈을 더한다. (남은 금액은 잔액에서 이미 뺐다)
+ */
 function replan(detail: GoalBlockDetail, dueDate: string, today: string) {
     const remaining = Math.max(0, detail.targetAmount - detail.block.balance);
-    setMonthlyTarget(detail, Math.ceil(remaining / monthsUntil(dueDate, today)));
+    setMonthlyTarget(
+        detail,
+        detail.monthly.saved + Math.ceil(remaining / monthsUntil(dueDate, today)),
+    );
     findBlock(detail.block.blockId).status = 'SAFE';
     detail.statusReason = null;
     detail.explanation = null;
